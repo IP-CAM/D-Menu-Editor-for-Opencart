@@ -8,8 +8,6 @@
  */
 
 class ControllerExtensionModuleDMenuEditor extends Controller {
-    private $version = '1.1.2';
-
     private $languages = array();
 
     private $catalog = array();
@@ -25,34 +23,22 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
         'menu' => array(
             'main' => array(
                 'icon' => array(
-                    'dimensions' => array(
-                        'width'  => 16,
-                        'height' => 16
-                    )
+                    'dimensions' => array('width' => 16, 'height' => 16)
                 )
             ),
             'top' => array(
                 'icon' => array(
-                    'dimensions' => array(
-                        'width'  => 16,
-                        'height' => 16
-                    )
+                    'dimensions' => array('width' => 16, 'height' => 16)
                 )
             ),
             'footer' => array(
                 'icon' => array(
-                    'dimensions' => array(
-                        'width'  => 16,
-                        'height' => 16
-                    )
+                    'dimensions' => array('width' => 16, 'height' => 16)
                 )
             ),
             'social' => array(
                 'icon' => array(
-                    'dimensions' => array(
-                        'width'  => 16,
-                        'height' => 16
-                    )
+                    'dimensions' => array('width' => 16, 'height' => 16)
                 )
             )
         ),
@@ -86,63 +72,56 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
             $module_settings = array();
         }
 
+        // Store ID.
+        if (isset($module_settings['general']['store_default'][$data['menu_type']])) {
+            // If Default Store ID is checked (in settings).
+            $data['store_id'] = $module_settings['general']['store_default'][$data['menu_type']];
+        } else {
+            $data['store_id'] = $this->config->get('config_store_id');
+        }
+
         // Settings Current Menu.
         if (isset($module_settings['menu'][$data['menu_type']])) {
             $data['settings_menu'] = $module_settings['menu'][$data['menu_type']];
         } else {
             $data['settings_menu'] = array(
-                'status' => 0,
-                'close'  => 0,
-                'icon'   => $this->settings['menu'][$data['menu_type']]['icon']
+                'status'   => 0,
+                'title'    => array(
+                    'status'  => 0,
+                    'display' => '',
+                    'name'    => array()
+                ),
+                'mobile'   => array(
+                    'status' => 0,
+                    'close'  => 0
+                ),
+                'currency' => 0,
+                'language' => 0,
+                'icon'     => $this->settings['menu'][$data['menu_type']]['icon']
             );
         }
-
-        // Module version.
-        $data['version'] = $this->version;
 
         // Additional data.
         $data['additional'] = array();
 
         // Items Menu.
-        if ($this->config->get('module_dmenu_editor_items_' . $data['menu_type'])) {
-            $data['menu_items'] = $this->config->get('module_dmenu_editor_items_' . $data['menu_type']);
-            $data['menu_items_status'] = $module_settings['menu'][$data['menu_type']]['status'];
+        if ($this->config->get('module_dmenu_editor_items_' . $data['menu_type'] . '_' . $data['store_id'])) {
+            $data['menu_items'] = $this->config->get('module_dmenu_editor_items_' . $data['menu_type'] . '_' . $data['store_id']);
         } else {
             $data['menu_items'] = array();
-            $data['menu_items_status'] = 0;
         }
+
+        // Setting 'Status Menu'.
+        $data['menu_items_status'] = $data['settings_menu']['status'];
 
         // Prepared data.
         if ($this->config->get('module_dmenu_editor_prepared')) {
             $prepared = $this->config->get('module_dmenu_editor_prepared');
 
-            if (isset($prepared['menu'][$data['menu_type']]['IDs'])) {
-                foreach ($prepared['menu'][$data['menu_type']]['IDs'] as $layout => $IDs) {
-                    switch ($layout) {
-                        // Category.
-                        case 'category':
-                            $this->prepared['menu']['data'][$layout] = $this->model_extension_module_dmenu_editor->getCategoriesPrepared($IDs);
-                            break;
-
-                        // Product.
-                        case 'product':
-                            $this->prepared['menu']['data'][$layout] = $this->model_extension_module_dmenu_editor->getProductsPrepared($IDs);
-                            break;
-
-                        // ocStore Blog Category.
-                        case 'blog_category':
-                            $this->prepared['menu']['data'][$layout] = $this->model_extension_module_dmenu_editor->getBlogCategoriesPrepared($IDs);
-                            break;
-
-                        // ocStore Blog Article.
-                        case 'blog_article':
-                            $this->prepared['menu']['data'][$layout] = $this->model_extension_module_dmenu_editor->getBlogArticlesPrepared($IDs);
-                            break;
-
-                        // Default.
-                        default:
-                            break;
-                    }
+            if (isset($prepared['menu'][$data['menu_type']]['store_' . $data['store_id']]['IDs'])) {
+                foreach ($prepared['menu'][$data['menu_type']]['store_' . $data['store_id']]['IDs'] as $layout => $IDs) {
+                    $this->prepared['menu']['IDs'] = $IDs;
+                    $this->prepared['menu']['data'][$layout] = $this->model_extension_module_dmenu_editor->getItemsPrepared($IDs, $layout);
                 }
             }
         }
@@ -152,8 +131,6 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
             'text_back' => $this->language->get('text_back'),
             'text_all'  => $this->language->get('text_all')
         );
-
-        $data['entry_menu_type'] = sprintf($this->language->get('entry_menu_type'), $this->language->get('entry_menu_' . $data['menu_type']));
 
         // Change Language, if not defined.
         foreach ($data['menu_items'] as $item) {
@@ -180,6 +157,14 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
             break;
         }
 
+        // Menu Title.
+        if ($data['settings_menu']['title']['status'] && isset($data['settings_menu']['title']['name'][$this->settings['language_id']]) && 
+            trim($data['settings_menu']['title']['name'][$this->settings['language_id']])) {
+                $data['entry_menu_type'] = $data['settings_menu']['title']['name'][$this->settings['language_id']];
+        } else {
+            $data['entry_menu_type'] = sprintf($this->language->get('entry_menu_type'), $this->language->get('entry_menu_' . $data['menu_type']));
+        }
+
         // Change Menu Items.
         $this->changeMenuItems($data['menu_items'], 'current', $this->current_class);
 
@@ -190,10 +175,21 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
             $data['catalog'] = array();
         }
 
-        // Additional HTML.
+        // Top Menu additional data.
         if ($data['menu_type'] == 'top') {
-            $data['additional']['currency'] = $this->load->controller('common/currency');
-            $data['additional']['language'] = $this->load->controller('common/language');
+            // Switcher Currency.
+            if ($data['settings_menu']['currency']) {
+                $data['additional']['currency'] = $this->load->controller('common/currency');
+            } else {
+                $data['additional']['currency'] = '';
+            }
+
+            // Switcher Language.
+            if ($data['settings_menu']['language']) {
+                $data['additional']['language'] = $this->load->controller('common/language');
+            } else {
+                $data['additional']['language'] = '';
+            }
         }
 
         return $this->load->view('extension/module/dmenu_editor/menu/' . $data['menu_type'], $data);
@@ -223,7 +219,7 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
                 if ($depth > 0) $ancestor = true;
 
                 // Recursion.
-                if (!empty($item['rows'])) {
+                if ($item['data']['status'] && !empty($item['rows'])) {
                     $this->changeMenuItems($item['rows'], $search_key, $search_value, ($depth + 1));
                 }
             } else if ($item['data']['layout'] == 'catalog' && $this->catalog_ancestor) {
@@ -232,7 +228,7 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
 
                 // Set 'current' class.
                 $item['data'][$search_key] = $this->current_ancestor_class;
-            } else if (!empty($item['rows']) && $this->changeMenuItems($item['rows'], $search_key, $search_value, ($depth + 1))) {
+            } else if ($item['data']['status'] && !empty($item['rows']) && $this->changeMenuItems($item['rows'], $search_key, $search_value, ($depth + 1))) {
                 // Set ancestor.
                 $ancestor = true;
 
@@ -257,272 +253,171 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
      * @return void
      */
     private function changeMenuItem(&$item) {
-        $layout = $item['data']['layout'];
+        if ($item['data']['status']) {
+            $layout = $item['data']['layout'];
 
-        if ($layout == 'catalog') {
-            // Get parts.
-            if (isset($this->request->get['path'])) {
-                $parts = explode('_', (string)$this->request->get['path']);
+            if ($layout == 'catalog') {
+                // Get parts.
+                if (isset($this->request->get['path'])) {
+                    $parts = explode('_', (string)$this->request->get['path']);
+                } else {
+                    $parts = array();
+                }
+
+                // Set 'current' class.
+                $item['data']['current'] = '';
+
+                // Get All Categories.
+                $this->getCatalog($parts);
+
+                // Title Menu Item.
+                $item['data']['title'] = $item['data']['category_menu_names'][$this->settings['language_id']];
             } else {
-                $parts = array();
-            }
+                // Change Menu Item array.
+                switch ($layout) {
+                    // Home.
+                    case 'home':
+                        $this->changeMenuItemOCPage($item, 'common/home', $layout);
+                        break;
 
-            // Set 'current' class.
-            $item['data']['current'] = '';
+                    // Contact Us.
+                    case 'contact':
+                        $this->changeMenuItemOCPage($item, 'information/contact');
+                        break;
 
-            // Get All Categories.
-            $this->getCatalog($parts);
+                    // Sitemap.
+                    case 'sitemap':
+                        $this->changeMenuItemOCPage($item, 'information/sitemap');
+                        break;
 
-            // Title Menu Item.
-            $item['data']['title'] = $item['data']['category_menu_names'][$this->settings['language_id']];
-        } else {
-            // Change Menu Item array.
-            switch ($layout) {
-                // Home.
-                case 'home':
-                    $this->changeMenuItemOCPage($item, 'common/home', $layout);
-                    break;
+                    // Cart.
+                    case 'cart':
+                        $this->changeMenuItemOCPage($item, 'checkout/cart');
+                        break;
 
-                // Contact Us.
-                case 'contact':
-                    $this->changeMenuItemOCPage($item, 'information/contact');
-                    break;
+                    // Checkout.
+                    case 'checkout':
+                        $this->changeMenuItemOCPage($item, 'checkout/checkout');
+                        break;
 
-                // Sitemap.
-                case 'sitemap':
-                    $this->changeMenuItemOCPage($item, 'information/sitemap');
-                    break;
+                    // Compare.
+                    case 'compare':
+                        $this->changeMenuItemOCPage($item, 'product/compare');
+                        break;
 
-                // Cart.
-                case 'cart':
-                    $this->changeMenuItemOCPage($item, 'checkout/cart');
-                    break;
+                    // Wishlist.
+                    case 'wishlist':
+                        $this->changeMenuItemOCPage($item, 'account/wishlist');
+                        break;
 
-                // Checkout.
-                case 'checkout':
-                    $this->changeMenuItemOCPage($item, 'checkout/checkout');
-                    break;
+                    // Manufacturers.
+                    case 'manufacturers':
+                        $this->changeMenuItemOCPage($item, 'product/manufacturer');
+                        break;
 
-                // Compare.
-                case 'compare':
-                    $this->changeMenuItemOCPage($item, 'product/compare');
-                    break;
+                    // Special.
+                    case 'special':
+                        $this->changeMenuItemOCPage($item, 'product/special');
+                        break;
 
-                // Wishlist.
-                case 'wishlist':
-                    $this->changeMenuItemOCPage($item, 'account/wishlist');
-                    break;
+                    // Search.
+                    case 'search':
+                        $this->changeMenuItemOCPage($item, 'product/search');
+                        break;
 
-                // Manufacturers.
-                case 'manufacturers':
-                    $this->changeMenuItemOCPage($item, 'product/manufacturer');
-                    break;
+                    // Account.
+                    case 'account':
+                        $this->changeMenuItemOCPage($item, 'account/account');
+                        break;
 
-                // Special.
-                case 'special':
-                    $this->changeMenuItemOCPage($item, 'product/special');
-                    break;
+                    // Account Login.
+                    case 'login':
+                        $this->changeMenuItemOCPage($item, 'account/login');
+                        break;
 
-                // Search.
-                case 'search':
-                    $this->changeMenuItemOCPage($item, 'product/search');
-                    break;
+                    // Account Register.
+                    case 'register':
+                        $this->changeMenuItemOCPage($item, 'account/register');
+                        break;
 
-                // Account.
-                case 'account':
-                    $this->changeMenuItemOCPage($item, 'account/account');
-                    break;
+                    // Account Logout.
+                    case 'logout':
+                        $this->changeMenuItemOCPage($item, 'account/logout');
+                        break;
 
-                // Account Login.
-                case 'login':
-                    $this->changeMenuItemOCPage($item, 'account/login');
-                    break;
+                    // Information.
+                    case 'information':
+                        $this->changeMenuItemLayout($item, $layout, 'information');
+                        break;
 
-                // Account Register.
-                case 'register':
-                    $this->changeMenuItemOCPage($item, 'account/register');
-                    break;
+                    // Category.
+                    case 'category':
+                        $this->changeMenuItemLayout($item, $layout, 'category');
+                        break;
 
-                // Account Logout.
-                case 'logout':
-                    $this->changeMenuItemOCPage($item, 'account/logout');
-                    break;
+                    // Product.
+                    case 'product':
+                        $this->changeMenuItemLayout($item, $layout, 'product');
+                        break;
 
-                // Information.
-                case 'information':
-                    // Get Current Information ID.
-                    if (isset($this->request->get['information_id'])) {
-                        $current_item_id = (int)$this->request->get['information_id'];
-                    } else {
-                        $current_item_id = 0;
-                    }
+                    // Manufacturer.
+                    case 'manufacturer':
+                        $this->changeMenuItemLayout($item, $layout, 'manufacturer');
+                        break;
 
-                    // Set 'current' class.
-                    if ($current_item_id == $item['data']['id']) {
-                        $item['data']['current'] = $this->current_class;
-                    } else {
+                    // ocStore Blog Category.
+                    case 'blog_category':
+                        $this->changeMenuItemLayout($item, $layout, 'blog_category');
+                        break;
+
+                    // ocStore Blog Article.
+                    case 'blog_article':
+                        $this->changeMenuItemLayout($item, $layout, 'article');
+                        break;
+
+                    // Custom.
+                    case 'custom':
+                        // Set prepared 'current' class.
                         $item['data']['current'] = '';
-                    }
 
-                    // Set href.
-                    $item['data']['url']['href'] = $this->url->link('information/information', 'information_id=' . (int)$item['data']['id']);
+                        // Parse URL.
+                        $parse_url = parse_url(str_replace('&amp;', '&', $item['data']['url']['seo'][$this->settings['language_id']]));
 
-                    break;
+                        // Check 'query' from $parse_url.
+                        if (isset($parse_url['query'])) {
+                            if (isset($parse_url['path'])) {
+                                // Home.
+                                $array_home = array('/', 'index.php', 'index.html');
+                                if ((!isset($this->request->get['route']) || $this->request->get['route'] == 'common/home') && in_array($parse_url['path'], $array_home)) {
+                                    // Set 'current' class.
+                                    $item['data']['current'] = $this->current_class;
 
-                // Category.
-                case 'category':
-                    // Get Current Category ID.
-                    if (isset($this->request->get['path'])) {
-                        $parts = explode('_', (string)$this->request->get['path']);
-                        $current_item_id = (int)$this->endc($parts);
-                    } else {
-                        $current_item_id = 0;
-                    }
+                                // SEO URL.
+                                } else if (isset($this->request->get['_route_']) && trim($this->request->get['_route_'], '/') == trim($parse_url['path'], '/')) {
+                                    // Set 'current' class.
+                                    $item['data']['current'] = $this->current_class;
+                                }
+                            } else {
+                                parse_str($parse_url['query'], $query);
 
-                    // Set 'current' class.
-                    if ($current_item_id == $item['data']['id'] && !isset($this->request->get['product_id'])) {
-                        $item['data']['current'] = $this->current_class;
-                    } else {
-                        $item['data']['current'] = '';
-                    }
+                                foreach ($query as $key => $value) {
+                                    if (isset($current) && !$current) break;
 
-                    // Get Category data.
-                    if (!empty($this->prepared['menu']['data'][$layout]['category_' . $item['data']['id']])) {
-                        $category_info = $this->prepared['menu']['data'][$layout]['category_' . $item['data']['id']];
-                    } else {
-                        $category_info = $this->model_extension_module_dmenu_editor->getCategory($item['data']['id']);
-                    }
+                                    if (!empty($value) && array_key_exists($key, $this->request->get) && ($value == $this->request->get[$key])) {
+                                        $current = true;
+                                    } else {
+                                        $current = false;
+                                    }
+                                }
 
-                    // Set href.
-                    $item['data']['url']['href'] = $this->url->link('product/category', 'path=' . $category_info['path']);
+                                // Set 'current' class.
+                                if ($current) {
+                                    $item['data']['current'] = $this->current_class;
+                                }
+                            }
 
-                    break;
-
-                // Product.
-                case 'product':
-                    // Get Current Product ID.
-                    if (isset($this->request->get['product_id'])) {
-                        $current_item_id = (int)$this->request->get['product_id'];
-                    } else {
-                        $current_item_id = 0;
-                    }
-
-                    // Set 'current' class.
-                    if ($current_item_id == $item['data']['id']) {
-                        $item['data']['current'] = $this->current_class;
-                    } else {
-                        $item['data']['current'] = '';
-                    }
-
-                    // Get Product data.
-                    if (!empty($this->prepared['menu']['data'][$layout]['product_' . $item['data']['id']])) {
-                        $product_info = $this->prepared['menu']['data'][$layout]['product_' . $item['data']['id']];
-                    } else {
-                        $product_info = $this->model_extension_module_dmenu_editor->getProduct($item['data']['id']);
-                    }
-
-                    // Set href.
-                    if (empty($product_info['path'])) {
-                        $item['data']['url']['href'] = $this->url->link('product/product', 'product_id=' . (int)$item['data']['id']);
-                    } else {
-                        $item['data']['url']['href'] = $this->url->link('product/product', 'path=' . $product_info['path'] . '&product_id=' . (int)$item['data']['id']);
-                    }
-
-                    break;
-
-                // Manufacturer.
-                case 'manufacturer':
-                    // Get Current Manufacturer ID.
-                    if (isset($this->request->get['manufacturer_id'])) {
-                        $current_item_id = (int)$this->request->get['manufacturer_id'];
-                    } else {
-                        $current_item_id = 0;
-                    }
-
-                    // Set 'current' class.
-                    if ($current_item_id == $item['data']['id']) {
-                        $item['data']['current'] = $this->current_class;
-                    } else {
-                        $item['data']['current'] = '';
-                    }
-
-                    // Set href.
-                    $item['data']['url']['href'] = $this->url->link('product/manufacturer/info', 'manufacturer_id=' . (int)$item['data']['id']);
-
-                    break;
-
-                // ocStore Blog Category.
-                case 'blog_category':
-                    // Get Current Blog Category ID.
-                    if (isset($this->request->get['blog_category_id'])) {
-                        $parts = explode('_', (string)$this->request->get['blog_category_id']);
-                        $current_item_id = (int)$this->endc($parts);
-                    } else {
-                        $current_item_id = 0;
-                    }
-
-                    // Set 'current' class.
-                    if ($current_item_id == $item['data']['id'] && !isset($this->request->get['article_id'])) {
-                        $item['data']['current'] = $this->current_class;
-                    } else {
-                        $item['data']['current'] = '';
-                    }
-
-                    // Get Blog Category data.
-                    if (!empty($this->prepared['menu']['data'][$layout]['blog_category_' . $item['data']['id']])) {
-                        $blog_category_info = $this->prepared['menu']['data'][$layout]['blog_category_' . $item['data']['id']];
-                    } else {
-                        $blog_category_info = $this->model_extension_module_dmenu_editor->getBlogCategory($item['data']['id']);
-                    }
-
-                    // Set href.
-                    $item['data']['url']['href'] = $this->url->link('blog/category', 'blog_category_id=' . $blog_category_info['path']);
-
-                    break;
-
-                // ocStore Blog Article.
-                case 'blog_article':
-                    // Get Current Blog Article ID.
-                    if (isset($this->request->get['article_id'])) {
-                        $current_item_id = (int)$this->request->get['article_id'];
-                    } else {
-                        $current_item_id = 0;
-                    }
-
-                    // Set 'current' class.
-                    if ($current_item_id == $item['data']['id']) {
-                        $item['data']['current'] = $this->current_class;
-                    } else {
-                        $item['data']['current'] = '';
-                    }
-
-                    // Get Blog Article data.
-                    if (!empty($this->prepared['menu']['data'][$layout]['blog_article_' . $item['data']['id']])) {
-                        $blog_article_info = $this->prepared['menu']['data'][$layout]['blog_article_' . $item['data']['id']];
-                    } else {
-                        $blog_article_info = $this->model_extension_module_dmenu_editor->getBlogArticle($item['data']['id']);
-                    }
-
-                    // Set href.
-                    if (empty($blog_article_info['path'])) {
-                        $item['data']['url']['href'] = $this->url->link('blog/article', 'article_id=' . (int)$item['data']['id']);
-                    } else {
-                        $item['data']['url']['href'] = $this->url->link('blog/article', 'blog_category_id=' . $blog_article_info['path'] . '&article_id=' . (int)$item['data']['id']);
-                    }
-
-                    break;
-
-                // Custom.
-                case 'custom':
-                    // Set prepared 'current' class.
-                    $item['data']['current'] = '';
-
-                    // Parse URL.
-                    $parse_url = parse_url(str_replace('&amp;', '&', $item['data']['url']['seo'][$this->settings['language_id']]));
-
-                    // Check 'query' from $parse_url.
-                    if (isset($parse_url['query'])) {
-                        if (isset($parse_url['path'])) {
+                        // Check 'path' from $parse_url.
+                        } else if (isset($parse_url['path'])) {
                             // Home.
                             $array_home = array('/', 'index.php', 'index.html');
                             if ((!isset($this->request->get['route']) || $this->request->get['route'] == 'common/home') && in_array($parse_url['path'], $array_home)) {
@@ -534,58 +429,39 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
                                 // Set 'current' class.
                                 $item['data']['current'] = $this->current_class;
                             }
-                        } else {
-                            parse_str($parse_url['query'], $query);
-
-                            foreach ($query as $key => $value) {
-                                if (isset($current) && !$current) break;
-
-                                if (!empty($value) && array_key_exists($key, $this->request->get) && ($value == $this->request->get[$key])) {
-                                    $current = true;
-                                } else {
-                                    $current = false;
-                                }
-                            }
-
-                            // Set 'current' class.
-                            if ($current) {
-                                $item['data']['current'] = $this->current_class;
-                            }
                         }
 
-                    // Check 'path' from $parse_url.
-                    } else if (isset($parse_url['path'])) {
-                        // Home.
-                        $array_home = array('/', 'index.php', 'index.html');
-                        if ((!isset($this->request->get['route']) || $this->request->get['route'] == 'common/home') && in_array($parse_url['path'], $array_home)) {
-                            // Set 'current' class.
-                            $item['data']['current'] = $this->current_class;
+                        // Set href.
+                        $item['data']['url']['href'] = $item['data']['url']['seo'][$this->settings['language_id']];
 
-                        // SEO URL.
-                        } else if (isset($this->request->get['_route_']) && trim($this->request->get['_route_'], '/') == trim($parse_url['path'], '/')) {
-                            // Set 'current' class.
-                            $item['data']['current'] = $this->current_class;
-                        }
-                    }
+                        break;
 
-                    // Set href.
-                    $item['data']['url']['href'] = $item['data']['url']['seo'][$this->settings['language_id']];
+                    // Unknown Layout.
+                    default:
+                        // Set 'current' class.
+                        $item['data']['current'] = '';
 
-                    break;
+                        // Set status.
+                        $item['data']['status'] = 0;
 
-                // etc.
-                default:
-                    // Set 'current' class.
-                    $item['data']['current'] = '';
+                        // Set href.
+                        $item['data']['url']['href'] = '';
 
-                    // Set href.
-                    $item['data']['url']['href'] = '';
+                        break;
+                }
 
-                    break;
+                // Title Menu Item.
+                $item['data']['title'] = $item['data']['names'][$this->settings['language_id']];
             }
+        } else {
+            // Set 'current' class.
+            $item['data']['current'] = '';
+
+            // Set href.
+            $item['data']['url']['href'] = '';
 
             // Title Menu Item.
-            $item['data']['title'] = $item['data']['names'][$this->settings['language_id']];
+            $item['data']['title'] = '';
         }
     }
 
@@ -674,6 +550,156 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
 					'current'  => $current_class
                 );
             }
+        }
+    }
+
+    /**
+     * Change Menu Item Layout.
+     * 
+     * @param array $item
+     * @param string $layout
+     * @param string $request_layout
+     * 
+     * @return void
+     */
+    private function changeMenuItemLayout(&$item, $layout, $request_layout) {
+        $item_info = array();
+
+        // Get Item data.
+        switch ($layout) {
+            // Layout.
+            case 'information':
+            case 'product':
+            case 'manufacturer':
+            case 'blog_article':
+                // Get Current Item ID.
+                if (isset($this->request->get[$request_layout . '_id'])) {
+                    $current_item_id = (int)$this->request->get[$request_layout . '_id'];
+                } else {
+                    $current_item_id = 0;
+                }
+
+                // Set 'current' class.
+                if ($current_item_id == $item['data']['id']) {
+                    $item['data']['current'] = $this->current_class;
+                } else {
+                    $item['data']['current'] = '';
+                }
+
+                break;
+
+            // Category.
+            case 'category':
+                // Get Current Category ID.
+                if (isset($this->request->get['path'])) {
+                    $parts = explode('_', (string)$this->request->get['path']);
+                    $current_item_id = (int)$this->endc($parts);
+                } else {
+                    $current_item_id = 0;
+                }
+
+                // Set 'current' class.
+                if ($current_item_id == $item['data']['id'] && !isset($this->request->get['product_id'])) {
+                    $item['data']['current'] = $this->current_class;
+                } else {
+                    $item['data']['current'] = '';
+                }
+
+                break;
+
+            // ocStore Blog Category.
+            case 'blog_category':
+                // Get Current Item ID.
+                if (isset($this->request->get[$request_layout . '_id'])) {
+                    $parts = explode('_', (string)$this->request->get[$request_layout . '_id']);
+                    $current_item_id = (int)$this->endc($parts);
+                } else {
+                    $current_item_id = 0;
+                }
+
+                // Set 'current' class.
+                if ($current_item_id == $item['data']['id'] && !isset($this->request->get['article_id'])) {
+                    $item['data']['current'] = $this->current_class;
+                } else {
+                    $item['data']['current'] = '';
+                }
+
+                break;
+
+            // etc.
+            default:
+                // Set 'current' class.
+                $item['data']['current'] = '';
+
+                break;
+        }
+
+        // Get Item data from DB.
+        if (!empty($this->prepared['menu']['data'][$layout][$layout . '_' . $item['data']['id']])) {
+            $item_info = $this->prepared['menu']['data'][$layout][$layout . '_' . $item['data']['id']];
+        } else {
+            if (!in_array($item['data']['id'], $this->prepared['menu']['IDs'])) {
+                $item_info = $this->model_extension_module_dmenu_editor->getItem($item['data']['id'], $layout);
+            }
+        }
+
+        // Set other data.
+        if (isset($item_info['status']) && $item_info['status']) {
+            // Set href.
+            switch ($layout) {
+                // Information.
+                case 'information':
+                    $item['data']['url']['href'] = $this->url->link('information/information', 'information_id=' . (int)$item['data']['id']);
+                    break;
+
+                // Category.
+                case 'category':
+                    $item['data']['url']['href'] = $this->url->link('product/category', 'path=' . $item_info['path']);
+                    break;
+
+                // Product.
+                case 'product':
+                    if (empty($item_info['path'])) {
+                        $item['data']['url']['href'] = $this->url->link('product/product', 'product_id=' . (int)$item['data']['id']);
+                    } else {
+                        $item['data']['url']['href'] = $this->url->link('product/product', 'path=' . $item_info['path'] . '&product_id=' . (int)$item['data']['id']);
+                    }
+
+                    break;
+
+                // ocStore Blog Category.
+                case 'blog_category':
+                    $item['data']['url']['href'] = $this->url->link('blog/category', 'blog_category_id=' . $item_info['path']);
+                    break;
+
+                // ocStore Blog Article.
+                case 'blog_article':
+                    if (empty($item_info['path'])) {
+                        $item['data']['url']['href'] = $this->url->link('blog/article', 'article_id=' . (int)$item['data']['id']);
+                    } else {
+                        $item['data']['url']['href'] = $this->url->link('blog/article', 'blog_category_id=' . $item_info['path'] . '&article_id=' . (int)$item['data']['id']);
+                    }
+
+                    break;
+
+                // etc.
+                default:
+                    $item['data']['url']['href'] = '';
+                    break;
+            }
+
+        // Manufacturer Item.
+        } else if (isset($item_info['manufacturer_id'])) {
+            // Set href.
+            $item['data']['url']['href'] = $this->url->link('product/manufacturer/info', 'manufacturer_id=' . (int)$item['data']['id']);
+
+        // Unknown Item.
+        } else {
+            // Set status.
+            $item['data']['status'] = 0;
+
+            // Set href.
+            $item['data']['url']['href'] = '';
         }
     }
 

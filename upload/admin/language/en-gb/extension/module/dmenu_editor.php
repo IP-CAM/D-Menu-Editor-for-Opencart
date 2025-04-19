@@ -15,11 +15,16 @@ $_['heading_title']                = 'Menu Editor';
 // Text
 $_['text_extension']               = 'Extensions';
 $_['text_edit']                    = 'Edit';
-$_['text_by_button']               = 'With Button';
-$_['text_by_gesture']              = 'With Gesture';
-$_['text_by_button_gesture']       = 'With Button and Gesture';
-$_['text_icon_width']              = 'Width';
-$_['text_icon_height']             = 'Height';
+$_['text_store']                   = 'Store';
+$_['text_add_code']                = 'Add code:';
+$_['text_show_on_desktop']         = 'Show on Desktop';
+$_['text_show_on_mobile']          = 'Show on Mobile';
+$_['text_show_on_desktop_mobile']  = 'Show on Desktop and Mobile';
+$_['text_close_by_button']         = 'Close with Button';
+$_['text_close_by_gesture']        = 'Close with Gesture';
+$_['text_close_by_button_gesture'] = 'Close with Button and Gesture';
+$_['text_icon_width']              = 'Width, px';
+$_['text_icon_height']             = 'Height, px';
 $_['text_result_categories']       = 'Categories';
 $_['text_all_category']            = 'All Categories';
 $_['text_category_menu_catalog']   = 'Catalog';
@@ -51,11 +56,23 @@ $_['text_item_desc_none']          = 'Unknown menu item';
 $_['text_menu_item']               = 'Menu Item';
 $_['text_add_item']                = 'Add Item';
 $_['text_add_item_tip']            = 'Add';
+$_['text_yes']                     = 'Yes';
+$_['text_no']                      = 'No';
+$_['text_enabled']                 = 'Enabled';
+$_['text_disabled']                = 'Disabled';
 $_['text_select_none']             = ' --- None --- ';
+$_['text_select']                  = ' --- Please Select --- ';
 $_['text_target_self']             = '_self - Loads the page into the current window (default)';
 $_['text_target_blank']            = '_blank - Loads the page in a new browser window';
 $_['text_target_parent']           = '_parent - Loads the page into the parent frame';
 $_['text_target_top']              = '_top - Cancels all frames and loads the page in a full browser window';
+$_['text_store_default']           = 'Default';
+$_['text_all_stores']              = 'All stores';
+$_['text_message_success']         = 'Success!';
+$_['text_message_error']           = 'Error!';
+$_['text_copying']                 = 'Сopying...';
+$_['text_store_not_selected']      = 'Store not selected!';
+$_['text_unable_copy_to_store']    = 'Unable to copy to current store!';
 $_['text_search_missing']          = 'No results found.';
 
 // Entry
@@ -67,7 +84,14 @@ $_['entry_status_main']            = 'Status «%s»';
 $_['entry_status_top']             = 'Status «%s»';
 $_['entry_status_footer']          = 'Status «%s»';
 $_['entry_status_social']          = 'Status «%s»';
-$_['entry_menu_close']             = 'Close Mobile Menu';
+$_['entry_title_menu']             = 'Title';
+$_['entry_menu_display']           = 'Show on site';
+$_['entry_menu_display_option_0']  = 'Default position';
+$_['entry_menu_display_option_1']  = 'Custom position';
+$_['entry_menu_display_hide']      = 'Hide information';
+$_['entry_menu_currency']          = 'Currency';
+$_['entry_menu_language']          = 'Language';
+$_['entry_menu_mobile']            = 'Mobile Menu';
 $_['entry_icon_dimensions']        = 'Icon Dimensions (W x H, px)';
 $_['entry_dev_block']              = 'Additional Settings:';
 $_['entry_ocstore_blog']           = 'ocStore Blog Support';
@@ -101,6 +125,7 @@ $_['entry_add_register']           = 'Registration Page';
 $_['entry_add_login']              = 'Login Page';
 $_['entry_add_logout']             = 'Logout Page';
 $_['entry_add_wishlist']           = 'Wishlist';
+$_['entry_copy_select']            = 'Copy to';
 
 // Tab
 $_['tab_menu_general']             = 'Menu';
@@ -127,8 +152,11 @@ $_['button_edit_item_tip']         = 'Edit';
 $_['button_look_tip']              = 'Look';
 $_['button_unlock_tip']            = 'Unlock';
 $_['button_lock_tip']              = 'Lock';
+$_['button_toolbar_store_default'] = 'Menu for all stores';
 $_['button_support_more']          = 'More Extensions';
 $_['button_support_support']       = 'Support';
+$_['button_copy']                  = 'Copy';
+$_['button_copy_code']             = 'Copy code';
 
 // Help
 $_['help_categories_menu']         = 'Hide Categories in drop down menu';
@@ -139,6 +167,13 @@ $_['help_link_label']              = 'Field «Link» with value «#»';
 $_['help_link']                    = 'Cancel link follow-through.';
 $_['help_name_hide_label']         = 'Field «Hide Title»';
 $_['help_name_hide']               = 'Hide Title menu item. It is recommended to specify an Icon.';
+
+$_['help_alert_top_display_0']     = '<div>Show the menu on the site according to the preset settings.</div><div>Work is guaranteed with the default theme (Default).</div><div>Custom theme may require modification.</div><div class="block"><div class="block-title">Location:</div><div>Modification file: «catalog/view/template/common/header.twig».</div><div>Replacing an HTML block with ID «top».</div></div>';
+$_['help_alert_footer_display_0']  = '<div>Show the menu on the site according to the preset settings.</div><div>Work is guaranteed with the default theme (Default).</div><div>Custom theme may require modification.</div><div class="block"><div class="block-title">Location:</div><div>Modification file: «catalog/view/template/common/footer.twig».</div><div>After the opening tag «footer».</div></div>';
+$_['help_alert_social_display_0']  = '<div>Show the menu on the site according to the preset settings.</div><div>Work is guaranteed with the default theme (Default).</div><div>Custom theme may require modification.</div><div class="block"><div class="block-title">Location:</div><div>Modification file: «catalog/view/template/common/footer.twig».</div><div>Before the closing tag «footer».</div></div>';
+$_['help_alert_top_display_1']     = '<div>Show the menu on the site in a manually set position.</div><div>Remove code (modification/event) if module is deleted!</div><div class="block"><div class="block-title">Addition methods:</div><div class="block-item-indent">1. FTP;</div><div class="block-item-indent">2. Navigation ->> Design ->> Theme Editor.</div><div class="block-item-indent">3. Create a modification (OCMOD) or event (EVENT).</div></div><div class="block"><div class="block-title">Location:</div><div>Modification file: «catalog/view/template/common/header.twig».</div></div>';
+$_['help_alert_footer_display_1']  = '<div>Show the menu on the site in a manually set position.</div><div>Remove code (modification/event) if module is deleted!</div><div class="block"><div class="block-title">Addition methods:</div><div class="block-item-indent">1. FTP;</div><div class="block-item-indent">2. Navigation ->> Design ->> Theme Editor.</div><div class="block-item-indent">3. Create a modification (OCMOD) or event (EVENT).</div></div><div class="block"><div class="block-title">Location:</div><div>Modification file: «catalog/view/template/common/footer.twig».</div></div>';
+$_['help_alert_social_display_1']  = '<div>Show the menu on the site in a manually set position.</div><div>Remove code (modification/event) if module is deleted!</div><div class="block"><div class="block-title">Addition methods:</div><div class="block-item-indent">1. FTP;</div><div class="block-item-indent">2. Navigation ->> Design ->> Theme Editor.</div><div class="block-item-indent">3. Create a modification (OCMOD) or event (EVENT).</div></div><div class="block"><div class="block-title">Location:</div><div>Modification file: «catalog/view/template/common/footer.twig».</div></div>';
 
 // Notification
 $_['note_title_empty']             = 'Title is empty!';

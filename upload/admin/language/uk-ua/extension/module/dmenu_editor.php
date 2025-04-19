@@ -15,11 +15,16 @@ $_['heading_title']                = 'Редактор Меню';
 // Text
 $_['text_extension']               = 'Доповнення';
 $_['text_edit']                    = 'Редагування';
-$_['text_by_button']               = 'Кнопкою';
-$_['text_by_gesture']              = 'Жестом';
-$_['text_by_button_gesture']       = 'Кнопкою та Жестом';
-$_['text_icon_width']              = 'Ширина';
-$_['text_icon_height']             = 'Висота';
+$_['text_store']                   = 'Магазин';
+$_['text_add_code']                = 'Додати код:';
+$_['text_show_on_desktop']         = 'Показати на Desktop пристрої';
+$_['text_show_on_mobile']          = 'Показати на Mobile пристрої';
+$_['text_show_on_desktop_mobile']  = 'Показати на Desktop та Mobile пристроях';
+$_['text_close_by_button']         = 'Закривати Кнопкою';
+$_['text_close_by_gesture']        = 'Закривати Жестом';
+$_['text_close_by_button_gesture'] = 'Закривати Кнопкою та Жестом';
+$_['text_icon_width']              = 'Ширина, px';
+$_['text_icon_height']             = 'Висота, px';
 $_['text_result_categories']       = 'Категорії';
 $_['text_all_category']            = 'Всі Категорії';
 $_['text_category_menu_catalog']   = 'Каталог';
@@ -51,11 +56,23 @@ $_['text_item_desc_none']          = 'Невідомий елемент меню
 $_['text_menu_item']               = 'Пункт меню';
 $_['text_add_item']                = 'Додати пункт меню';
 $_['text_add_item_tip']            = 'Додати';
+$_['text_yes']                     = 'Так';
+$_['text_no']                      = 'Ні';
+$_['text_enabled']                 = 'Увімкнено';
+$_['text_disabled']                = 'Вимкнено';
 $_['text_select_none']             = ' --- Не обрано --- ';
+$_['text_select']                  = ' --- Оберіть --- ';
 $_['text_target_self']             = '_self - Завантажує сторінку у поточне вікно (за замовчуванням)';
 $_['text_target_blank']            = '_blank - Завантажує сторінку у нове вікно браузера';
 $_['text_target_parent']           = '_parent - Завантажує сторінку у фрейм-батько';
 $_['text_target_top']              = '_top - Скасовує всі фрейми та завантажує сторінку у повному вікні браузера';
+$_['text_store_default']           = 'Основний магазин';
+$_['text_all_stores']              = 'Всі магазини';
+$_['text_message_success']         = 'Успіх!';
+$_['text_message_error']           = 'Помилка!';
+$_['text_copying']                 = 'Копіювання...';
+$_['text_store_not_selected']      = 'Магазин не вибраний!';
+$_['text_unable_copy_to_store']    = 'Не вдалося скопіювати в поточний магазин!';
 $_['text_search_missing']          = 'Результатів не знайдено.';
 
 // Entry
@@ -67,7 +84,14 @@ $_['entry_status_main']            = 'Статус «%s»';
 $_['entry_status_top']             = 'Статус «%s»';
 $_['entry_status_footer']          = 'Статус «%s»';
 $_['entry_status_social']          = 'Статус «%s»';
-$_['entry_menu_close']             = 'Закривати мобільне меню';
+$_['entry_title_menu']             = 'Заголовок';
+$_['entry_menu_display']           = 'Показати на сайті';
+$_['entry_menu_display_option_0']  = 'За замовчуванням';
+$_['entry_menu_display_option_1']  = 'Вручну';
+$_['entry_menu_display_hide']      = 'Приховати інформацію';
+$_['entry_menu_currency']          = 'Валюта';
+$_['entry_menu_language']          = 'Мова';
+$_['entry_menu_mobile']            = 'Мобільне меню';
 $_['entry_icon_dimensions']        = 'Розміри зображень (Ш x В, px)';
 $_['entry_dev_block']              = 'Додаткові налаштування:';
 $_['entry_ocstore_blog']           = 'Підтримка ocStore Blog';
@@ -101,6 +125,7 @@ $_['entry_add_register']           = 'Сторінка реєстрації';
 $_['entry_add_login']              = 'Сторінка авторизації';
 $_['entry_add_logout']             = 'Сторінка виходу';
 $_['entry_add_wishlist']           = 'Список бажань';
+$_['entry_copy_select']            = 'Копіювати в';
 
 // Tab
 $_['tab_menu_general']             = 'Меню';
@@ -127,8 +152,11 @@ $_['button_edit_item_tip']         = 'Редагувати';
 $_['button_look_tip']              = 'Подивитись';
 $_['button_unlock_tip']            = 'Розблокувати';
 $_['button_lock_tip']              = 'Заблокувати';
+$_['button_toolbar_store_default'] = 'Меню для всіх магазинів';
 $_['button_support_more']          = 'Більше доповнень';
 $_['button_support_support']       = 'Підтримка';
+$_['button_copy']                  = 'Копіювати';
+$_['button_copy_code']             = 'Скопіюйте код';
 
 // Help
 $_['help_categories_menu']         = 'Сховати Категорії у меню, що випадає';
@@ -139,6 +167,13 @@ $_['help_link_label']              = 'Поле «Link» зі значенням 
 $_['help_link']                    = 'Скасування переходу за посиланням.';
 $_['help_name_hide_label']         = 'Поле «Сховати заголовок»';
 $_['help_name_hide']               = 'Сховати Заголовок елемента меню. Рекомендується вказати Зображення.';
+
+$_['help_alert_top_display_0']     = '<div>Показати меню на сайті згідно з встановленими налаштуваннями.</div><div>Робота гарантується із шаблоном за замовчуванням (Default).</div><div>Індивідуальний шаблон може вимагати модифікації.</div><div class="block"><div class="block-title">Розташування:</div><div>Файл модифікації: «catalog/view/template/common/header.twig».</div><div>Заміна HTML-блоку з ID «top».</div></div>';
+$_['help_alert_footer_display_0']  = '<div>Показати меню на сайті згідно з встановленими налаштуваннями.</div><div>Робота гарантується із шаблоном за замовчуванням (Default).</div><div>Індивідуальний шаблон може вимагати модифікації.</div><div class="block"><div class="block-title">Розташування:</div><div>Файл модифікації: «catalog/view/template/common/footer.twig».</div><div>Після тега «footer», що відкривається.</div></div>';
+$_['help_alert_social_display_0']  = '<div>Показати меню на сайті згідно з встановленими налаштуваннями.</div><div>Робота гарантується із шаблоном за замовчуванням (Default).</div><div>Індивідуальний шаблон може вимагати модифікації.</div><div class="block"><div class="block-title">Розташування:</div><div>Файл модифікації: «catalog/view/template/common/footer.twig».</div><div>Перед тегом «footer», що закривається.</div></div>';
+$_['help_alert_top_display_1']     = '<div>Показати меню на сайті у встановленій вручну позиції.</div><div>У разі видалення модуля видаліть код (модифікацію/подію)!</div><div class="block"><div class="block-title">Методи додавання:</div><div class="block-item-indent">1. FTP;</div><div class="block-item-indent">2. Navigation ->> Design ->> Theme Editor.</div><div class="block-item-indent">3. Створити модифікацію (OCMOD) чи подію (EVENT).</div></div><div class="block"><div class="block-title">Розташування:</div><div>Файл модифікації: «catalog/view/template/common/header.twig».</div></div>';
+$_['help_alert_footer_display_1']  = '<div>Показати меню на сайті у встановленій вручну позиції.</div><div>У разі видалення модуля видаліть код (модифікацію/подію)!</div><div class="block"><div class="block-title">Методи додавання:</div><div class="block-item-indent">1. FTP;</div><div class="block-item-indent">2. Navigation ->> Design ->> Theme Editor.</div><div class="block-item-indent">3. Створити модифікацію (OCMOD) чи подію (EVENT).</div></div><div class="block"><div class="block-title">Розташування:</div><div>Файл модифікації: «catalog/view/template/common/footer.twig».</div></div>';
+$_['help_alert_social_display_1']  = '<div>Показати меню на сайті у встановленій вручну позиції.</div><div>У разі видалення модуля видаліть код (модифікацію/подію)!</div><div class="block"><div class="block-title">Методи додавання:</div><div class="block-item-indent">1. FTP;</div><div class="block-item-indent">2. Navigation ->> Design ->> Theme Editor.</div><div class="block-item-indent">3. Створити модифікацію (OCMOD) чи подію (EVENT).</div></div><div class="block"><div class="block-title">Розташування:</div><div>Файл модифікації: «catalog/view/template/common/footer.twig».</div></div>';
 
 // Notification
 $_['note_title_empty']             = 'Заголовок не вказано!';

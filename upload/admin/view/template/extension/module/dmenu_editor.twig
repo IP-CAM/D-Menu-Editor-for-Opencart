@@ -48,57 +48,65 @@
                     </div>
                 {% endif %}
 
-                {% if error_items['main']['empty_fields'] %}
-                    {% set class_warning_menu_main = 'alert_warning' %}
+                {% for store in stores %}
+                    {% if error_items['main']['store_' ~ store.store_id]['empty_fields'] %}
+                        {% set class_warning_menu_main = 'alert_warning' %}
 
-                    <div class="alert alert-warning alert-dismissible">
-                        <div class="dmenu-alert-title">{{ tab_menu_main }}</div>
-                        <div class="dmenu-alert-content">
-                            <i class="fa fa-exclamation-circle"></i>
-                            <span>{{ error_items['main']['empty_fields'] }}</span>
-                            <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <div class="alert alert-warning alert-dismissible">
+                            <div class="dmenu-alert-title">{{ tab_menu_main }} - {{ text_store }} «{{ store.name }}»</div>
+                            <div class="dmenu-alert-content">
+                                <i class="fa fa-exclamation-circle"></i>
+                                <span>{{ error_items['main']['store_' ~ store.store_id]['empty_fields'] }}</span>
+                                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                            </div>
                         </div>
-                    </div>
-                {% endif %}
+                    {% endif %}
+                {% endfor %}
 
-                {% if error_items['top']['empty_fields'] %}
-                    {% set class_warning_menu_top = 'alert_warning' %}
+                {% for store in stores %}
+                    {% if error_items['top']['store_' ~ store.store_id]['empty_fields'] %}
+                        {% set class_warning_menu_top = 'alert_warning' %}
 
-                    <div class="alert alert-warning alert-dismissible">
-                        <div class="dmenu-alert-title">{{ tab_menu_top }}</div>
-                        <div class="dmenu-alert-content">
-                            <i class="fa fa-exclamation-circle"></i>
-                            <span>{{ error_items['top']['empty_fields'] }}</span>
-                            <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <div class="alert alert-warning alert-dismissible">
+                            <div class="dmenu-alert-title">{{ tab_menu_top }} - {{ text_store }} «{{ store.name }}»</div>
+                            <div class="dmenu-alert-content">
+                                <i class="fa fa-exclamation-circle"></i>
+                                <span>{{ error_items['top']['store_' ~ store.store_id]['empty_fields'] }}</span>
+                                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                            </div>
                         </div>
-                    </div>
-                {% endif %}
+                    {% endif %}
+                {% endfor %}
 
-                {% if error_items['footer']['empty_fields'] %}
-                    {% set class_warning_menu_footer = 'alert_warning' %}
+                {% for store in stores %}
+                    {% if error_items['footer']['store_' ~ store.store_id]['empty_fields'] %}
+                        {% set class_warning_menu_footer = 'alert_warning' %}
 
-                    <div class="alert alert-warning alert-dismissible">
-                        <div class="dmenu-alert-title">{{ tab_menu_footer }}</div>
-                        <div class="dmenu-alert-content">
-                            <i class="fa fa-exclamation-circle"></i>
-                            <span>{{ error_items['footer']['empty_fields'] }}</span>
-                            <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <div class="alert alert-warning alert-dismissible">
+                            <div class="dmenu-alert-title">{{ tab_menu_footer }} - {{ text_store }} «{{ store.name }}»</div>
+                            <div class="dmenu-alert-content">
+                                <i class="fa fa-exclamation-circle"></i>
+                                <span>{{ error_items['footer']['store_' ~ store.store_id]['empty_fields'] }}</span>
+                                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                            </div>
                         </div>
-                    </div>
-                {% endif %}
+                    {% endif %}
+                {% endfor %}
 
-                {% if error_items['social']['empty_fields'] %}
-                    {% set class_warning_menu_social = 'alert_warning' %}
+                {% for store in stores %}
+                    {% if error_items['social']['store_' ~ store.store_id]['empty_fields'] %}
+                        {% set class_warning_menu_social = 'alert_warning' %}
 
-                    <div class="alert alert-warning alert-dismissible">
-                        <div class="dmenu-alert-title">{{ tab_menu_social }}</div>
-                        <div class="dmenu-alert-content">
-                            <i class="fa fa-exclamation-circle"></i>
-                            <span>{{ error_items['social']['empty_fields'] }}</span>
-                            <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <div class="alert alert-warning alert-dismissible">
+                            <div class="dmenu-alert-title">{{ tab_menu_social }} - {{ text_store }} «{{ store.name }}»</div>
+                            <div class="dmenu-alert-content">
+                                <i class="fa fa-exclamation-circle"></i>
+                                <span>{{ error_items['social']['store_' ~ store.store_id]['empty_fields'] }}</span>
+                                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                            </div>
                         </div>
-                    </div>
-                {% endif %}
+                    {% endif %}
+                {% endfor %}
 
                 <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-module_dmenu_editor" class="form-horizontal">
                     <ul class="nav nav-tabs">
@@ -122,10 +130,10 @@
                                         <div class="sticky-menu_items-content">
                                             <div class="form-group sticky-menu_item_wrap open">
                                                 <div class="sticky-menu_item">
-                                                    <label class="text-left sticky-menu_item_title">
+                                                    <div class="text-left sticky-menu_item_title">
                                                         <span>{{ entry_add_pages }}</span>
                                                         <i class="fa fa-angle-down"></i>
-                                                    </label>
+                                                    </div>
 
                                                     <div class="sticky-menu_item_content tab-content" style="display: block;">
                                                         <div class="sticky_menu_item_under_wrap">
@@ -133,7 +141,7 @@
                                                                 <div class="sticky-menu_item-item sticky-menu_item-item_0">
                                                                     <span data-id="0" data-url_link="" data-layout="custom" 
                                                                         {% for language in languages %}
-                                                                            data-name_{{ language['language_id'] }}="{{ other_pages['custom']['names'][language['language_id']] }}" 
+                                                                            data-name_{{ language['language_id'] }}="{{ other_pages['custom']['names'][language.language_id] }}" 
                                                                             data-url_seo_{{ language['language_id'] }}="" 
                                                                         {% endfor %}
                                                                     >{{ entry_add_custom_link }}</span>
@@ -155,8 +163,8 @@
                                                                     <div class="sticky-menu_item-item sticky-menu_item-item_{{ loop.index0 }}">
                                                                         <span data-id="{{ opencart_page['id'] }}" data-url_link="{{ opencart_page['url']['link'] }}" data-layout="{{ opencart_page['layout'] }}" 
                                                                             {% for language in languages %}
-                                                                                data-name_{{ language['language_id'] }}="{{ opencart_page['names'][language['language_id']] }}" 
-                                                                                data-url_seo_{{ language['language_id'] }}="{% if opencart_page['url']['seo'][language['language_id']] is defined %}{{ opencart_page['url']['seo'][language['language_id']] }}{% endif %}" 
+                                                                                data-name_{{ language['language_id'] }}="{{ opencart_page['names'][language.language_id] }}" 
+                                                                                data-url_seo_{{ language['language_id'] }}="{% if opencart_page['url']['seo'][language.language_id] is defined %}{{ opencart_page['url']['seo'][language.language_id] }}{% endif %}" 
                                                                             {% endfor %}
                                                                         >{{ opencart_page['title'] }}</span>
                                                                     </div>
@@ -170,10 +178,10 @@
                                             {% if information %}
                                                 <div class="form-group sticky-menu_item_wrap">
                                                     <div class="sticky-menu_item">
-                                                        <label class="text-left sticky-menu_item_title">
+                                                        <div class="text-left sticky-menu_item_title">
                                                             <span>{{ entry_add_info }}</span>
                                                             <i class="fa fa-angle-down"></i>
-                                                        </label>
+                                                        </div>
 
                                                         <div class="sticky-menu_item_content tab-content">
                                                             <div class="sticky-menu_item_tabs">
@@ -194,8 +202,8 @@
                                                                         <div class="sticky-menu_item-item sticky-menu_item-item_{{ key_info }}">
                                                                             <span data-id="{{ info['id'] }}" data-url_link="{{ info['url']['link'] }}" data-layout="{{ info['layout'] }}" 
                                                                                 {% for language in languages %}
-                                                                                    data-name_{{ language['language_id'] }}="{% if info['names'][language['language_id']] is defined %}{{ info['names'][language['language_id']] }}{% endif %}" 
-                                                                                    data-url_seo_{{ language['language_id'] }}="{% if info['url']['seo'][language['language_id']] is defined %}{{ info['url']['seo'][language['language_id']] }}{% endif %}" 
+                                                                                    data-name_{{ language['language_id'] }}="{% if info['names'][language.language_id] is defined %}{{ info['names'][language.language_id] }}{% endif %}" 
+                                                                                    data-url_seo_{{ language['language_id'] }}="{% if info['url']['seo'][language.language_id] is defined %}{{ info['url']['seo'][language.language_id] }}{% endif %}" 
                                                                                 {% endfor %}
                                                                             >{% if info['title'] is not empty %}{{ info['title'] }}{% else %}{{ note_title_empty }}{% endif %}</span>
                                                                         </div>
@@ -205,7 +213,7 @@
 
                                                             <div class="tab-pane" id="tab-general_sticky_information_search">
                                                                 <div class="sticky_menu_item_search_form">
-                                                                    <input type="search" value="" class="form-control sticky_menu_item_search_input">
+                                                                    <input type="search" id="sticky-information-search-field" class="form-control sticky_menu_item_search_input" value="">
                                                                     <button type="button" class="sticky_menu_item_search_button" data-text_loading="{{ button_sticky_load }}" data-layout="information">{{ button_sticky_search }}</button>
                                                                 </div>
 
@@ -225,10 +233,10 @@
 
                                             <div class="form-group sticky-menu_item_wrap">
                                                 <div class="sticky-menu_item">
-                                                    <label class="text-left sticky-menu_item_title">
+                                                    <div class="text-left sticky-menu_item_title">
                                                         <span>{{ entry_add_categories }}</span>
                                                         <i class="fa fa-angle-down"></i>
-                                                    </label>
+                                                    </div>
 
                                                     <div class="sticky-menu_item_content tab-content">
                                                         <div class="sticky_menu_item_under_wrap">
@@ -236,7 +244,7 @@
                                                                 <div class="sticky-menu_item-item sticky-menu_item-item_0">
                                                                     <span data-id="0" data-url_link="" data-layout="catalog" 
                                                                         {% for language in languages %}
-                                                                            data-name_{{ language['language_id'] }}="{{ other_pages['catalog']['names'][language['language_id']] }}" 
+                                                                            data-name_{{ language['language_id'] }}="{{ other_pages['catalog']['names'][language.language_id] }}" 
                                                                             data-url_seo_{{ language['language_id'] }}="" 
                                                                         {% endfor %}
                                                                     >{{ text_all_category }}</span>
@@ -263,8 +271,8 @@
                                                                         <div class="sticky-menu_item-item sticky-menu_item-item_{{ key_category }}">
                                                                             <span data-id="{{ category['id'] }}" data-url_link="{{ category['url']['link'] }}" data-layout="{{ category['layout'] }}" 
                                                                                 {% for language in languages %}
-                                                                                    data-name_{{ language['language_id'] }}="{% if category['names'][language['language_id']] is defined %}{{ category['names'][language['language_id']] }}{% endif %}" 
-                                                                                    data-url_seo_{{ language['language_id'] }}="{% if category['url']['seo'][language['language_id']] is defined %}{{ category['url']['seo'][language['language_id']] }}{% endif %}" 
+                                                                                    data-name_{{ language['language_id'] }}="{% if category['names'][language.language_id] is defined %}{{ category['names'][language.language_id] }}{% endif %}" 
+                                                                                    data-url_seo_{{ language['language_id'] }}="{% if category['url']['seo'][language.language_id] is defined %}{{ category['url']['seo'][language.language_id] }}{% endif %}" 
                                                                                 {% endfor %}
                                                                             >{% if category['title'] is not empty %}{{ category['title'] }}{% else %}{{ note_title_empty }}{% endif %}</span>
                                                                         </div>
@@ -274,7 +282,7 @@
 
                                                             <div class="tab-pane" id="tab-general_sticky_categories_search">
                                                                 <div class="sticky_menu_item_search_form">
-                                                                    <input type="search" value="" class="form-control sticky_menu_item_search_input">
+                                                                    <input type="search" id="sticky-categories-search-field" class="form-control sticky_menu_item_search_input" value="">
                                                                     <button type="button" class="sticky_menu_item_search_button" data-text_loading="{{ button_sticky_load }}" data-layout="category">{{ button_sticky_search }}</button>
                                                                 </div>
 
@@ -295,10 +303,10 @@
                                             {% if products %}
                                                 <div class="form-group sticky-menu_item_wrap">
                                                     <div class="sticky-menu_item">
-                                                        <label class="text-left sticky-menu_item_title">
+                                                        <div class="text-left sticky-menu_item_title">
                                                             <span>{{ entry_add_products }}</span>
                                                             <i class="fa fa-angle-down"></i>
-                                                        </label>
+                                                        </div>
 
                                                         <div class="sticky-menu_item_content tab-content">
                                                             <div class="sticky-menu_item_tabs">
@@ -319,8 +327,8 @@
                                                                         <div class="sticky-menu_item-item sticky-menu_item-item_{{ key_product }}">
                                                                             <span data-id="{{ product['id'] }}" data-url_link="{{ product['url']['link'] }}" data-layout="{{ product['layout'] }}" 
                                                                                 {% for language in languages %}
-                                                                                    data-name_{{ language['language_id'] }}="{% if product['names'][language['language_id']] is defined %}{{ product['names'][language['language_id']] }}{% endif %}" 
-                                                                                    data-url_seo_{{ language['language_id'] }}="{% if product['url']['seo'][language['language_id']] is defined %}{{ product['url']['seo'][language['language_id']] }}{% endif %}" 
+                                                                                    data-name_{{ language['language_id'] }}="{% if product['names'][language.language_id] is defined %}{{ product['names'][language.language_id] }}{% endif %}" 
+                                                                                    data-url_seo_{{ language['language_id'] }}="{% if product['url']['seo'][language.language_id] is defined %}{{ product['url']['seo'][language.language_id] }}{% endif %}" 
                                                                                 {% endfor %}
                                                                             >{% if product['title'] is not empty %}{{ product['title'] }}{% else %}{{ note_title_empty }}{% endif %}</span>
                                                                         </div>
@@ -330,7 +338,7 @@
 
                                                             <div class="tab-pane" id="tab-general_sticky_products_search">
                                                                 <div class="sticky_menu_item_search_form">
-                                                                    <input type="search" value="" class="form-control sticky_menu_item_search_input">
+                                                                    <input type="search" id="sticky-products-search-field" class="form-control sticky_menu_item_search_input" value="">
                                                                     <button type="button" class="sticky_menu_item_search_button" data-text_loading="{{ button_sticky_load }}" data-layout="product">{{ button_sticky_search }}</button>
                                                                 </div>
 
@@ -351,10 +359,10 @@
                                             {% if manufacturers %}
                                                 <div class="form-group sticky-menu_item_wrap">
                                                     <div class="sticky-menu_item">
-                                                        <label class="text-left sticky-menu_item_title">
+                                                        <div class="text-left sticky-menu_item_title">
                                                             <span>{{ entry_add_manufacturers }}</span>
                                                             <i class="fa fa-angle-down"></i>
-                                                        </label>
+                                                        </div>
 
                                                         <div class="sticky-menu_item_content tab-content">
                                                             <div class="sticky-menu_item_tabs">
@@ -375,8 +383,8 @@
                                                                         <div class="sticky-menu_item-item sticky-menu_item-item_{{ key_manufacturer }}">
                                                                             <span data-id="{{ manufacturer['id'] }}" data-url_link="{{ manufacturer['url']['link'] }}" data-layout="{{ manufacturer['layout'] }}" 
                                                                                 {% for language in languages %}
-                                                                                    data-name_{{ language['language_id'] }}="{% if manufacturer['names'][language['language_id']] is defined %}{{ manufacturer['names'][language['language_id']] }}{% endif %}" 
-                                                                                    data-url_seo_{{ language['language_id'] }}="{% if manufacturer['url']['seo'][language['language_id']] is defined %}{{ manufacturer['url']['seo'][language['language_id']] }}{% endif %}" 
+                                                                                    data-name_{{ language['language_id'] }}="{% if manufacturer['names'][language.language_id] is defined %}{{ manufacturer['names'][language.language_id] }}{% endif %}" 
+                                                                                    data-url_seo_{{ language['language_id'] }}="{% if manufacturer['url']['seo'][language.language_id] is defined %}{{ manufacturer['url']['seo'][language.language_id] }}{% endif %}" 
                                                                                 {% endfor %}
                                                                             >{% if manufacturer['title'] is not empty %}{{ manufacturer['title'] }}{% else %}{{ note_title_empty }}{% endif %}</span>
                                                                         </div>
@@ -386,7 +394,7 @@
 
                                                             <div class="tab-pane" id="tab-general_sticky_manufacturers_search">
                                                                 <div class="sticky_menu_item_search_form">
-                                                                    <input type="search" value="" class="form-control sticky_menu_item_search_input">
+                                                                    <input type="search" id="sticky-manufacturers-search-field" class="form-control sticky_menu_item_search_input" value="">
                                                                     <button type="button" class="sticky_menu_item_search_button" data-text_loading="{{ button_sticky_load }}" data-layout="manufacturer">{{ button_sticky_search }}</button>
                                                                 </div>
 
@@ -407,10 +415,10 @@
                                             {% if blog_categories %}
                                                 <div class="form-group sticky-menu_item_wrap">
                                                     <div class="sticky-menu_item">
-                                                        <label class="text-left sticky-menu_item_title">
+                                                        <div class="text-left sticky-menu_item_title">
                                                             <span>{{ entry_add_blog_categories }}</span>
                                                             <i class="fa fa-angle-down"></i>
-                                                        </label>
+                                                        </div>
 
                                                         <div class="sticky-menu_item_content tab-content">
                                                             <div class="sticky-menu_item_tabs">
@@ -431,8 +439,8 @@
                                                                         <div class="sticky-menu_item-item sticky-menu_item-item_{{ key_b_category }}">
                                                                             <span data-id="{{ b_category['id'] }}" data-url_link="{{ b_category['url']['link'] }}" data-layout="{{ b_category['layout'] }}" 
                                                                                 {% for language in languages %}
-                                                                                    data-name_{{ language['language_id'] }}="{% if b_category['names'][language['language_id']] is defined %}{{ b_category['names'][language['language_id']] }}{% endif %}" 
-                                                                                    data-url_seo_{{ language['language_id'] }}="{% if b_category['url']['seo'][language['language_id']] is defined %}{{ b_category['url']['seo'][language['language_id']] }}{% endif %}" 
+                                                                                    data-name_{{ language['language_id'] }}="{% if b_category['names'][language.language_id] is defined %}{{ b_category['names'][language.language_id] }}{% endif %}" 
+                                                                                    data-url_seo_{{ language['language_id'] }}="{% if b_category['url']['seo'][language.language_id] is defined %}{{ b_category['url']['seo'][language.language_id] }}{% endif %}" 
                                                                                 {% endfor %}
                                                                             >{% if b_category['title'] is not empty %}{{ b_category['title'] }}{% else %}{{ note_title_empty }}{% endif %}</span>
                                                                         </div>
@@ -442,7 +450,7 @@
 
                                                             <div class="tab-pane" id="tab-general_sticky_blog_categories_search">
                                                                 <div class="sticky_menu_item_search_form">
-                                                                    <input type="search" value="" class="form-control sticky_menu_item_search_input">
+                                                                    <input type="search" id="sticky-blog_categories-search-field" class="form-control sticky_menu_item_search_input" value="">
                                                                     <button type="button" class="sticky_menu_item_search_button" data-text_loading="{{ button_sticky_load }}" data-layout="blog_category">{{ button_sticky_search }}</button>
                                                                 </div>
 
@@ -463,10 +471,10 @@
                                             {% if blog_articles %}
                                                 <div class="form-group sticky-menu_item_wrap">
                                                     <div class="sticky-menu_item">
-                                                        <label class="text-left sticky-menu_item_title">
+                                                        <div class="text-left sticky-menu_item_title">
                                                             <span>{{ entry_add_blog_articles }}</span>
                                                             <i class="fa fa-angle-down"></i>
-                                                        </label>
+                                                        </div>
 
                                                         <div class="sticky-menu_item_content tab-content">
                                                             <div class="sticky-menu_item_tabs">
@@ -487,8 +495,8 @@
                                                                         <div class="sticky-menu_item-item sticky-menu_item-item_{{ key_b_article }}">
                                                                             <span data-id="{{ b_article['id'] }}" data-url_link="{{ b_article['url']['link'] }}" data-layout="{{ b_article['layout'] }}" 
                                                                                 {% for language in languages %}
-                                                                                    data-name_{{ language['language_id'] }}="{% if b_article['names'][language['language_id']] is defined %}{{ b_article['names'][language['language_id']] }}{% endif %}" 
-                                                                                    data-url_seo_{{ language['language_id'] }}="{% if b_article['url']['seo'][language['language_id']] is defined %}{{ b_article['url']['seo'][language['language_id']] }}{% endif %}" 
+                                                                                    data-name_{{ language['language_id'] }}="{% if b_article['names'][language.language_id] is defined %}{{ b_article['names'][language.language_id] }}{% endif %}" 
+                                                                                    data-url_seo_{{ language['language_id'] }}="{% if b_article['url']['seo'][language.language_id] is defined %}{{ b_article['url']['seo'][language.language_id] }}{% endif %}" 
                                                                                 {% endfor %}
                                                                             >{% if b_article['title'] is not empty %}{{ b_article['title'] }}{% else %}{{ note_title_empty }}{% endif %}</span>
                                                                         </div>
@@ -498,7 +506,7 @@
 
                                                             <div class="tab-pane" id="tab-general_sticky_blog_articles_search">
                                                                 <div class="sticky_menu_item_search_form">
-                                                                    <input type="search" value="" class="form-control sticky_menu_item_search_input">
+                                                                    <input type="search" id="sticky-blog_articles-search-field" class="form-control sticky_menu_item_search_input" value="">
                                                                     <button type="button" class="sticky_menu_item_search_button" data-text_loading="{{ button_sticky_load }}" data-layout="blog_article">{{ button_sticky_search }}</button>
                                                                 </div>
 
@@ -531,11 +539,32 @@
                                         <li><a href="#tab-menu_social" class="{{ class_warning_menu_social }}" data-toggle="tab">{{ tab_menu_social }}</a></li>
                                     </ul>
 
-                                    <div class="tab-content">
+                                    <div id="tab-content-menu" class="tab-content">
                                         <div class="tab-pane active" id="tab-menu_main">{{ menu_main }}</div>
                                         <div class="tab-pane" id="tab-menu_top">{{ menu_top }}</div>
                                         <div class="tab-pane" id="tab-menu_footer">{{ menu_footer }}</div>
                                         <div class="tab-pane" id="tab-menu_social">{{ menu_social }}</div>
+                                    </div>
+
+                                    <div class="module-copy">
+                                        <span class="copy-message">&nbsp;</span>
+
+                                        <label class="copy-title" for="module-menu-copy_stores">{{ entry_copy_select }}</label>
+
+                                        <div class="copy-content">
+                                            <select id="module-menu-copy_stores" class="form-control copy-select">
+                                                <option value="">{{ text_select }}</option>
+                                                <option value="all">{{ text_all_stores }}</option>
+
+                                                {% for store in stores %}
+                                                    <option value="{{ store['store_id'] }}">{{ store['name'] }}</option>
+                                                {% endfor %}
+                                            </select>
+
+                                            <button type="button" id="module-menu-copy_btn" class="btn btn-default copy-btn" data-toggle="tooltip" title="{{ button_copy }}">
+                                                <i class="fa fa-copy"></i>
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <hr>
@@ -557,41 +586,52 @@
     </div>
 
     <script type="text/javascript">
-        // Text.
-        const dmenu_entry_target              = '{{ entry_target }}';
-        const dmenu_text_select_none          = '{{ text_select_none }}';
-        const dmenu_text_target_self          = '{{ text_target_self }}';
-        const dmenu_text_target_blank         = '{{ text_target_blank }}';
-        const dmenu_text_target_parent        = '{{ text_target_parent }}';
-        const dmenu_text_target_top           = '{{ text_target_top }}';
-        const dmenu_text_result_categories    = '{{ text_result_categories }}';
-        const dmenu_text_item_desc_catalog    = '{{ text_item_desc_catalog }}';
-        const dmenu_text_yes                  = '{{ text_yes }}';
-        const dmenu_text_no                   = '{{ text_no }}';
-        const dmenu_text_menu_item_missing    = '{{ text_menu_item_missing }}';
-        const dmenu_text_item_desc_none       = '{{ text_item_desc_none }}';
-        const dmenu_text_search_missing       = '{{ text_search_missing }}';
+        // Translated Text.
+        const dmenu_translated_text = {
+            // Text.
+            entry_target              : '{{ entry_target }}',
+            text_select_none          : '{{ text_select_none }}',
+            text_target_self          : '{{ text_target_self }}',
+            text_target_blank         : '{{ text_target_blank }}',
+            text_target_parent        : '{{ text_target_parent }}',
+            text_target_top           : '{{ text_target_top }}',
+            text_result_categories    : '{{ text_result_categories }}',
+            text_item_desc_catalog    : '{{ text_item_desc_catalog }}',
+            text_enabled              : '{{ text_enabled }}',
+            text_disabled             : '{{ text_disabled }}',
+            text_yes                  : '{{ text_yes }}',
+            text_no                   : '{{ text_no }}',
+            text_menu_item_missing    : '{{ text_menu_item_missing }}',
+            text_item_desc_none       : '{{ text_item_desc_none }}',
+            text_search_missing       : '{{ text_search_missing }}',
+            text_message_success      : '{{ text_message_success }}',
+            text_message_error        : '{{ text_message_error }}',
+            text_store_not_selected   : '{{ text_store_not_selected }}',
+            text_unable_copy_to_store : '{{ text_unable_copy_to_store }}',
+            text_copying              : '{{ text_copying }}',
 
-        // Entry.
-        const dmenu_entry_name                = '{{ entry_name }}';
-        const dmenu_entry_name_hide           = '{{ entry_name_hide }}';
-        const dmenu_entry_url                 = '{{ entry_url }}';
-        const dmenu_entry_xfn                 = '{{ entry_xfn }}';
-        const dmenu_entry_class               = '{{ entry_class }}';
-        const dmenu_entry_icon                = '{{ entry_icon }}';
-        const dmenu_entry_category_menu       = '{{ entry_category_menu }}';
-        const dmenu_entry_category_menu_title = '{{ entry_category_menu_title }}';
+            // Entry.
+            entry_status              : '{{ entry_status }}',
+            entry_name                : '{{ entry_name }}',
+            entry_name_hide           : '{{ entry_name_hide }}',
+            entry_url                 : '{{ entry_url }}',
+            entry_xfn                 : '{{ entry_xfn }}',
+            entry_class               : '{{ entry_class }}',
+            entry_icon                : '{{ entry_icon }}',
+            entry_category_menu       : '{{ entry_category_menu }}',
+            entry_category_menu_title : '{{ entry_category_menu_title }}',
 
-        // Button.
-        const dmenu_button_look_tip           = '{{ button_look_tip }}';
-        const dmenu_button_remove_item_tip    = '{{ button_remove_item_tip }}';
-        const dmenu_button_edit_item_tip      = '{{ button_edit_item_tip }}';
-        const dmenu_button_lock_tip           = '{{ button_lock_tip }}';
-        const dmenu_button_unlock_tip         = '{{ button_unlock_tip }}';
+            // Button.
+            button_look_tip           : '{{ button_look_tip }}',
+            button_remove_item_tip    : '{{ button_remove_item_tip }}',
+            button_edit_item_tip      : '{{ button_edit_item_tip }}',
+            button_lock_tip           : '{{ button_lock_tip }}',
+            button_unlock_tip         : '{{ button_unlock_tip }}',
 
-        // Notification.
-        const dmenu_note_title_empty          = '{{ note_title_empty }}';
-        const dmenu_note_item_not_empty       = '{{ note_item_not_empty }}';
+            // Notification.
+            note_title_empty          : '{{ note_title_empty }}',
+            note_item_not_empty       : '{{ note_item_not_empty }}'
+        }
 
 
         // User Token.
@@ -606,11 +646,14 @@
         // Module Layouts.
         const dmenu_moduleLayouts = JSON.parse('{{ module_layouts | json_encode | raw }}');
 
+        // Stores.
+        const dmenu_stores = JSON.parse('{{ stores | json_encode | raw }}');
+
         // Search Limit.
         const dmenu_searchLimit = '{{ search_limit }}';
 
         // Menu Item placeholder.
-        const dmenu_item_placeholder = '{{ item_placeholder }}';
+        const dmenu_itemPlaceholder = '{{ item_placeholder }}';
     </script>
 </div>
 

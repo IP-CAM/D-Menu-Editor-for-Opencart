@@ -8,8 +8,6 @@
  */
 
 class ControllerExtensionModuleDMenuEditor extends Controller {
-    private $version = '1.1.2';
-
     private $error = array();
     private $languages = array();
     private $prepared = array();
@@ -18,37 +16,26 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
         'menu' => array(
             'main' => array(
                 'icon' => array(
-                    'dimensions' => array(
-                        'width'  => 16,
-                        'height' => 16
-                    )
+                    'dimensions' => array('width' => 16, 'height' => 16)
                 )
             ),
             'top' => array(
                 'icon' => array(
-                    'dimensions' => array(
-                        'width'  => 16,
-                        'height' => 16
-                    )
+                    'dimensions' => array('width' => 16, 'height' => 16)
                 )
             ),
             'footer' => array(
                 'icon' => array(
-                    'dimensions' => array(
-                        'width'  => 16,
-                        'height' => 16
-                    )
+                    'dimensions' => array('width' => 16, 'height' => 16)
                 )
             ),
             'social' => array(
                 'icon' => array(
-                    'dimensions' => array(
-                        'width'  => 16,
-                        'height' => 16
-                    )
+                    'dimensions' => array('width' => 16, 'height' => 16)
                 )
             )
         ),
+        'items_limit' => 50,
         'search_limit' => 20
     );
 
@@ -133,9 +120,6 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
         $data['action'] = $this->url->link('extension/module/dmenu_editor', 'user_token=' . $this->session->data['user_token'], true);
         $data['cancel'] = $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=module', true);
 
-        // Module version.
-        $data['version'] = $this->version;
-
         // User Token.
         $data['user_token'] = $this->session->data['user_token'];
 
@@ -152,9 +136,12 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
             'text_target_blank'         => $this->language->get('text_target_blank'),
             'text_target_parent'        => $this->language->get('text_target_parent'),
             'text_target_top'           => $this->language->get('text_target_top'),
+            'text_enabled'              => $this->language->get('text_enabled'),
+            'text_disabled'             => $this->language->get('text_disabled'),
             'text_yes'                  => $this->language->get('text_yes'),
             'text_no'                   => $this->language->get('text_no'),
 
+            'entry_status'              => $this->language->get('entry_status'),
             'entry_name'                => $this->language->get('entry_name'),
             'entry_name_hide'           => $this->language->get('entry_name_hide'),
             'entry_url'                 => $this->language->get('entry_url'),
@@ -198,40 +185,71 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
             $data['module_settings']['general']['ocstore_blog'] = 0;
         }
 
+        // Stores.
+		$data['stores'] = array();
+
+		$data['stores'][] = array(
+			'store_id' => 0,
+			'name'     => $this->language->get('text_store_default'),
+            'url'      => ''
+		);
+
+        $results = $this->model_extension_module_dmenu_editor->getStores();
+
+        foreach ($results as $result) {
+            $data['stores'][] = $result;
+        }
+
         // Main Menu Items.
-        if (isset($this->request->post['module_dmenu_editor_items_main'])) {
-            $data['menus']['main'] = $this->request->post['module_dmenu_editor_items_main'];
-        } else if (is_array($this->config->get('module_dmenu_editor_items_main'))) {
-            $data['menus']['main'] = $this->config->get('module_dmenu_editor_items_main');
-        } else {
-            $data['menus']['main'] = array();
+        $data['menus']['main'] = array();
+
+        foreach ($data['stores'] as $store) {
+            if (isset($this->request->post['module_dmenu_editor_items_main_' . $store['store_id']])) {
+                $data['menus']['main']['store_' . $store['store_id']] = $this->request->post['module_dmenu_editor_items_main_' . $store['store_id']];
+            } else if (is_array($this->config->get('module_dmenu_editor_items_main_' . $store['store_id']))) {
+                $data['menus']['main']['store_' . $store['store_id']] = $this->config->get('module_dmenu_editor_items_main_' . $store['store_id']);
+            } else {
+                $data['menus']['main']['store_' . $store['store_id']] = array();
+            }
         }
 
         // Top Menu Items.
-        if (isset($this->request->post['module_dmenu_editor_items_top'])) {
-            $data['menus']['top'] = $this->request->post['module_dmenu_editor_items_top'];
-        } else if (is_array($this->config->get('module_dmenu_editor_items_top'))) {
-            $data['menus']['top'] = $this->config->get('module_dmenu_editor_items_top');
-        } else {
-            $data['menus']['top'] = array();
+        $data['menus']['top'] = array();
+
+        foreach ($data['stores'] as $store) {
+            if (isset($this->request->post['module_dmenu_editor_items_top_' . $store['store_id']])) {
+                $data['menus']['top']['store_' . $store['store_id']] = $this->request->post['module_dmenu_editor_items_top_' . $store['store_id']];
+            } else if (is_array($this->config->get('module_dmenu_editor_items_top_' . $store['store_id']))) {
+                $data['menus']['top']['store_' . $store['store_id']] = $this->config->get('module_dmenu_editor_items_top_' . $store['store_id']);
+            } else {
+                $data['menus']['top']['store_' . $store['store_id']] = array();
+            }
         }
 
         // Footer Menu Items.
-        if (isset($this->request->post['module_dmenu_editor_items_footer'])) {
-            $data['menus']['footer'] = $this->request->post['module_dmenu_editor_items_footer'];
-        } else if (is_array($this->config->get('module_dmenu_editor_items_footer'))) {
-            $data['menus']['footer'] = $this->config->get('module_dmenu_editor_items_footer');
-        } else {
-            $data['menus']['footer'] = array();
+        $data['menus']['footer'] = array();
+
+        foreach ($data['stores'] as $store) {
+            if (isset($this->request->post['module_dmenu_editor_items_footer_' . $store['store_id']])) {
+                $data['menus']['footer']['store_' . $store['store_id']] = $this->request->post['module_dmenu_editor_items_footer_' . $store['store_id']];
+            } else if (is_array($this->config->get('module_dmenu_editor_items_footer_' . $store['store_id']))) {
+                $data['menus']['footer']['store_' . $store['store_id']] = $this->config->get('module_dmenu_editor_items_footer_' . $store['store_id']);
+            } else {
+                $data['menus']['footer']['store_' . $store['store_id']] = array();
+            }
         }
 
         // Social Menu Items.
-        if (isset($this->request->post['module_dmenu_editor_items_social'])) {
-            $data['menus']['social'] = $this->request->post['module_dmenu_editor_items_social'];
-        } else if (is_array($this->config->get('module_dmenu_editor_items_social'))) {
-            $data['menus']['social'] = $this->config->get('module_dmenu_editor_items_social');
-        } else {
-            $data['menus']['social'] = array();
+        $data['menus']['social'] = array();
+
+        foreach ($data['stores'] as $store) {
+            if (isset($this->request->post['module_dmenu_editor_items_social_' . $store['store_id']])) {
+                $data['menus']['social']['store_' . $store['store_id']] = $this->request->post['module_dmenu_editor_items_social_' . $store['store_id']];
+            } else if (is_array($this->config->get('module_dmenu_editor_items_social_' . $store['store_id']))) {
+                $data['menus']['social']['store_' . $store['store_id']] = $this->config->get('module_dmenu_editor_items_social_' . $store['store_id']);
+            } else {
+                $data['menus']['social']['store_' . $store['store_id']] = array();
+            }
         }
 
         // Menu Item placeholder.
@@ -274,24 +292,24 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
         $data['languages'] = $this->languages;
 
         // Information.
-        $data['information_limit'] = 50;
+        $data['information_limit'] = $this->settings['items_limit'];
         $data['information'] = $this->model_extension_module_dmenu_editor->getInformation($data['information_limit']);
 
         // Categories.
-        $data['categories_limit'] = 50;
+        $data['categories_limit'] = $this->settings['items_limit'];
         $data['categories'] = $this->model_extension_module_dmenu_editor->getCategories($data['categories_limit']);
 
         // Products.
-        $data['products_limit'] = 50;
+        $data['products_limit'] = $this->settings['items_limit'];
         $data['products'] = $this->model_extension_module_dmenu_editor->getProducts($data['products_limit']);
 
         // Manufacturers.
-        $data['manufacturers_limit'] = 50;
+        $data['manufacturers_limit'] = $this->settings['items_limit'];
         $data['manufacturers'] = $this->model_extension_module_dmenu_editor->getManufacturers($data['manufacturers_limit']);
 
         // ocStore Blog Categories.
         if ($data['module_settings']['general']['ocstore_blog']) {
-            $data['blog_categories_limit'] = 50;
+            $data['blog_categories_limit'] = $this->settings['items_limit'];
             $data['blog_categories'] = $this->model_extension_module_dmenu_editor->getBlogCategories($data['blog_categories_limit']);
         } else {
             $data['blog_categories_limit'] = 0;
@@ -300,7 +318,7 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
 
         // ocStore Blog Articles.
         if ($data['module_settings']['general']['ocstore_blog']) {
-            $data['blog_articles_limit'] = 50;
+            $data['blog_articles_limit'] = $this->settings['items_limit'];
             $data['blog_articles'] = $this->model_extension_module_dmenu_editor->getBlogArticles($data['blog_articles_limit']);
         } else {
             $data['blog_articles_limit'] = 0;
@@ -519,11 +537,12 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
      * 
      * @param array $items
      * @param string $menu_type
+     * @param int $store_id
      * @param array $meaning
      * 
      * @return void
      */
-    private function changeMenuItems(&$items, $menu_type, $meaning = array()) {
+    private function changeMenuItems(&$items, $menu_type, $store_id, $meaning = array()) {
         $items_count = count($items);
 
         for ($i = 0; $i < $items_count; $i++) {
@@ -543,7 +562,7 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
 
                                     $items[$i]['error']['category_menu_names'][$key_name] = $this->language->get('error_empty_field');
 
-                                    $this->error['error_items'][$menu_type]['empty_fields'] = $this->language->get('error_empty_fields');
+                                    $this->error['error_items'][$menu_type]['store_' . $store_id]['empty_fields'] = $this->language->get('error_empty_fields');
                                 }
                             }
                         }
@@ -566,7 +585,7 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
 
                                 $items[$i]['error']['names'][$key_name] = $this->language->get('error_empty_field');
 
-                                $this->error['error_items'][$menu_type]['empty_fields'] = $this->language->get('error_empty_fields');
+                                $this->error['error_items'][$menu_type]['store_' . $store_id]['empty_fields'] = $this->language->get('error_empty_fields');
                             }
                         }
 
@@ -579,7 +598,7 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
 
                                     $items[$i]['error']['seo'][$key_seo] = $this->language->get('error_empty_field');
 
-                                    $this->error['error_items'][$menu_type]['empty_fields'] = $this->language->get('error_empty_fields');
+                                    $this->error['error_items'][$menu_type]['store_' . $store_id]['empty_fields'] = $this->language->get('error_empty_fields');
                                 }
                             }
                         }
@@ -590,7 +609,7 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
 
                     // Recursion.
                     if (array_key_exists('rows', $items[$i]) && count($items[$i]['rows']) > 0) {
-                        $this->changeMenuItems($items[$i]['rows'], $menu_type, $meaning);
+                        $this->changeMenuItems($items[$i]['rows'], $menu_type, $store_id, $meaning);
                     }
 
                     break;
@@ -605,12 +624,12 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
                 }
 
                 // Set prepared item ID.
-                if (isset($this->prepared['menu'][$menu_type]['IDs'][$layout])) {
-                    if (!in_array($items[$i]['data']['id'], $this->prepared['menu'][$menu_type]['IDs'][$layout])) {
-                        $this->prepared['menu'][$menu_type]['IDs'][$layout][] = $items[$i]['data']['id'];
+                if (isset($this->prepared['menu'][$menu_type]['store_' . $store_id]['IDs'][$layout])) {
+                    if (!in_array($items[$i]['data']['id'], $this->prepared['menu'][$menu_type]['store_' . $store_id]['IDs'][$layout])) {
+                        $this->prepared['menu'][$menu_type]['store_' . $store_id]['IDs'][$layout][] = $items[$i]['data']['id'];
                     }
                 } else {
-                    $this->prepared['menu'][$menu_type]['IDs'][$layout][] = $items[$i]['data']['id'];
+                    $this->prepared['menu'][$menu_type]['store_' . $store_id]['IDs'][$layout][] = $items[$i]['data']['id'];
                 }
             }
         }
@@ -665,32 +684,55 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
      * @return bool $this->error
      */
     protected function validate(&$data, $meaning = array()) {
+        // Stores.
+		$stores = array();
+
+		$stores[] = array(
+			'store_id' => 0,
+			'name'     => $this->language->get('text_store_default'),
+            'url'      => ''
+		);
+
+        $results = $this->model_extension_module_dmenu_editor->getStores();
+
+        foreach ($results as $result) {
+            $stores[] = $result;
+        }
+
         // Change Main Menu Items.
-        if (!empty($data['module_dmenu_editor_items_main'])) {
-            $this->changeMenuItems($data['module_dmenu_editor_items_main'], 'main', $meaning);
-        } else {
-            $data['module_dmenu_editor_items_main'] = array();
+        foreach ($stores as $store) {
+            if (!empty($data['module_dmenu_editor_items_main_' . $store['store_id']])) {
+                $this->changeMenuItems($data['module_dmenu_editor_items_main_' . $store['store_id']], 'main', $store['store_id'], $meaning);
+            } else {
+                $data['module_dmenu_editor_items_main_' . $store['store_id']] = array();
+            }
         }
 
         // Change Top Menu Items.
-        if (!empty($data['module_dmenu_editor_items_top'])) {
-            $this->changeMenuItems($data['module_dmenu_editor_items_top'], 'top', $meaning);
-        } else {
-            $data['module_dmenu_editor_items_top'] = array();
+        foreach ($stores as $store) {
+            if (!empty($data['module_dmenu_editor_items_top_' . $store['store_id']])) {
+                $this->changeMenuItems($data['module_dmenu_editor_items_top_' . $store['store_id']], 'top', $store['store_id'], $meaning);
+            } else {
+                $data['module_dmenu_editor_items_top_' . $store['store_id']] = array();
+            }
         }
 
         // Change Footer Menu Items.
-        if (!empty($data['module_dmenu_editor_items_footer'])) {
-            $this->changeMenuItems($data['module_dmenu_editor_items_footer'], 'footer', $meaning);
-        } else {
-            $data['module_dmenu_editor_items_footer'] = array();
+        foreach ($stores as $store) {
+            if (!empty($data['module_dmenu_editor_items_footer_' . $store['store_id']])) {
+                $this->changeMenuItems($data['module_dmenu_editor_items_footer_' . $store['store_id']], 'footer', $store['store_id'], $meaning);
+            } else {
+                $data['module_dmenu_editor_items_footer_' . $store['store_id']] = array();
+            }
         }
 
         // Change Social Menu Items.
-        if (!empty($data['module_dmenu_editor_items_social'])) {
-            $this->changeMenuItems($data['module_dmenu_editor_items_social'], 'social', $meaning);
-        } else {
-            $data['module_dmenu_editor_items_social'] = array();
+        foreach ($stores as $store) {
+            if (!empty($data['module_dmenu_editor_items_social_' . $store['store_id']])) {
+                $this->changeMenuItems($data['module_dmenu_editor_items_social_' . $store['store_id']], 'social', $store['store_id'], $meaning);
+            } else {
+                $data['module_dmenu_editor_items_social_' . $store['store_id']] = array();
+            }
         }
 
         return !$this->error;
@@ -736,7 +778,7 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
             'trigger'     => 'catalog/view/common/currency/before',
             'action'      => 'extension/module/dmenu_editor/events/catalogViewCurrencyBefore',
             'status'      => 1,
-            'sort_order'  => 0
+            'sort_order'  => 2
         );
 
         $events[] = array(
@@ -745,7 +787,7 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
             'trigger'     => 'catalog/view/common/language/before',
             'action'      => 'extension/module/dmenu_editor/events/catalogViewLanguageBefore',
             'status'      => 1,
-            'sort_order'  => 0
+            'sort_order'  => 2
         );
 
         $events[] = array(
@@ -754,7 +796,7 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
             'trigger'     => 'catalog/controller/common/menu/before',
             'action'      => 'extension/module/dmenu_editor/events/catalogControllerMenuBefore',
             'status'      => 1,
-            'sort_order'  => 0
+            'sort_order'  => 2
         );
 
         $events[] = array(
@@ -763,7 +805,7 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
             'trigger'     => 'catalog/view/common/header/after',
             'action'      => 'extension/module/dmenu_editor/events/catalogViewHeaderAfter',
             'status'      => 1,
-            'sort_order'  => 0
+            'sort_order'  => 2
         );
 
         $events[] = array(
@@ -772,7 +814,7 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
             'trigger'     => 'catalog/view/common/footer/after',
             'action'      => 'extension/module/dmenu_editor/events/catalogViewFooterAfter',
             'status'      => 1,
-            'sort_order'  => 0
+            'sort_order'  => 2
         );
 
         // Loading event model.

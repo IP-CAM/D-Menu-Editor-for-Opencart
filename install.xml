@@ -2,7 +2,7 @@
 <modification>
     <name>D.Menu Editor</name>
     <code>DMenuEditor</code>
-    <version>1.1.2</version>
+    <version>1.2.0</version>
     <author>D.art</author>
 
     <file path="catalog/controller/common/header.php">

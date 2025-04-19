@@ -37,23 +37,23 @@ class ControllerExtensionModuleDMenuEditorSettings extends Controller {
 
         // Settings 'Main Menu' HTML.
         $data['menu_type'] = 'main';
-        $data['settings_menu_main'] = $this->load->controller('extension/module/dmenu_editor/settings/menu', $data);
+        $data['settings_menu_main'] = $this->load->view('extension/module/dmenu_editor/settings/menu', $data);
 
         // Settings 'Top Menu' HTML.
         $data['menu_type'] = 'top';
-        $data['settings_menu_top'] = $this->load->controller('extension/module/dmenu_editor/settings/menu', $data);
+        $data['settings_menu_top'] = $this->load->view('extension/module/dmenu_editor/settings/menu', $data);
 
         // Settings 'Footer Menu' HTML.
         $data['menu_type'] = 'footer';
-        $data['settings_menu_footer'] = $this->load->controller('extension/module/dmenu_editor/settings/menu', $data);
+        $data['settings_menu_footer'] = $this->load->view('extension/module/dmenu_editor/settings/menu', $data);
 
         // Settings 'Social Menu' HTML.
         $data['menu_type'] = 'social';
-        $data['settings_menu_social'] = $this->load->controller('extension/module/dmenu_editor/settings/menu', $data);
+        $data['settings_menu_social'] = $this->load->view('extension/module/dmenu_editor/settings/menu', $data);
 
         // Settings 'General' HTML.
         $data['menu_type'] = '';
-        $data['settings_general'] = $this->load->controller('extension/module/dmenu_editor/settings/general', $data);
+        $data['settings_general'] = $this->load->view('extension/module/dmenu_editor/settings/general', $data);
 
         return $this->load->view('extension/module/dmenu_editor/settings', $data);
     }

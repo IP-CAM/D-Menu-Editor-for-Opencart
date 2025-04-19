@@ -227,6 +227,16 @@ class ModelExtensionModuleDMenuEditor extends Model {
     }
 
     /**
+     * Get Stores.
+     *
+     * @return array $query->rows
+     */
+    public function getStores() {
+        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "store s ORDER BY s.store_id");
+        return $query->rows;
+    }
+
+    /**
      * Search data.
      * 
      * @param string $layout

@@ -39,7 +39,7 @@ class ControllerExtensionModuleDMenuEditorEvents extends Controller {
             // Route.
             $route = 'extension/module/dmenu_editor';
 
-            // Menu type.
+            // Menu data.
             $data['menu_type'] = 'main';
         }
     }
@@ -127,7 +127,7 @@ class ControllerExtensionModuleDMenuEditorEvents extends Controller {
                 foreach ($module_dmenu_editor_settings as $key => $setting) {
                     if ($key == 'menu') {
                         foreach ($setting as $menu) {
-                            if ($menu['status'] && $menu['close']) {
+                            if ($menu['status'] && $menu['mobile']['status'] && $menu['mobile']['close']) {
                                 $module_dmenu_editor_settings_close = true;
                             }
                         }
@@ -140,13 +140,20 @@ class ControllerExtensionModuleDMenuEditorEvents extends Controller {
                 $module_dmenu_editor_settings_close = false;
             }
 
+            if ($this->request->server['HTTPS']) {
+                $http_server = HTTPS_SERVER;
+            } else {
+                $http_server = HTTP_SERVER;
+            }
+
             // New HTML.
             $html  = '';
-            $html .= '<link href="' . HTTP_SERVER . 'catalog/view/javascript/module-dmenu_editor/dmenu_editor.css" type="text/css" rel="stylesheet" media="screen">';
-            $html .= '<script src="' . HTTP_SERVER . 'catalog/view/javascript/module-dmenu_editor/dmenu_editor.js" type="text/javascript"></script>';
+            $html .= '<script type="text/javascript">var dmenuSettings = { status: 0, menu: {} };</script>';
+            $html .= '<link href="' . $http_server . 'catalog/view/javascript/module-dmenu_editor/dmenu_editor.css" type="text/css" rel="stylesheet" media="screen">';
+            $html .= '<script src="' . $http_server . 'catalog/view/javascript/module-dmenu_editor/dmenu_editor.js" type="text/javascript"></script>';
 
             if ($module_dmenu_editor_settings_close) {
-                $html .= '<script src="' . HTTP_SERVER . 'catalog/view/javascript/module-dmenu_editor/touchSwipe/jquery.touchSwipe.min.js" type="text/javascript"></script>';
+                $html .= '<script src="' . $http_server . 'catalog/view/javascript/module-dmenu_editor/touchSwipe/jquery.touchSwipe.min.js" type="text/javascript"></script>';
             }
 
             // Find HTML.
@@ -160,27 +167,38 @@ class ControllerExtensionModuleDMenuEditorEvents extends Controller {
 
             // Top Menu.
             if ($this->config->get('module_dmenu_editor_status') && $module_dmenu_editor_settings['menu']['top']['status']) {
-                $dmenu_top = $this->load->controller('extension/module/dmenu_editor', array('menu_type' => 'top'));
+                // Filter data.
+                $filter_data = array(
+                    'menu_type' => 'top'
+                );
 
-                // Operation 1.
-                // Add D.Menu Top Menu.
-                $html = '<div id="dmenu_editor-top">' . $dmenu_top . '</div>';
-                $id = 'top'; // Element ID
-                $find = '/(<.*?id=["\']' . $id . '["\'].*?>)/i';
-                $replace = $html . '$1';
-                $output = preg_replace($find, $replace, $output);
+                // Top Menu HTML.
+                $dmenu_top = $this->load->controller('extension/module/dmenu_editor', $filter_data);
 
-                // Operation 2.
-                // Hide Current Theme Top Menu.
-                $id = 'top'; // Element ID
-                $find = '/<(\w*)\s+.*?id=["\']' . $id . '["\'].*?>/i';
-                $replace = '<$1 id="' . $id . '" style="display: none !important;">';
-                $output = preg_replace($find, $replace, $output);
+                // Setting "Show on site". Option "Custom".
+                if ($module_dmenu_editor_settings['menu']['top']['display']) {
+                    // Operation.
+                    // Add Top Menu.
+                    $find = '<div id="dmenu_editor-top"></div>';
+                    $replace = '<div id="dmenu_editor-top">' . $dmenu_top . '</div>';
+                    $output = str_replace($find, $replace, $output);
 
-                // Operation 2 Alt.
-                // Remove Current Theme Top Menu. Remove HTML-content by ID.
-                //$this->load->model('extension/module/dmenu_editor');
-                //$output = $this->model_extension_module_dmenu_editor->removeTagsByID($output, array('top'));
+                // Setting "Show on site". Option "Default".
+                } else {
+                    $find_ID = 'top'; // HTML Element ID
+
+                    // Operation 1.
+                    // Add Module Top Menu.
+                    $find = '/(<[^>]*?id=["\']' . $find_ID . '["\'].*?>)/i';
+                    $replace = '<div id="dmenu_editor-top">' . $dmenu_top . '</div>$1';
+                    $output = preg_replace($find, $replace, $output);
+
+                    // Operation 2.
+                    // Hide Default Top Menu.
+                    $find = '/<(\w*)[^>]+?id=["\']' . $find_ID . '["\'].*?>/i';
+                    $replace = '<$1 id="' . $find_ID . '" style="display: none !important;">';
+                    $output = preg_replace($find, $replace, $output);
+                }
             }
         }
     }
@@ -204,24 +222,54 @@ class ControllerExtensionModuleDMenuEditorEvents extends Controller {
 
         // Footer Menu.
         if ($this->config->get('module_dmenu_editor_status') && $module_dmenu_editor_settings['menu']['footer']['status']) {
-            $dmenu_footer = $this->load->controller('extension/module/dmenu_editor', array('menu_type' => 'footer'));
+            // Menu data.
+            $filter_data = array(
+                'menu_type' => 'footer'
+            );
 
-            // Operation.
-            $html = '<div id="dmenu_editor-footer">' . $dmenu_footer . '</div>';
-            $find = '/(<footer.*?>)/i';
-            $replace = '$1' . $html;
-            $output = preg_replace($find, $replace, $output);
+            // Footer Menu HTML.
+            $dmenu_footer = $this->load->controller('extension/module/dmenu_editor', $filter_data);
+
+            // Setting "Show on site". Option "Custom".
+            if ($module_dmenu_editor_settings['menu']['footer']['display']) {
+                // Operation.
+                $find = '<div id="dmenu_editor-footer"></div>';
+                $replace = '<div id="dmenu_editor-footer">' . $dmenu_footer . '</div>';
+                $output = str_replace($find, $replace, $output);
+
+            // Setting "Show on site". Option "Default".
+            } else {
+                // Operation.
+                $find = '/(<footer.*?>)/i';
+                $replace = '$1<div id="dmenu_editor-footer">' . $dmenu_footer . '</div>';
+                $output = preg_replace($find, $replace, $output);
+            }
         }
 
         // Social Menu.
         if ($this->config->get('module_dmenu_editor_status') && $module_dmenu_editor_settings['menu']['social']['status']) {
-            $dmenu_social = $this->load->controller('extension/module/dmenu_editor', array('menu_type' => 'social'));
+            // Menu data.
+            $filter_data = array(
+                'menu_type' => 'social'
+            );
 
-            // Operation.
-            $html = '<div id="dmenu_editor-social">' . $dmenu_social . '</div>';
-            $find = '</footer>';
-            $replace = $html . $find;
-            $output = str_replace($find, $replace, $output);
+            // Social Menu HTML.
+            $dmenu_social = $this->load->controller('extension/module/dmenu_editor', $filter_data);
+
+            // Setting "Show on site". Option "Custom".
+            if ($module_dmenu_editor_settings['menu']['social']['display']) {
+                // Operation.
+                $find = '<div id="dmenu_editor-social"></div>';
+                $replace = '<div id="dmenu_editor-social">' . $dmenu_social . '</div>';
+                $output = str_replace($find, $replace, $output);
+
+            // Setting "Show on site". Option "Default".
+            } else {
+                // Operation.
+                $find = '</footer>';
+                $replace = '<div id="dmenu_editor-social">' . $dmenu_social . '</div>' . $find;
+                $output = str_replace($find, $replace, $output);
+            }
         }
     }
 }

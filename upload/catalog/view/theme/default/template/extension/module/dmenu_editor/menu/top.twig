@@ -1,5 +1,13 @@
-{% if module_dmenu_editor_status and menu_items_status and menu_items %}
-    <div class="dmenu_editor-menu_inner">
+{% if module_dmenu_editor_status and menu_items_status and (menu_items or settings_menu['currency'] or settings_menu['language']) %}
+    {% if settings_menu['title']['status'] %}
+        <div class="dmenu_editor-title_inner {{ settings_menu['title']['display'] }}">
+            <div class="container">
+                <div class="dmenu_editor-title_type">{{ entry_menu_type }}</div>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="dmenu_editor-menu_inner {% if settings_menu['mobile']['status'] %}mobile{% endif %}">
         <div class="container">
             <nav id="dmenu_editor-menu_{{ menu_type }}" class="dmenu_editor-nav_menu" data-menu="{{ menu_type }}">
                 <div class="dmenu_editor-header">
@@ -18,7 +26,7 @@
                             <ul class="dmenu_editor-menu_list dmenu_editor-menu_list-general">
                                 <li class="dmenu_editor-mobile_header">
                                     <span class="dmenu_editor-mobile_header_title">{{ entry_menu_type }}</span>
-                                    <button type="button" class="dmenu_editor-mobile_toggle" style="{% if settings_menu['close'] == 1 %}display: none;{% endif %}" role="button" aria-label="{{ entry_menu_type }}">
+                                    <button type="button" class="dmenu_editor-mobile_toggle" style="{% if settings_menu['mobile']['close'] == 1 %}display: none;{% endif %}" role="button" aria-label="{{ entry_menu_type }}">
                                         <span></span>
                                         <span></span>
                                         <span></span>
@@ -52,60 +60,72 @@
                         {% endif %}
 
                         {% for menu_item in menu_items %}
-                            {% if menu_item['data']['layout'] == 'catalog' %}
-                                {% if catalog|length > 0 %}
-                                    {% set index_r = 0 %}
+                            {% if menu_item['data']['status'] %}
+                                {% if menu_item['data']['layout'] == 'catalog' %}
+                                    {% if catalog|length > 0 %}
+                                        {% set index_r = 0 %}
 
-                                    {% if menu_item['data']['category_menu'] %}
-                                        {% set index_item = index + 1 %}
+                                        {% if menu_item['data']['category_menu'] %}
+                                            {% set index_item = index + 1 %}
 
-                                        <li class="dmenu_editor-item dmenu_editor-level_{{ index }} dmenu_editor-dropdown dmenu_editor-catalog{% if index == 1 %} depth-zero{% endif %} {{ menu_item['data']['current'] }}{% if menu_item['data']['icon']['thumb'] is defined %} dmenu_editor-icon{% endif %}">
-                                            <a class="dmenu_editor-dropdown_toggle" role="button"{% if menu_item['data']['icon']['thumb'] is defined %} style="background-image: url({{ menu_item['data']['icon']['thumb'] }});"{% endif %}>{{ menu_item['data']['title'] }}</a>
+                                            <li class="dmenu_editor-item dmenu_editor-level_{{ index }} dmenu_editor-dropdown dmenu_editor-catalog{% if index == 1 %} depth-zero{% endif %} {{ menu_item['data']['current'] }}{% if menu_item['data']['icon']['thumb'] is defined %} dmenu_editor-icon{% endif %}">
+                                                <a class="dmenu_editor-dropdown_toggle" role="button"{% if menu_item['data']['icon']['thumb'] is defined %} style="background-image: url({{ menu_item['data']['icon']['thumb'] }});"{% endif %}>{{ menu_item['data']['title'] }}</a>
+
+                                                <div class="dmenu_editor-dropdown_inner">
+                                                    <div class="dmenu_editor-menu">
+                                                        <ul class="dmenu_editor-menu_list">
+                                                            {% import _self as macros %}
+                                                            {{ macros.recursiveCatalog(catalog, additional, translated_text, 1, index_item, index_r) }}
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        {% else %}
+                                            {% import _self as macros %}
+                                            {{ macros.recursiveCatalog(catalog, additional, translated_text, 0, index, index_r) }}
+                                        {% endif %}
+                                    {% endif %}
+                                {% else %}
+                                    {% set status_rows = false %}
+
+                                    {% if menu_item['rows'] %}
+                                        {% for row in menu_item['rows'] %}
+                                            {% if row['data']['status'] %}
+                                                {% set status_rows = true %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+
+                                    {% if status_rows %}
+                                        {% set index_r = index + 1 %}
+
+                                        <li class="dmenu_editor-item dmenu_editor-level_{{ index }} dmenu_editor-dropdown{% if index == 1 %} depth-zero{% endif %}{% if menu_item['data']['class'] %} {{ menu_item['data']['class'] }}{% endif %}{% if menu_item['data']['current'] %} {{ menu_item['data']['current'] }}{% endif %}{% if menu_item['data']['names_hide'] is defined %} dmenu_editor-title_hidden{% endif %}{% if menu_item['data']['icon']['thumb'] is defined %} dmenu_editor-icon{% endif %}">
+                                            <a href="{{ menu_item['data']['url']['href'] }}" class="dmenu_editor-dropdown_toggle"{% if menu_item['data']['target'] %} target="{{ menu_item['data']['target'] }}"{% endif %}{% if menu_item['data']['xfn'] %} rel="{{ menu_item['data']['xfn'] }}"{% endif %}{% if menu_item['data']['icon']['thumb'] is defined %} style="background-image: url({{ menu_item['data']['icon']['thumb'] }});"{% endif %}>{{ menu_item['data']['title'] }}</a>
 
                                             <div class="dmenu_editor-dropdown_inner">
                                                 <div class="dmenu_editor-menu">
                                                     <ul class="dmenu_editor-menu_list">
                                                         {% import _self as macros %}
-                                                        {{ macros.recursiveCatalog(catalog, translated_text, 1, index_item, index_r) }}
+                                                        {{ macros.recursiveItems(menu_item['rows'], catalog, additional, translated_text, index_r) }}
                                                     </ul>
                                                 </div>
+
+                                                {% if menu_item['data']['url']['href'] and menu_item['data']['url']['href'] != '#' %}
+                                                    <a href="{{ menu_item['data']['url']['href'] }}" class="see-all">{{ translated_text['text_all'] }} "{{ menu_item['data']['title'] }}"</a>
+                                                {% endif %}
                                             </div>
                                         </li>
                                     {% else %}
-                                        {% import _self as macros %}
-                                        {{ macros.recursiveCatalog(catalog, translated_text, 0, index, index_r) }}
+                                        <li class="dmenu_editor-item dmenu_editor-level_{{ index }}{% if index == 1 %} depth-zero{% endif %}{% if menu_item['data']['class'] %} {{ menu_item['data']['class'] }}{% endif %}{% if menu_item['data']['current'] %} {{ menu_item['data']['current'] }}{% endif %}{% if menu_item['data']['names_hide'] is defined %} dmenu_editor-title_hidden{% endif %}{% if menu_item['data']['icon']['thumb'] is defined %} dmenu_editor-icon{% endif %}">
+                                            <a href="{{ menu_item['data']['url']['href'] }}"{% if menu_item['data']['target'] %} target="{{ menu_item['data']['target'] }}"{% endif %}{% if menu_item['data']['xfn'] %} rel="{{ menu_item['data']['xfn'] }}"{% endif %}{% if menu_item['data']['icon']['thumb'] is defined %} style="background-image: url({{ menu_item['data']['icon']['thumb'] }});"{% endif %}>{{ menu_item['data']['title'] }}</a>
+                                        </li>
                                     {% endif %}
-                                {% endif %}
-                            {% else %}
-                                {% if menu_item['rows'] is defined and menu_item['rows']|length > 0 %}
-                                    {% set index_r = index + 1 %}
-
-                                    <li class="dmenu_editor-item dmenu_editor-level_{{ index }} dmenu_editor-dropdown{% if index == 1 %} depth-zero{% endif %}{% if menu_item['data']['class'] %} {{ menu_item['data']['class'] }}{% endif %}{% if menu_item['data']['current'] %} {{ menu_item['data']['current'] }}{% endif %}{% if menu_item['data']['names_hide'] is defined %} dmenu_editor-title_hidden{% endif %}{% if menu_item['data']['icon']['thumb'] is defined %} dmenu_editor-icon{% endif %}">
-                                        <a href="{{ menu_item['data']['url']['href'] }}" class="dmenu_editor-dropdown_toggle"{% if menu_item['data']['target'] %} target="{{ menu_item['data']['target'] }}"{% endif %}{% if menu_item['data']['xfn'] %} rel="{{ menu_item['data']['xfn'] }}"{% endif %}{% if menu_item['data']['icon']['thumb'] is defined %} style="background-image: url({{ menu_item['data']['icon']['thumb'] }});"{% endif %}>{{ menu_item['data']['title'] }}</a>
-
-                                        <div class="dmenu_editor-dropdown_inner">
-                                            <div class="dmenu_editor-menu">
-                                                <ul class="dmenu_editor-menu_list">
-                                                    {% import _self as macros %}
-                                                    {{ macros.recursiveItems(menu_item['rows'], catalog, additional, translated_text, index_r) }}
-                                                </ul>
-                                            </div>
-
-                                            {% if menu_item['data']['url']['href'] and menu_item['data']['url']['href'] != '#' %}
-                                                <a href="{{ menu_item['data']['url']['href'] }}" class="see-all">{{ translated_text['text_all'] }} "{{ menu_item['data']['title'] }}"</a>
-                                            {% endif %}
-                                        </div>
-                                    </li>
-                                {% else %}
-                                    <li class="dmenu_editor-item dmenu_editor-level_{{ index }}{% if index == 1 %} depth-zero{% endif %}{% if menu_item['data']['class'] %} {{ menu_item['data']['class'] }}{% endif %}{% if menu_item['data']['current'] %} {{ menu_item['data']['current'] }}{% endif %}{% if menu_item['data']['names_hide'] is defined %} dmenu_editor-title_hidden{% endif %}{% if menu_item['data']['icon']['thumb'] is defined %} dmenu_editor-icon{% endif %}">
-                                        <a href="{{ menu_item['data']['url']['href'] }}"{% if menu_item['data']['target'] %} target="{{ menu_item['data']['target'] }}"{% endif %}{% if menu_item['data']['xfn'] %} rel="{{ menu_item['data']['xfn'] }}"{% endif %}{% if menu_item['data']['icon']['thumb'] is defined %} style="background-image: url({{ menu_item['data']['icon']['thumb'] }});"{% endif %}>{{ menu_item['data']['title'] }}</a>
-                                    </li>
                                 {% endif %}
                             {% endif %}
                         {% endfor %}
                     {% endmacro %}
 
-                    {% macro recursiveCatalog(categories, translated_text, catalog_menu, index_item, index = 0, depth = 0) %}
+                    {% macro recursiveCatalog(categories, additional, translated_text, catalog_menu, index_item, index = 0, depth = 0) %}
                         {% if depth == 0 %}
                             {% if catalog_menu == 1 %}
                                 <li class="dmenu_editor-back">
@@ -136,7 +156,7 @@
 
                                                     <ul class="dmenu_editor-menu_list">
                                                         {% import _self as macros %}
-                                                        {{ macros.recursiveCatalog(children, translated_text, catalog_menu, index_item_loop, index_r, depth_r) }}
+                                                        {{ macros.recursiveCatalog(children, additional, translated_text, catalog_menu, index_item_loop, index_r, depth_r) }}
                                                     </ul>
                                                 {% endfor %}
                                             {% else %}
@@ -145,7 +165,7 @@
 
                                                 <ul class="dmenu_editor-menu_list">
                                                     {% import _self as macros %}
-                                                    {{ macros.recursiveCatalog(category['children'], translated_text, catalog_menu, index_item_loop, index_r, depth_r) }}
+                                                    {{ macros.recursiveCatalog(category['children'], additional, translated_text, catalog_menu, index_item_loop, index_r, depth_r) }}
                                                 </ul>
                                             {% endif %}
                                         </div>
@@ -164,11 +184,18 @@
             </nav>
 
             <script type="text/javascript">
-                // Init Settings 'Close Menu'.
-                if (typeof dmenu_closeMenu === 'undefined') var dmenu_closeMenu = {};
+                // General Settings.
+                dmenuSettings.status = Number('{{ module_dmenu_editor_status }}');
 
-                // Settings.
-                dmenu_closeMenu.{{ menu_type }} = Number('{{ settings_menu["close"] }}');
+                // Menu Settings.
+                dmenuSettings.menu.{{ menu_type }} = {
+                    status  : Number('{{ settings_menu["status"] }}'),  // Setting 'Status'
+                    display : Number('{{ settings_menu["display"] }}'), // Setting 'Show on site'
+                    mobile  : {
+                        status : Number('{{ settings_menu["mobile"]["status"] }}'), // Setting 'Status Mobile Menu'
+                        close  : Number('{{ settings_menu["mobile"]["close"] }}')   // Setting 'Close Mobile Menu'
+                    }
+                };
             </script>
         </div>
     </div>

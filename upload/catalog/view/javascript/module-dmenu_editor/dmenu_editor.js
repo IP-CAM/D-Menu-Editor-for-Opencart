@@ -12,39 +12,55 @@ jQuery(function($) {
     // Window Width.
     var widthWindowDMenu = $(window).width();
 
-    // If Top Menu Enabled.
-    if (!dMenuIsEmptyHTML($('#dmenu_editor-top'))) {
-        // Remove Current Theme Top Menu.
-        $('#top').remove();
+    // Remove Default Top Menu.
+    if ((typeof dmenuSettings.menu.top !== 'undefined')) {
+        if (!dmenuSettings.menu.top.display) {
+            $('#top').remove();
+        }
+    } else {
+        if (dMenuIsEmptyHTML($('#dmenu_editor-top'))) {
+            $('#top').remove();
+        }
     }
 
-    // Fire on document
+    // Fire on document.
     $(document).ready(function() {
         // When Display device < 768px.
         if (widthWindowDMenu < 768) {
-            // Move Menu Elements.
-            if (!dMenuIsEmptyHTML($('#dmenu_editor-top'))) {
-                // Additional Items.
-                var additional = $('#dmenu_editor-menu_top').find('.dmenu_editor-item_additional');
+            // Swipe Menu Setting (General).
+            var dmenuCloseBySwipeGeneral = false;
+            for (const [key, value] of Object.entries(dmenuSettings.menu)) {
+                if (value.status && value.mobile.status && value.mobile.close) {
+                    dmenuCloseBySwipeGeneral = true;
+                    break;
+                }
+            }
 
-                // Move Additional Items to the end of the current menu level.
-                additional.each(function(index, element) {
-                    var parentEl = $(element).parent();
+            // Top Menu manipulations.
+            if (typeof dmenuSettings.menu.top !== 'undefined') {
+                if (dmenuSettings.menu.top.mobile.status) {
+                    // Additional Items.
+                    var additional = $('#dmenu_editor-menu_top').find('.dmenu_editor-item_additional');
 
-                    if (typeof parentEl.data('additional_moved') === 'undefined') {
-                        $(element).css({
-                            'border-top': '1px solid #fff',
-                            'margin-top': '5px'
-                        });
+                    // Move Additional Items to the end of the current menu level.
+                    additional.each(function(index, element) {
+                        var parentEl = $(element).parent();
 
-                        parentEl.data('additional_moved', '1').attr('data-additional_moved', '1');
-                    }
+                        if (typeof parentEl.data('additional_moved') === 'undefined') {
+                            $(element).css({
+                                'border-top': '1px solid #fff',
+                                'margin-top': '5px'
+                            });
 
-                    parentEl.append(element);
-                });
+                            parentEl.data('additional_moved', '1').attr('data-additional_moved', '1');
+                        }
 
-                // Move Top Menu.
-                //$('#dmenu_editor-main').before($('#dmenu_editor-top'));
+                        parentEl.append(element);
+                    });
+
+                    // Move Top Menu.
+                    //$('#dmenu_editor-main').before($('#dmenu_editor-top'));
+                }
             }
 
             // Show Mobile Menu.
@@ -57,40 +73,29 @@ jQuery(function($) {
                 $(this).toggleClass('active').closest('#dmenu_editor-menu_' + menu_type).addClass('open').find('.dmenu_editor-collapse > .dmenu_editor-dropdown_inner').css('overflow', 'hidden auto');
             });
 
-            if (typeof dmenu_closeMenu !== 'undefined') {
-                // Hide Mobile Menu. With Button.
-                $('.dmenu_editor-mobile_toggle').on('click', function(e){
-                    e.preventDefault();
+            // Hide Mobile Menu. With Button.
+            $('.dmenu_editor-mobile_toggle').on('click', function(e){
+                e.preventDefault();
 
-                    var menu_type = $(this).closest('.dmenu_editor-nav_menu').data('menu');
+                var menu_type = $(this).closest('.dmenu_editor-nav_menu').data('menu');
 
-                    if (dmenu_closeMenu[menu_type] !== 1) {
-                        dMenuCloseMenuMobile(menu_type);
-                    }
+                if (dmenuSettings['menu'][menu_type]['mobile']['close'] !== 1) {
+                    dMenuMobileClose(menu_type);
+                }
+            });
+
+            // Hide Mobile Menu. With Swipe.
+            if (dmenuCloseBySwipeGeneral) {
+                $('.dmenu_editor-mobile_bg').swipe({
+                    swipeLeft: function(event, direction, distance, duration, fingerCount, fingerData, currentDirection){
+                        var menu_type = $(this).closest('.dmenu_editor-nav_menu').data('menu');
+
+                        if (dmenuSettings['menu'][menu_type]['mobile']['close'] !== 0) {
+                            dMenuMobileClose(menu_type);
+                        }
+                    },
+                    threshold: 10 // Distance for triggers swipe by 'px'
                 });
-
-                // Swipe Menu Setting.
-                var dmenu_closeMenuSwipe = false;
-                for (const [key, value] of Object.entries(dmenu_closeMenu)) {
-                    if (value > 0) {
-                        dmenu_closeMenuSwipe = true;
-                        break;
-                    }
-                }
-
-                // Hide Mobile Menu. With Swipe.
-                if (dmenu_closeMenuSwipe) {
-                    $('.dmenu_editor-mobile_bg').swipe({
-                        swipeLeft: function(event, direction, distance, duration, fingerCount, fingerData, currentDirection){
-                            var menu_type = $(this).closest('.dmenu_editor-nav_menu').data('menu');
-
-                            if (dmenu_closeMenu[menu_type] !== 0) {
-                                dMenuCloseMenuMobile(menu_type);
-                            }
-                        },
-                        threshold: 10 // Distance for triggers swipe by 'px'
-                    });
-                }
             }
 
             // Click Menu Item.
@@ -186,7 +191,7 @@ jQuery(function($) {
     /**
      * Close Mobile Menu.
      */
-    function dMenuCloseMenuMobile(menu_type) {
+    function dMenuMobileClose(menu_type) {
         $('body').css('overflow', '');
         $('#dmenu_editor-menu_' + menu_type + ' .dmenu_editor-dropdown').removeClass('active');
         $('#dmenu_editor-menu_' + menu_type + ' .dmenu_editor-dropdown_inner').css({ 'overflow' : '' });
@@ -198,7 +203,7 @@ jQuery(function($) {
      * Check empty HTML.
      */
     function dMenuIsEmptyHTML(el) {
-        return !$.trim(el.html())
+        return $(el).length ? !$.trim(el.html()) : undefined;
     }
 
     /**

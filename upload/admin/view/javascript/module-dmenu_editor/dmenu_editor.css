@@ -1,5 +1,18 @@
 @charset "UTF-8";
 
+/* Placeholder */
+
+#form-module_dmenu_editor ::placeholder {
+    color: #bfbfbf;
+    opacity: 1;
+    -webkit-transition: opacity .3s ease-in-out 0s;
+    transition: opacity .3s ease-in-out 0s;
+}
+
+#form-module_dmenu_editor :focus::placeholder {
+    opacity: 0;
+}
+
 /* Elements */
 
 .nav-tabs > li > a.alert_warning {
@@ -45,15 +58,102 @@
     font-weight: 700;
 }
 
+.module-menu_items,
+.module_stores,
 .module_menu {
     position: relative;
+}
+
+.module-menu_items {
+    background-color: #f6f7f7;
+}
+
+.module_stores {
+    background-color: #dee2e6;
+    padding: 10px 15px;
+}
+
+.module_stores .nav-tabs {
+    border: none;
+    margin: 0;
+}
+
+.module_stores .nav-tabs li a,
+.module_stores .nav-tabs > li > a,
+.module_stores .nav-tabs > li.active > a {
+    border: none;
+}
+
+.module-toolbar {
+    line-height: 0;
+    text-align: right;
+    background-color: #eaeef3;
+    padding: 10px 15px;
+}
+
+.module-toolbar .item_toolbar {
+    display: inline-block;
+}
+
+.module-toolbar input.field-store_default {
+    width: 26px;
+    height: 26px;
+    border: 1px solid #4aa7dd;
+    margin: 0;
+}
+
+.module-toolbar input.field-store_default[type="checkbox"]:checked::after {
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.module-copy {
+    position: relative;
+    text-align: right;
+    margin: 15px 0;
+}
+
+.copy-message,
+.copy-title,
+.copy-content,
+.copy-select,
+.copy-btn {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.copy-title {
+    margin: 0 5px 0 0;
+}
+
+.copy-select {
+    width: 180px;
+}
+
+.copy-message {
+    color: #af660b;
+    border: 1px solid transparent;
+    padding: 2px 10px;
+    margin: 0 20px 0 0;
+}
+
+.copy-message.success {
+    color: #14a314;
+    border-color: #14a314;
+}
+
+.copy-message.error {
+    color: #d63384;
+    border-color: #d63384;
 }
 
 .module-menu_items_wrap {
     min-height: 410px;
     position: relative;
     background-color: #f6f7f7;
-    padding: 40px 15px;
+    padding: 20px 15px;
     margin: 5px 0 0 0;
 }
 
@@ -97,6 +197,7 @@
 
 .sticky-menu_item,
 .module-dmenu_editor-item {
+    position: relative;
     border: 1px solid #dcdcde;
     transition: border-color .2s ease-in-out 0s;
 }
@@ -173,9 +274,8 @@
     display: grid;
     grid-template-columns: 1fr;
     grid-gap: 0;
+    position: relative;
     background-color: #fff;
-    border-left: 1px solid #f5f5f5;
-    border-right: 1px solid #f5f5f5;
     padding: 30px 0 20px;
     margin: 0;
 }
@@ -255,6 +355,23 @@
     text-transform: none;
     letter-spacing: normal;
     white-space: nowrap;
+}
+
+.module-dmenu_editor-item span.status {
+    width: 4px;
+    height: 100%;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.module-dmenu_editor-item span.status.enabled {
+    background-color: #4abf2c;
+}
+
+.module-dmenu_editor-item span.status.disabled {
+    background-color: #ed5b5b;
 }
 
 .module-dmenu_editor-item_title a.a_item_href {
@@ -398,6 +515,52 @@
 #tab-settings .settings_sidebar .nav-tabs > li.active > a {
     color: #fff;
     background-image: linear-gradient(to right, #9d9d9d, transparent);
+}
+
+#tab-settings .field-display-info {
+    margin: 15px 0 0;
+}
+
+#tab-settings .field-display-info .alert {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin: 0;
+    overflow: auto;
+}
+
+#tab-settings .field-display-info .alert i {
+    font-size: 30px;
+}
+
+#tab-settings .field-display-info .block {
+    margin: 10px 0 0;
+}
+
+#tab-settings .field-display-info .block-title {
+    font-weight: 700;
+    font-style: italic;
+    text-decoration: underline;
+}
+
+#tab-settings .field-display-info .block-item-indent {
+    text-indent: 5px;
+}
+
+#tab-settings .field-display-info .block-copy .message {
+    margin: 0 0 0 10px;
+}
+
+#tab-settings .field-display-info .block-copy .message.success {
+    color: #14a314;
+}
+
+#tab-settings .field-display-info .block-copy .message.error {
+    color: #d63384;
+}
+
+#tab-settings .field-display-hide {
+    margin: 10px 0 0;
 }
 
 /* Loader */
@@ -558,6 +721,17 @@
         right: 0;
         top: 20px;
         padding: 0 15px;
+    }
+
+    .module-copy {
+        padding: 0 0 40px;
+    }
+
+    .copy-message {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        margin: 0;
     }
 }
 

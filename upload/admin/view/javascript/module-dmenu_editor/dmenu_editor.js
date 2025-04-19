@@ -13,10 +13,10 @@ jQuery(function($) {
     // Fire on document
     $(document).ready(function() {
         // Sortable Menu Items.
-        sortableMenuItems();
+        dmenuSortableMenuItems();
 
         // Sortable Sticky Items.
-        sortableStickyItems();
+        dmenuSortableStickyItems();
 
         // When Display device > 1200px.
         if (widthWindowDME <= 1200) {
@@ -72,15 +72,40 @@ jQuery(function($) {
             _this.closest('.module-menu_items_wrap').find('[data-toggle="tooltip"]').tooltip();
         });
 
+        // Checked Default Store Menu.
+        $('.store-tab_pane .field-store_default').on('change', function() {
+            var field = $(this);
+
+            if (field.is(':checked')) {
+                field.closest('.module_menu').find('.field-store_default').attr('checked', false).prop('checked', false);
+                field.attr('checked', true).prop('checked', true);
+            } else {
+                field.closest('.module_menu').find('.field-store_default').attr('checked', false).prop('checked', false);
+            }
+        });
+
+        // Enable/Disable Status.
+        $('.module-menu_items_wrap').on('change', '.field-status', function(){
+            var field = $(this);
+            var itemStatus = field.val();
+
+            // Display Status on Item.
+            if (itemStatus == '1') {
+                field.closest('.module-dmenu_editor-item').find('span.status').removeClass('enabled disabled').addClass('enabled');
+            } else {
+                field.closest('.module-dmenu_editor-item').find('span.status').removeClass('enabled disabled').addClass('disabled');
+            }
+        });
+
         // Show/Hide Title Catalog Settings.
         $('.module-menu_items_wrap').on('change', '.setting-category_menu select', function(){
-            var _this = $(this);
-            var categoryDisplay = _this.val();
+            var field = $(this);
+            var categoryDisplay = field.val();
 
             if (categoryDisplay == '1') {
-                _this.closest('.module-dmenu_editor-item_content').find('.setting-category_menu_hidden_block').removeClass('hidden');
+                field.closest('.module-dmenu_editor-item_content').find('.setting-category_menu_hidden_block').removeClass('hidden');
             } else {
-                _this.closest('.module-dmenu_editor-item_content').find('.setting-category_menu_hidden_block').addClass('hidden');
+                field.closest('.module-dmenu_editor-item_content').find('.setting-category_menu_hidden_block').addClass('hidden');
             }
         });
 
@@ -126,13 +151,13 @@ jQuery(function($) {
                             }
 
                             searchResults += '<div class="sticky-menu_item-item sticky-menu_item-item_' + i + '">';
-                                searchResults += '<span data-id="' + json[i]['id'] + '" data-url_link="' + json[i]['url']['link'] + '" data-layout="' + json[i]['layout'] + '" ' + searchDataNamesSeo + '>' + ( json[i]['title'] ? json[i]['title'] : dmenu_note_title_empty ) + '</span>';
+                                searchResults += '<span data-id="' + json[i]['id'] + '" data-url_link="' + json[i]['url']['link'] + '" data-layout="' + json[i]['layout'] + '" ' + searchDataNamesSeo + '>' + ( json[i]['title'] ? json[i]['title'] : dmenu_translated_text['note_title_empty'] ) + '</span>';
                             searchResults += '</div>';
                         }
 
                         _this.closest('.tab-pane').find('.sticky_menu_item_search_wrap').html(searchResults);
                     } else {
-                        _this.closest('.tab-pane').find('.sticky_menu_item_search_wrap').html(dmenu_text_search_missing);
+                        _this.closest('.tab-pane').find('.sticky_menu_item_search_wrap').html(dmenu_translated_text['text_search_missing']);
                     }
                 },
                 error: function(xhr, ajaxOptions, thrownError) {
@@ -142,8 +167,8 @@ jQuery(function($) {
         });
 
         // Remove Menu Item.
-        var timeoutRemoveID = null;
-        $('.module-menu_items_wrap').on('click', '.fa_row_remove', function() {
+        var dmenuTimeoutRemoveID = null;
+        $('.module-menu_items_wrap').on('click', '.fa_row_remove', function(){
             var textMissing = '';
             var speedAnimationHide = 200;
             var timeoutBeforeRepair = 500;
@@ -159,7 +184,7 @@ jQuery(function($) {
             // Or to take arms against a sea of troubles,
             // And by opposing, end them.
             if (item.find('.module-menu_item_wrap').length > 0) {
-                removeOrNotRemove = confirm(dmenu_note_item_not_empty);
+                removeOrNotRemove = confirm(dmenu_translated_text['note_item_not_empty']);
             }
 
             // The choice is made.
@@ -172,7 +197,7 @@ jQuery(function($) {
                     if (item.siblings('.sortable_filtered').length > 0) {
                         item.hide(speedAnimationHide, function(){ item.remove(); });
 
-                        //textMissing = displayMessageMissing();
+                        //textMissing = dmenuDisplayMessageMissing();
                         //item.closest('.module-menu_items_wrap').append(textMissing);
                     } else {
                         item.hide(speedAnimationHide, function(){ item.remove(); });
@@ -182,21 +207,21 @@ jQuery(function($) {
                         item.hide(speedAnimationHide, function(){ item.remove(); });
 
                         if (isSortableWrap) {
-                            textMissing = displayMessageMissing();
+                            textMissing = dmenuDisplayMessageMissing();
                             item.closest('.module-menu_items_wrap').append(textMissing);
                         }
                     }
                 }
 
                 // Repair Menu Items.
-                if (timeoutRemoveID != null) {
-                    window.clearTimeout(timeoutRemoveID);
+                if (dmenuTimeoutRemoveID != null) {
+                    window.clearTimeout(dmenuTimeoutRemoveID);
 
-                    timeoutRemoveID = window.setTimeout(function(){
+                    dmenuTimeoutRemoveID = window.setTimeout(function(){
                         repairMenuItems(container);
                     }, timeoutBeforeRepair);
                 } else {
-                    timeoutRemoveID = window.setTimeout(function(){
+                    dmenuTimeoutRemoveID = window.setTimeout(function(){
                         repairMenuItems(container);
                     }, timeoutBeforeRepair);
                 }
@@ -204,10 +229,172 @@ jQuery(function($) {
             // or Not?..
             } else {}
         });
+
+        // Copy current menu to selected store.
+        $('#module-menu-copy_btn').on('click', function(){
+            var button = $(this);
+            var messageEl = button.closest('.module-copy').find('.copy-message');
+
+            messageEl.removeClass('success error').text(dmenu_translated_text['text_copying']);
+
+            var targetStoreID = button.closest('.module-copy').find('select').val();
+            var currentMenuType = $('#tab-content-menu > .tab-pane.active .module-menu_items').data('menu');
+            var currentStoreID = $('#tab-content-menu > .tab-pane.active .store-tab_pane.active').data('store');
+
+            var menuStore = $('#tab-content-menu > .tab-pane.active .store-tab_pane.active .module-menu_items_wrap');
+            var menuHTML = menuStore.html();
+
+            // Store Menu is not empty.
+            if (!menuStore.find('.not_repair').length) {
+                switch(targetStoreID) {
+                    // Store not selected.
+                    case '':
+                        // Display message.
+                        dmenuTimeoutMessage(messageEl, dmenu_translated_text['text_store_not_selected'], 'error');
+
+                        break;
+
+                    // Copy to all stores in current menu.
+                    case 'all':
+                        // Set menu HTML to all stores.
+                        for (store in dmenu_stores) {
+                            if (dmenu_stores[store]['store_id'] != currentStoreID) {
+                                var storeTargetID = dmenu_stores[store]['store_id'];
+                                var items = $(menuHTML);
+
+                                // Params to change attributes.
+                                var dataChange = {
+                                    mode           : 'copy',
+                                    menu           : currentMenuType,
+                                    storeIdCurrent : currentStoreID,
+                                    storeIdTarget  : storeTargetID,
+                                    attrIdDepth    : false,
+                                    attrNameDepth  : false
+                                };
+
+                                // Change attributes.
+                                items = dmenuChangeAttributes(items, dataChange);
+
+                                // Set new HTML to Document.
+                                $('#tab-content-menu #module_menu_' + currentMenuType + '_store_' + storeTargetID + '_sortable_wrap').html(items);
+
+                                // Hide Menu Items.
+                                $('#tab-content-menu #module_menu_' + currentMenuType + '_store_' + storeTargetID + '_sortable_wrap').find('.module-menu_item_wrap').removeClass('open').find('.module-dmenu_editor-item_content').css('display', 'none');
+                            }
+                        }
+
+                        // Display message.
+                        dmenuTimeoutMessage(messageEl, dmenu_translated_text['text_message_success'], 'success');
+
+                        break;
+
+                    // Copy to selected Store.
+                    default:
+                        // Store is not current.
+                        if (targetStoreID != currentStoreID) {
+                            var items = $(menuHTML);
+
+                            // Params to change attributes.
+                            var dataChange = {
+                                mode           : 'copy',
+                                menu           : currentMenuType,
+                                storeIdCurrent : currentStoreID,
+                                storeIdTarget  : targetStoreID,
+                                attrIdDepth    : false,
+                                attrNameDepth  : false
+                            };
+
+                            // Change attributes.
+                            items = dmenuChangeAttributes(items, dataChange);
+
+                            // Set new HTML to Document.
+                            $('#tab-content-menu #module_menu_' + currentMenuType + '_store_' + targetStoreID + '_sortable_wrap').html(items);
+
+                            // Hide Menu Items.
+                            $('#tab-content-menu #module_menu_' + currentMenuType + '_store_' + targetStoreID + '_sortable_wrap').find('.module-menu_item_wrap').removeClass('open').find('.module-dmenu_editor-item_content').css('display', 'none');
+
+                            // Display message.
+                            dmenuTimeoutMessage(messageEl, dmenu_translated_text['text_message_success'], 'success');
+
+                        // Store current.
+                        } else {
+                            // Display message.
+                            dmenuTimeoutMessage(messageEl, dmenu_translated_text['text_unable_copy_to_store'], 'error');
+                        }
+
+                        break;
+                }
+
+            // Store Menu is empty.
+            } else {
+                // Display message.
+                dmenuTimeoutMessage(messageEl, dmenu_translated_text['text_menu_item_missing'], 'error');
+            }
+        });
+
+        // Select Info-block.
+        $('#tab-settings_menu .select-setting-display').on('change', function(){
+            var _this = $(this);
+            var value = _this.val();
+            var menu = _this.closest('.tab-pane').data('menu');
+
+            // Show selected Info-block.
+            _this.closest('.form-group').find('.alert').css('display', 'none');
+            _this.closest('.form-group').find('#alert-' + menu + '_display-' + value).css('display', '');
+        });
+
+        // Hide Info-block.
+        $('#tab-settings_menu .field-display-hide input').on('change', function(){
+            var checkbox = $(this);
+
+            // Hide Info-block in current menu settings.
+            if (checkbox.is(':checked')) {
+                checkbox.closest('.form-group').find('.field-display-info').css('display', 'none');
+            } else {
+                checkbox.closest('.form-group').find('.field-display-info').css('display', '');
+            }
+        });
+
+        // Copy code to clipboard.
+        $('#tab-settings_menu .field-display-info .copy-code').on('click', function(){
+            var button = $(this);
+            var messageEl = button.closest('.block').find('.message');
+
+            // Remove message.
+            messageEl.removeClass('success error').html('');
+
+            // Get code.
+            var code = button.closest('.dmenu-alert-content').find('code').text();
+
+            // Create temporary INPUT field.
+            var tempInput = $('<input type="text">');
+            $('body').append(tempInput);
+
+            // Select INPUT field.
+            tempInput.val(code).select();
+
+            // Copy code to clipboard.
+            try {
+                // Copy code.
+                document.execCommand('copy');
+
+                // Display message.
+                dmenuTimeoutMessage(messageEl, dmenu_translated_text['text_message_success'], 'success');
+            } catch (err) {
+                // Error.
+                console.error('Unable to copy to clipboard!', err);
+
+                // Display message.
+                dmenuTimeoutMessage(messageEl, dmenu_translated_text['text_message_error'], 'error');
+            }
+
+            // Remove temporary INPUT field.
+            tempInput.remove();
+        });
     });
 
     // Sortable Menu Items.
-    function sortableMenuItems () {
+    function dmenuSortableMenuItems () {
         var menuSortable = [];
         var menuSortableWrap = [].slice.call(document.querySelectorAll('.nested-sortable'));
 
@@ -233,14 +420,14 @@ jQuery(function($) {
                     var container = $(event.item).closest('.module-menu_items_wrap').prop('id');
 
                     // Repair Menu Items.
-                    repairMenuItems(container);
+                    dmenuRepairMenuItems(container);
                 }
             });
         }
     }
 
     // Sortable Sticky Items.
-    function sortableStickyItems () {
+    function dmenuSortableStickyItems () {
         var menuStickySortable = [];
         var menuStickySortableWrap = [].slice.call(document.querySelectorAll('.sticky-clone-sortable'));
 
@@ -267,6 +454,7 @@ jQuery(function($) {
                         var _item = $(event.item);
                         var container = _item.closest('.module-menu_items_wrap').prop('id');
                         var menu = _item.closest('.module-menu_items').data('menu');
+                        var store = _item.closest('.store-tab_pane').data('store');
 
                         // Remove Missing message.
                         _item.closest('.module-menu_items_wrap').find('.not_repair').remove();
@@ -314,7 +502,7 @@ jQuery(function($) {
                                     break;
                             }
                         } else {
-                            titleNotice = dmenu_text_item_desc_none;
+                            titleNotice = dmenu_translated_text['text_item_desc_none'];
                             fieldReadonly = '';
                         }
 
@@ -336,28 +524,57 @@ jQuery(function($) {
 
                         // Get Menu Item.
                         if (layout == 'catalog') {
-                            var menuItemHTML = getCatalogMenuItem(layout, names, attrIdDepth, attrNameDepth, menu);
+                            // Params to get Menu Item HTML.
+                            var dataItem = {
+                                menu          : menu,
+                                store         : store,
+                                layout        : layout,
+                                names         : names,
+                                attrIdDepth   : attrIdDepth,
+                                attrNameDepth : attrNameDepth
+                            };
+
+                            // Menu Item HTML.
+                            var menuItemHTML = dmenuGetCatalogMenuItem(dataItem);
 
                             // Prepare Menu Item container.
-                            _item.prop('id', menu + '-item-' + attrIdDepth).prop('class', 'form-group module-menu_item_wrap catalog_item').attr('data-title', title).data('title', title).attr('data-row', row).data('row', row);
+                            _item.prop('id', menu + '-store_' + store + '-item-' + attrIdDepth).prop('class', 'form-group module-menu_item_wrap catalog_item').attr('data-row', row).data('row', row);
                         } else {
-                            var menuItemHTML = getMenuItem(id, layout, title, titleNotice, urlLink, names, urlSeo, attrIdDepth, attrNameDepth, fieldReadonly, seoDisplay, menu);
+                            // Params to get Menu Item HTML.
+                            var dataItem = {
+                                menu          : menu,
+                                store         : store,
+                                id            : id,
+                                layout        : layout,
+                                title         : title,
+                                titleNotice   : titleNotice,
+                                urlLink       : urlLink,
+                                names         : names,
+                                urlSeo        : urlSeo,
+                                attrIdDepth   : attrIdDepth,
+                                attrNameDepth : attrNameDepth,
+                                fieldReadonly : fieldReadonly,
+                                seoDisplay    : seoDisplay
+                            };
+
+                            // Menu Item HTML.
+                            var menuItemHTML = dmenuGetMenuItem(dataItem);
 
                             // Prepare Menu Item container.
-                            _item.prop('id', menu + '-item-' + attrIdDepth).prop('class', 'form-group module-menu_item_wrap').attr('data-title', title).data('title', title).attr('data-row', row).data('row', row);
+                            _item.prop('id', menu + '-store_' + store + '-item-' + attrIdDepth).prop('class', 'form-group module-menu_item_wrap').attr('data-title', title).data('title', title).attr('data-row', row).data('row', row);
                         }
 
                         // Set Menu Item.
                         _item.html(menuItemHTML);
 
                         // Repair Menu Items.
-                        repairMenuItems(container);
+                        dmenuRepairMenuItems(container);
 
                         // Refresh tooltips.
                         _item.closest('.module-menu_items_wrap').find('[data-toggle="tooltip"]').tooltip();
 
                         // Refresh Sortable Menu Items.
-                        sortableMenuItems();
+                        dmenuSortableMenuItems();
                     }
                 }
             });
@@ -365,21 +582,22 @@ jQuery(function($) {
     }
 
     // Repair Menu Items.
-    function repairMenuItems(container) {
+    function dmenuRepairMenuItems(container) {
         // Add visual loader.
         $('#' + container).closest('.module_menu').append('<div class="loader-repair"><div class="lds-dual-ring"></div></div>');
 
         // Repair attributes.
-        repairAttributes(container);
+        dmenuRepairAttributes(container);
 
         // Remove visual loader.
         $('#' + container).closest('.module_menu').find('.loader-repair').remove();
     }
 
     // Repair attributes. Recursion.
-    function repairAttributes(container) {
+    function dmenuRepairAttributes(container) {
         var _container = $('#' + container);
         var menu = _container.closest('.module-menu_items').data('menu');
+        var store = _container.closest('.store-tab_pane').data('store');
 
         // Recursion condition.
         if (_container.children().length > 0) {
@@ -406,57 +624,22 @@ jQuery(function($) {
                         attrNameDepth = '[' + targetNameRows + '][rows][' + index + ']';
                     }
 
-                    // Change attributes: FOR.
-                    _this.find('label').each(function(iLabel, elLabel) {
-                        var _elLabel = $(elLabel);
+                    // Params to change attributes.
+                    var dataChange = {
+                        mode           : 'sort',
+                        menu           : menu,
+                        storeIdCurrent : store,
+                        storeIdTarget  : store,
+                        attrIdDepth    : attrIdDepth,
+                        attrNameDepth  : attrNameDepth
+                    };
 
-                        if (_elLabel.is('[for]')) {
-                            let attrFor = _elLabel.prop('for');
-                            let regExp = new RegExp(menu + '-item-\\w+-', 'g');
-                            let newAttrFor = attrFor.replace(regExp, menu + '-item-' + attrIdDepth + '-');
-
-                            _elLabel.attr('for', newAttrFor).prop('for', newAttrFor);
-                        }
-                    });
-
-                    // Change attributes: ID, NAME.
-                    _this.attr('id', menu + '-item-' + attrIdDepth).prop('id', menu + '-item-' + attrIdDepth);
-                    _this.find('input, select, a').each(function(iField, elField) {
-                        var _elField = $(elField);
-
-                        if (_elField.is('[id]')) {
-                            let attrID = _elField.prop('id');
-                            let regExp = new RegExp(menu + '-item-\\w+-', 'g');
-                            let newAttrID = attrID.replace(regExp, menu + '-item-' + attrIdDepth + '-');
-
-                            _elField.attr('id', newAttrID).prop('id', newAttrID);
-                        }
-
-                        if (_elField.is('[name]')) {
-                            let attrName = _elField.prop('name');
-                            let regExp = new RegExp('module_dmenu_editor_items_' + menu + '[\\w\\[\\]]+?\\[data\\]', 'g');
-                            let newAttrName = attrName.replace(regExp, 'module_dmenu_editor_items_' + menu + attrNameDepth + '[data]');
-
-                            _elField.attr('name', newAttrName).prop('name', newAttrName);
-                        }
-                    });
-
-                    // Change sortable container attributes: ID.
-                    _this.find('.module-menu_items_wrap_content').each(function(iContainer, elContainer) {
-                        var _elContainer = $(elContainer);
-
-                        if (_elContainer.is('[id]')) {
-                            let attrId = _elContainer.prop('id');
-                            let regExp = new RegExp('module_menu_' + menu + '_nested_sortable-\\w+', 'g');
-                            let newAttrId = attrId.replace(regExp, 'module_menu_' + menu + '_nested_sortable-' + attrIdDepth);
-
-                            _elContainer.attr('id', newAttrId).prop('id', newAttrId);
-                        }
-                    });
+                    // Change attributes.
+                    _this = dmenuChangeAttributes(_this, dataChange);
 
                     // Recursion.
                     if (_this.find('.nested-sortable').first().children().length > 0) {
-                        repairAttributes(_this.find('.nested-sortable').first().prop('id'));
+                        dmenuRepairAttributes(_this.find('.nested-sortable').first().prop('id'));
                     }
                 }
             });
@@ -465,34 +648,120 @@ jQuery(function($) {
         }
     }
 
+    // Change attributes.
+    function dmenuChangeAttributes(jqHTML, data) {
+        var jqElement = null;
+        var regExp = null;
+        var attrTarget = null;
+        var attrCurrent = null;
+
+        // Change attributes: FOR.
+        jqHTML.find('label').each(function(index, element) {
+            jqElement = $(element);
+
+            if (jqElement.is('[for]')) {
+                attrCurrent = jqElement.prop('for');
+
+                if (data.mode == 'sort') {
+                    regExp = new RegExp(data.menu + '-store_' + data.storeIdCurrent + '-item-\\w+-', 'g');
+                    attrTarget = attrCurrent.replace(regExp, data.menu + '-store_' + data.storeIdTarget + '-item-' + data.attrIdDepth + '-');
+                } else {
+                    regExp = new RegExp(data.menu + '-store_' + data.storeIdCurrent + '-item-', 'g');
+                    attrTarget = attrCurrent.replace(regExp, data.menu + '-store_' + data.storeIdTarget + '-item-');
+                }
+
+                jqElement.attr('for', attrTarget).prop('for', attrTarget);
+            }
+        });
+
+        // Set attributes: ID.
+        if (data.mode == 'sort') {
+            jqHTML.attr('id', data.menu + '-store_' + data.storeIdTarget + '-item-' + data.attrIdDepth).prop('id', data.menu + '-store_' + data.storeIdTarget + '-item-' + data.attrIdDepth);
+        }
+
+        // Change attributes: ID, NAME.
+        jqHTML.find('input, select, a').each(function(index, element) {
+            jqElement = $(element);
+
+            if (jqElement.is('[id]')) {
+                attrCurrent = jqElement.prop('id');
+
+                if (data.mode == 'sort') {
+                    regExp = new RegExp(data.menu + '-store_' + data.storeIdCurrent + '-item-\\w+-', 'g');
+                    attrTarget = attrCurrent.replace(regExp, data.menu + '-store_' + data.storeIdTarget + '-item-' + data.attrIdDepth + '-');
+                } else {
+                    regExp = new RegExp(data.menu + '-store_' + data.storeIdCurrent + '-item-', 'g');
+                    attrTarget = attrCurrent.replace(regExp, data.menu + '-store_' + data.storeIdTarget + '-item-');
+                }
+
+                jqElement.attr('id', attrTarget).prop('id', attrTarget);
+            }
+
+            if (jqElement.is('[name]')) {
+                attrCurrent = jqElement.prop('name');
+
+                if (data.mode == 'sort') {
+                    regExp = new RegExp('module_dmenu_editor_items_' + data.menu + '_' + data.storeIdCurrent + '[\\w\\[\\]]+?\\[data\\]', 'g');
+                    attrTarget = attrCurrent.replace(regExp, 'module_dmenu_editor_items_' + data.menu + '_' + data.storeIdTarget + data.attrNameDepth + '[data]');
+                } else {
+                    regExp = new RegExp('module_dmenu_editor_items_' + data.menu + '_' + data.storeIdCurrent + '\\[', 'g');
+                    attrTarget = attrCurrent.replace(regExp, 'module_dmenu_editor_items_' + data.menu + '_' + data.storeIdTarget + '[');
+                }
+
+                jqElement.attr('name', attrTarget).prop('name', attrTarget);
+            }
+        });
+
+        // Change sortable container attributes: ID.
+        jqHTML.find('.module-menu_items_wrap_content').each(function(index, element) {
+            jqElement = $(element);
+
+            if (jqElement.is('[id]')) {
+                attrCurrent = jqElement.prop('id');
+
+                if (data.mode == 'sort') {
+                    regExp = new RegExp('module_menu_' + data.menu + '_store_' + data.storeIdCurrent + '_nested_sortable-\\w+', 'g');
+                    attrTarget = attrCurrent.replace(regExp, 'module_menu_' + data.menu + '_store_' + data.storeIdTarget + '_nested_sortable-' + data.attrIdDepth);
+                } else {
+                    regExp = new RegExp('module_menu_' + data.menu + '_store_' + data.storeIdCurrent + '_nested_sortable-', 'g');
+                    attrTarget = attrCurrent.replace(regExp, 'module_menu_' + data.menu + '_store_' + data.storeIdTarget + '_nested_sortable-');
+                }
+
+                jqElement.attr('id', attrTarget).prop('id', attrTarget);
+            }
+        });
+
+        return jqHTML;
+    }
+
     // HTML Menu Item.
-    function getMenuItem(id, layout, title, titleNotice, urlLink, names, urlSeo, attrIdDepth, attrNameDepth, fieldReadonly, seoDisplay, menu) {
+    function dmenuGetMenuItem(data) {
         var menuItemHTML = '';
 
         menuItemHTML += '<div class="module-dmenu_editor-item">';
-            menuItemHTML += '<label class="text-left module-dmenu_editor-item_title">';
-                menuItemHTML += '<span class="text">' + title + '</span>';
+            menuItemHTML += '<div class="text-left module-dmenu_editor-item_title">';
+                menuItemHTML += '<span class="text">' + data.title + '</span>';
 
                 menuItemHTML += '<span class="buttons">';
-                    menuItemHTML += '<span class="notice">' + titleNotice + '</span>';
+                    menuItemHTML += '<span class="notice">' + data.titleNotice + '</span>';
 
-                    if (urlLink && layout != 'custom') {
-                        menuItemHTML += '<a href="/' + urlLink + '" class="a_item_href" target="_blank">';
-                            menuItemHTML += '<i class="fa fa-eye fa_item_href" data-toggle="tooltip" title="' + dmenu_button_look_tip + '"></i>';
+                    if (data.urlLink && data.layout != 'custom') {
+                        menuItemHTML += '<a href="/' + data.urlLink + '" class="a_item_href" target="_blank">';
+                            menuItemHTML += '<i class="fa fa-eye fa_item_href" data-toggle="tooltip" title="' + dmenu_translated_text['button_look_tip'] + '"></i>';
                         menuItemHTML += '</a>';
                     } else {
                         menuItemHTML += '<a class="a_item_href"></a>';
                     }
 
-                    menuItemHTML += '<i class="fa fa-trash-o fa_row_remove" data-toggle="tooltip" title="' + dmenu_button_remove_item_tip + '"></i>';
-                    menuItemHTML += '<i class="fa fa-angle-down fa_arrow_open" data-toggle="tooltip" title="' + dmenu_button_edit_item_tip + '"></i>';
+                    menuItemHTML += '<i class="fa fa-trash-o fa_row_remove" data-toggle="tooltip" title="' + dmenu_translated_text['button_remove_item_tip'] + '"></i>';
+                    menuItemHTML += '<i class="fa fa-angle-down fa_arrow_open" data-toggle="tooltip" title="' + dmenu_translated_text['button_edit_item_tip'] + '"></i>';
                 menuItemHTML += '</span>';
-            menuItemHTML += '</label>';
+            menuItemHTML += '</div>';
 
             menuItemHTML += '<div class="module-dmenu_editor-item_content" style="display: none;">';
                 menuItemHTML += '<div>';
                     menuItemHTML += '<div class="field required">';
-                        menuItemHTML += '<label class="col-sm-2 control-label" for="' + menu + '-item-' + attrIdDepth + '-data-names_' + dmenu_configLanguageID + '">' + dmenu_entry_name + '</label>';
+                        menuItemHTML += '<label class="col-sm-2 control-label" for="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-names_' + dmenu_configLanguageID + '">' + dmenu_translated_text['entry_name'] + '</label>';
                         menuItemHTML += '<div class="col-sm-10 module-dmenu_editor-item_title_languages">';
 
                             for (language in dmenu_languages) {
@@ -501,14 +770,14 @@ jQuery(function($) {
                                         menuItemHTML += '<img src="language/' + dmenu_languages[language]["code"] + '/' + dmenu_languages[language]["code"] + '.png" title="' + dmenu_languages[language]["name"] + '" />';
                                     menuItemHTML += '</span>';
 
-                                    menuItemHTML += '<input type="text" name="module_dmenu_editor_items_' + menu + attrNameDepth + '[data][names][' + dmenu_languages[language]["language_id"] + ']" id="' + menu + '-item-' + attrIdDepth + '-data-names_' + dmenu_languages[language]["language_id"] + '" class="form-control name_' + dmenu_languages[language]["language_id"] + '" value="' + names[dmenu_languages[language]["language_id"]] + '" required>';
+                                    menuItemHTML += '<input type="text" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][names][' + dmenu_languages[language]["language_id"] + ']" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-names_' + dmenu_languages[language]["language_id"] + '" class="form-control name_' + dmenu_languages[language]["language_id"] + '" value="' + data.names[dmenu_languages[language]["language_id"]] + '" required>';
                                 menuItemHTML += '</div>';
                             }
 
                             menuItemHTML += '<div class="input-group pull-left">';
                                 menuItemHTML += '<div class="checkbox">';
-                                    menuItemHTML += '<label for="' + menu + '-item-' + attrIdDepth + '-data-names_hide">';
-                                        menuItemHTML += '<input type="checkbox" name="module_dmenu_editor_items_' + menu + attrNameDepth + '[data][names_hide]" id="' + menu + '-item-' + attrIdDepth + '-data-names_hide" class="form-control names_hide" value="1"> ' + dmenu_entry_name_hide;
+                                    menuItemHTML += '<label for="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-names_hide">';
+                                        menuItemHTML += '<input type="checkbox" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][names_hide]" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-names_hide" class="form-control names_hide" value="1"> ' + dmenu_translated_text['entry_name_hide'];
                                     menuItemHTML += '</label>';
                                 menuItemHTML += '</div>';
                             menuItemHTML += '</div>';
@@ -516,9 +785,9 @@ jQuery(function($) {
                         menuItemHTML += '</div>';
                     menuItemHTML += '</div>';
 
-                    if ( seoDisplay ) {
+                    if (data.seoDisplay) {
                         menuItemHTML += '<div class="field required">';
-                            menuItemHTML += '<label class="col-sm-2 control-label" for="' + menu + '-item-' + attrIdDepth + '-data-url-seo_' + dmenu_configLanguageID + '">' + dmenu_entry_url + '</label>';
+                            menuItemHTML += '<label class="col-sm-2 control-label" for="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-url-seo_' + dmenu_configLanguageID + '">' + dmenu_translated_text['entry_url'] + '</label>';
                             menuItemHTML += '<div class="col-sm-10 module-dmenu_editor-item_title_languages item_url">';
 
                                 for (language in dmenu_languages) {
@@ -527,12 +796,12 @@ jQuery(function($) {
                                             menuItemHTML += '<img src="language/' + dmenu_languages[language]["code"] + '/' + dmenu_languages[language]["code"] + '.png" title="' + dmenu_languages[language]["name"] + '" />';
                                         menuItemHTML += '</span>';
 
-                                        menuItemHTML += '<input type="text" name="module_dmenu_editor_items_' + menu + attrNameDepth + '[data][url][seo][' + dmenu_languages[language]["language_id"] + ']" id="' + menu + '-item-' + attrIdDepth + '-data-url-seo_' + dmenu_languages[language]["language_id"] + '" class="form-control url_seo_' + dmenu_languages[language]["language_id"] + '" value="" ' + fieldReadonly + '>';
+                                        menuItemHTML += '<input type="text" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][url][seo][' + dmenu_languages[language]["language_id"] + ']" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-url-seo_' + dmenu_languages[language]["language_id"] + '" class="form-control url_seo_' + dmenu_languages[language]["language_id"] + '" value="" ' + data.fieldReadonly + '>';
 
-                                        if (fieldReadonly) {
-                                            menuItemHTML += '<i class="fa fa-lock" data-toggle="tooltip" data-lock="' + dmenu_button_lock_tip + '" data-unlock="' + dmenu_button_unlock_tip + '" title="' + dmenu_button_unlock_tip + '"></i>';
+                                        if (data.fieldReadonly) {
+                                            menuItemHTML += '<i class="fa fa-lock" data-toggle="tooltip" data-lock="' + dmenu_translated_text['button_lock_tip'] + '" data-unlock="' + dmenu_translated_text['button_unlock_tip'] + '" title="' + dmenu_translated_text['button_unlock_tip'] + '"></i>';
                                         } else {
-                                            menuItemHTML += '<i class="fa fa-unlock" data-toggle="tooltip" data-lock="' + dmenu_button_lock_tip + '" data-unlock="' + dmenu_button_unlock_tip + '" title="' + dmenu_button_lock_tip + '"></i>';
+                                            menuItemHTML += '<i class="fa fa-unlock" data-toggle="tooltip" data-lock="' + dmenu_translated_text['button_lock_tip'] + '" data-unlock="' + dmenu_translated_text['button_unlock_tip'] + '" title="' + dmenu_translated_text['button_lock_tip'] + '"></i>';
                                         }
                                     menuItemHTML += '</div>';
                                 }
@@ -542,54 +811,66 @@ jQuery(function($) {
                     }
 
                     menuItemHTML += '<div class="field">';
-                        menuItemHTML += '<label class="col-sm-2 control-label" for="' + menu + '-item-' + attrIdDepth + '-data-target">' + dmenu_entry_target + '</label>';
+                        menuItemHTML += '<label class="col-sm-2 control-label" for="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-target">' + dmenu_translated_text['entry_target'] + '</label>';
                         menuItemHTML += '<div class="col-sm-10 module-dmenu_editor-item_field">';
-                            menuItemHTML += '<select name="module_dmenu_editor_items_' + menu + attrNameDepth + '[data][target]" id="' + menu + '-item-' + attrIdDepth + '-data-target" class="form-control">';
-                                menuItemHTML += '<option value="">' + dmenu_text_select_none + '</option>';
-                                menuItemHTML += '<option value="_self">' + dmenu_text_target_self + '</option>';
-                                menuItemHTML += '<option value="_blank">' + dmenu_text_target_blank + '</option>';
-                                menuItemHTML += '<option value="_parent">' + dmenu_text_target_parent + '</option>';
-                                menuItemHTML += '<option value="_top">' + dmenu_text_target_top + '</option>';
+                            menuItemHTML += '<select name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][target]" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-target" class="form-control">';
+                                menuItemHTML += '<option value="">' + dmenu_translated_text['text_select_none'] + '</option>';
+                                menuItemHTML += '<option value="_self">' + dmenu_translated_text['text_target_self'] + '</option>';
+                                menuItemHTML += '<option value="_blank">' + dmenu_translated_text['text_target_blank'] + '</option>';
+                                menuItemHTML += '<option value="_parent">' + dmenu_translated_text['text_target_parent'] + '</option>';
+                                menuItemHTML += '<option value="_top">' + dmenu_translated_text['text_target_top'] + '</option>';
                             menuItemHTML += '</select>';
                         menuItemHTML += '</div>';
                     menuItemHTML += '</div>';
 
                     menuItemHTML += '<div class="field">';
-                        menuItemHTML += '<label class="col-sm-2 control-label" for="' + menu + '-item-' + attrIdDepth + '-data-xfn">' + dmenu_entry_xfn + '</label>';
+                        menuItemHTML += '<label class="col-sm-2 control-label" for="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-xfn">' + dmenu_translated_text['entry_xfn'] + '</label>';
 
                         menuItemHTML += '<div class="col-sm-10 module-dmenu_editor-item_field">';
-                            menuItemHTML += '<input name="module_dmenu_editor_items_' + menu + attrNameDepth + '[data][xfn]" id="' + menu + '-item-' + attrIdDepth + '-data-xfn" class="form-control" value="">';
+                            menuItemHTML += '<input name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][xfn]" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-xfn" class="form-control" value="">';
                         menuItemHTML += '</div>';
                     menuItemHTML += '</div>';
 
                     menuItemHTML += '<div class="field">';
-                        menuItemHTML += '<label class="col-sm-2 control-label" for="' + menu + '-item-' + attrIdDepth + '-data-class">' + dmenu_entry_class + '</label>';
+                        menuItemHTML += '<label class="col-sm-2 control-label" for="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-class">' + dmenu_translated_text['entry_class'] + '</label>';
                         menuItemHTML += '<div class="col-sm-10 module-dmenu_editor-item_field">';
-                            menuItemHTML += '<input name="module_dmenu_editor_items_' + menu + attrNameDepth + '[data][class]" id="' + menu + '-item-' + attrIdDepth + '-data-class" class="form-control" value="">';
+                            menuItemHTML += '<input name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][class]" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-class" class="form-control" value="">';
                         menuItemHTML += '</div>';
                     menuItemHTML += '</div>';
 
                     menuItemHTML += '<div class="field">';
-                        menuItemHTML += '<label class="col-sm-2 control-label" for="' + menu + '-item-' + attrIdDepth + '-data-icon-image">' + dmenu_entry_icon + '</label>';
+                        menuItemHTML += '<label class="col-sm-2 control-label">' + dmenu_translated_text['entry_icon'] + '</label>';
                         menuItemHTML += '<div class="col-sm-10 module-dmenu_editor-item_field">';
-                            menuItemHTML += '<a href="" id="' + menu + '-item-' + attrIdDepth + '-data-icon-thumb" data-toggle="image" class="img-thumbnail module_dmenu_editor-placeholder">';
-                                menuItemHTML += '<img src="' + dmenu_item_placeholder + '" alt="' + dmenu_entry_icon + '" title="' + dmenu_entry_icon + '" data-placeholder="' + dmenu_item_placeholder + '">';
+                            menuItemHTML += '<a href="" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-icon-thumb" data-toggle="image" class="img-thumbnail module_dmenu_editor-placeholder">';
+                                menuItemHTML += '<img src="' + dmenu_itemPlaceholder + '" alt="' + dmenu_translated_text['entry_icon'] + '" title="' + dmenu_translated_text['entry_icon'] + '" data-placeholder="' + dmenu_itemPlaceholder + '">';
                             menuItemHTML += '</a>';
-                            menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + menu + attrNameDepth + '[data][icon][image]" value="" id="' + menu + '-item-' + attrIdDepth + '-data-icon-image" class="hidden">';
+                            menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][icon][image]" value="" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-icon-image" class="hidden">';
+                        menuItemHTML += '</div>';
+                    menuItemHTML += '</div>';
+
+                    menuItemHTML += '<div class="field">';
+                        menuItemHTML += '<label class="col-sm-2 control-label" for="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-status">' + dmenu_translated_text['entry_status'] + '</label>';
+                        menuItemHTML += '<div class="col-sm-10 module-dmenu_editor-item_field">';
+                            menuItemHTML += '<select name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][status]" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-status" class="form-control field-status">';
+                                menuItemHTML += '<option value="1" selected="selected">' + dmenu_translated_text['text_enabled'] + '</option>';
+                                menuItemHTML += '<option value="0">' + dmenu_translated_text['text_disabled'] + '</option>';
+                            menuItemHTML += '</select>';
                         menuItemHTML += '</div>';
                     menuItemHTML += '</div>';
 
                     menuItemHTML += '<div>';
-                        menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + menu + attrNameDepth + '[data][url][link]" class="hidden" value="' + urlLink + '">';
-                        menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + menu + attrNameDepth + '[data][id]" class="hidden" value="' + id + '">';
-                        menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + menu + attrNameDepth + '[data][layout]" class="hidden" value="' + layout + '">';
+                        menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][url][link]" class="hidden" value="' + data.urlLink + '">';
+                        menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][id]" class="hidden" value="' + data.id + '">';
+                        menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][layout]" class="hidden" value="' + data.layout + '">';
                     menuItemHTML += '</div>';
                 menuItemHTML += '</div>';
             menuItemHTML += '</div>';
+
+            menuItemHTML += '<span class="status enabled"></span>';
         menuItemHTML += '</div>';
 
         menuItemHTML += '<div class="module-dmenu_editor-item_content_sortable">';
-            menuItemHTML += '<div id="module_menu_' + menu + '_nested_sortable-' + attrIdDepth + '" class="module-menu_items_wrap_content nested-sortable"></div>';
+            menuItemHTML += '<div id="module_menu_' + data.menu + '-store_' + data.store + '_nested_sortable-' + data.attrIdDepth + '" class="module-menu_items_wrap_content nested-sortable"></div>';
         menuItemHTML += '</div>';
 
         // Return.
@@ -597,36 +878,36 @@ jQuery(function($) {
     }
 
     // HTML Catalog Menu Item.
-    function getCatalogMenuItem(layout, names, attrIdDepth, attrNameDepth, menu) {
+    function dmenuGetCatalogMenuItem(data) {
         var menuItemHTML = '';
 
         menuItemHTML += '<div class="module-dmenu_editor-item">';
-            menuItemHTML += '<label class="text-left module-dmenu_editor-item_title">';
-                menuItemHTML += '<span class="text">' + dmenu_text_result_categories + '</span>';
+            menuItemHTML += '<div class="text-left module-dmenu_editor-item_title">';
+                menuItemHTML += '<span class="text">' + dmenu_translated_text['text_result_categories'] + '</span>';
 
                 menuItemHTML += '<span class="buttons">';
-                    menuItemHTML += '<span class="notice">' + dmenu_text_item_desc_catalog + '</span>';
+                    menuItemHTML += '<span class="notice">' + dmenu_translated_text['text_item_desc_catalog'] + '</span>';
                     menuItemHTML += '<a class="a_item_href"></a>';
-                    menuItemHTML += '<i class="fa fa-trash-o fa_row_remove" data-toggle="tooltip" title="' + dmenu_button_remove_item_tip + '"></i>';
-                    menuItemHTML += '<i class="fa fa-angle-down fa_arrow_open" data-toggle="tooltip" title="' + dmenu_button_edit_item_tip + '"></i>';
+                    menuItemHTML += '<i class="fa fa-trash-o fa_row_remove" data-toggle="tooltip" title="' + dmenu_translated_text['button_remove_item_tip'] + '"></i>';
+                    menuItemHTML += '<i class="fa fa-angle-down fa_arrow_open" data-toggle="tooltip" title="' + dmenu_translated_text['button_edit_item_tip'] + '"></i>';
                 menuItemHTML += '</span>';
-            menuItemHTML += '</label>';
+            menuItemHTML += '</div>';
 
             menuItemHTML += '<div class="module-dmenu_editor-item_content" style="display: none;">';
                 menuItemHTML += '<div class="field setting-category_menu">';
-                    menuItemHTML += '<label class="col-sm-2 control-label" for="' + menu + '-item-' + attrIdDepth + '-data-category_menu">' + dmenu_entry_category_menu + '</label>';
+                    menuItemHTML += '<label class="col-sm-2 control-label" for="' + data.menu + '-item-' + data.attrIdDepth + '-data-category_menu">' + dmenu_translated_text['entry_category_menu'] + '</label>';
 
                     menuItemHTML += '<div class="col-sm-10 module-dmenu_editor-item_field">';
-                        menuItemHTML += '<select name="module_dmenu_editor_items_' + menu + attrNameDepth + '[data][category_menu]" id="' + menu + '-item-' + attrIdDepth + '-data-category_menu" class="form-control">';
-                            menuItemHTML += '<option value="1">' + dmenu_text_yes + '</option>';
-                            menuItemHTML += '<option value="0" selected="selected">' + dmenu_text_no + '</option>';
+                        menuItemHTML += '<select name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][category_menu]" id="' + data.menu + '-item-' + data.attrIdDepth + '-data-category_menu" class="form-control">';
+                            menuItemHTML += '<option value="1">' + dmenu_translated_text['text_yes'] + '</option>';
+                            menuItemHTML += '<option value="0" selected="selected">' + dmenu_translated_text['text_no'] + '</option>';
                         menuItemHTML += '</select>';
                     menuItemHTML += '</div>';
                 menuItemHTML += '</div>';
 
                 menuItemHTML += '<div class="setting-category_menu_hidden_block hidden">';
                     menuItemHTML += '<div class="field setting-category_menu_title required">';
-                        menuItemHTML += '<label class="col-sm-2 control-label" for="' + menu + '-item-' + attrIdDepth + '-data-name_' + dmenu_configLanguageID + '">' + dmenu_entry_category_menu_title + '</label>';
+                        menuItemHTML += '<label class="col-sm-2 control-label" for="' + data.menu + '-item-' + data.attrIdDepth + '-data-name_' + dmenu_configLanguageID + '">' + dmenu_translated_text['entry_category_menu_title'] + '</label>';
 
                         menuItemHTML += '<div class="col-sm-10 module-dmenu_editor-item_field">';
 
@@ -636,7 +917,7 @@ jQuery(function($) {
                                         menuItemHTML += '<img src="language/' + dmenu_languages[language]["code"] + '/' + dmenu_languages[language]["code"] + '.png" title="' + dmenu_languages[language]["name"] + '" />';
                                     menuItemHTML += '</span>';
 
-                                    menuItemHTML += '<input type="text" id="' + menu + '-item-' + attrIdDepth + '-data-name_' + dmenu_languages[language]["language_id"] + '" name="module_dmenu_editor_items_' + menu + attrNameDepth + '[data][category_menu_names][' + dmenu_languages[language]["language_id"] + ']" class="form-control name_' + dmenu_languages[language]["language_id"] + '" value="' + names[dmenu_languages[language]["language_id"]] + '">';
+                                    menuItemHTML += '<input type="text" id="' + data.menu + '-item-' + data.attrIdDepth + '-data-name_' + dmenu_languages[language]["language_id"] + '" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][category_menu_names][' + dmenu_languages[language]["language_id"] + ']" class="form-control name_' + dmenu_languages[language]["language_id"] + '" value="' + data.names[dmenu_languages[language]["language_id"]] + '">';
                                 menuItemHTML += '</div>';
                             }
 
@@ -644,23 +925,35 @@ jQuery(function($) {
                     menuItemHTML += '</div>';
 
                     menuItemHTML += '<div class="field setting-category_menu_icon">';
-                        menuItemHTML += '<label class="col-sm-2 control-label" for="' + menu + '-item-' + attrIdDepth + '-data-icon-image">' + dmenu_entry_icon + '</label>';
+                        menuItemHTML += '<label class="col-sm-2 control-label">' + dmenu_translated_text['entry_icon'] + '</label>';
 
                         menuItemHTML += '<div class="col-sm-10">';
-                            menuItemHTML += '<a href="" id="' + menu + '-item-' + attrIdDepth + '-data-icon-thumb" data-toggle="image" class="img-thumbnail module_dmenu_editor-placeholder">';
-                                menuItemHTML += '<img src="' + dmenu_item_placeholder + '" alt="' + dmenu_entry_icon + '" title="' + dmenu_entry_icon + '" data-placeholder="' + dmenu_item_placeholder + '">';
+                            menuItemHTML += '<a href="" id="' + data.menu + '-item-' + data.attrIdDepth + '-data-icon-thumb" data-toggle="image" class="img-thumbnail module_dmenu_editor-placeholder">';
+                                menuItemHTML += '<img src="' + dmenu_itemPlaceholder + '" alt="' + dmenu_translated_text['entry_icon'] + '" title="' + dmenu_translated_text['entry_icon'] + '" data-placeholder="' + dmenu_itemPlaceholder + '">';
                             menuItemHTML += '</a>';
-                            menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + menu + attrNameDepth + '[data][icon][image]" value="" id="' + menu + '-item-' + attrIdDepth + '-data-icon-image" class="hidden">';
+                            menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][icon][image]" value="" id="' + data.menu + '-item-' + data.attrIdDepth + '-data-icon-image" class="hidden">';
                         menuItemHTML += '</div>';
                     menuItemHTML += '</div>';
                 menuItemHTML += '</div>';
+
+                menuItemHTML += '<div class="field setting-status">';
+                    menuItemHTML += '<label class="col-sm-2 control-label" for="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-status">' + dmenu_translated_text['entry_status'] + '</label>';
+                    menuItemHTML += '<div class="col-sm-10 module-dmenu_editor-item_field">';
+                        menuItemHTML += '<select name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][status]" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-status" class="form-control field-status">';
+                            menuItemHTML += '<option value="1" selected="selected">' + dmenu_translated_text['text_enabled'] + '</option>';
+                            menuItemHTML += '<option value="0">' + dmenu_translated_text['text_disabled'] + '</option>';
+                        menuItemHTML += '</select>';
+                    menuItemHTML += '</div>';
+                menuItemHTML += '</div>';
             menuItemHTML += '</div>';
+
+            menuItemHTML += '<span class="status enabled"></span>';
         menuItemHTML += '</div>';
 
         menuItemHTML += '<div>';
-            menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + menu + attrNameDepth + '[data][url][link]" class="hidden" value="">';
-            menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + menu + attrNameDepth + '[data][id]" class="hidden" value="0">';
-            menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + menu + attrNameDepth + '[data][layout]" class="hidden" value="' + layout + '">';
+            menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][url][link]" class="hidden" value="">';
+            menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][id]" class="hidden" value="0">';
+            menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][layout]" class="hidden" value="' + data.layout + '">';
         menuItemHTML += '</div>';
 
         // Return.
@@ -668,14 +961,28 @@ jQuery(function($) {
     }
 
     // HTML Missing message.
-    function displayMessageMissing() {
+    function dmenuDisplayMessageMissing() {
         var textMissing = '';
 
         textMissing += '<div class="not_repair sortable_filtered">';
-            textMissing += '<div class="module-menu_items_missing_text">' + dmenu_text_menu_item_missing + '</div>';
+            textMissing += '<div class="module-menu_items_missing_text">' + dmenu_translated_text['text_menu_item_missing'] + '</div>';
         textMissing += '</div>';
 
         // Return.
         return textMissing;
+    }
+
+    // Timeout with message.
+    var dmenuTimeoutClearMessage = null;
+    function dmenuTimeoutMessage(container, html, classText) {
+        container.addClass(classText).html(html);
+
+        if (dmenuTimeoutClearMessage != null) {
+            window.clearTimeout(dmenuTimeoutClearMessage);
+        }
+
+        dmenuTimeoutClearMessage = window.setTimeout(function(){
+            container.removeClass('success error').html('');
+        }, 3000);
     }
 });
