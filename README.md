@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-</head>
+<head></head>
 <body>
     <h1>D.Menu Editor</h1>
     <h2>Overview</h2>
@@ -12,9 +9,7 @@
         <a href="https://php.net/" rel="nofollow"><img src="https://img.shields.io/badge/release-v1.2.0-0d7fc0" alt="GitHub release"></a>
         <a href="https://php.net/" rel="nofollow"><img src="https://img.shields.io/badge/cms-opencart 3.x-2bbdec" alt="CMS OpenCart 3.x"></a>
     </p>
-    <p>
-        D.Menu Editor for CMS OpenCart 3.x allows you to replace the standard category menu in the site header with a more flexible and easily customizable multi-level menu. The module makes it very easy to add menu items using "Drag-and-drop" technology and has a modern "user-friendly" interface.
-    </p>
+    <p>D.Menu Editor allows you to replace the standard category menu in the site header with a more flexible and easily customizable multi-level menu. The module makes it very easy to add menu items using "Drag-and-drop" technology and has a modern "user-friendly" interface.</p>
     <h3>Note:</h3>
     <p>
         <ul>
@@ -57,7 +52,7 @@
     <h3>Compatibility:</h3>
     <p>
         <ul>
-            <li>Opencart 3.x</li>
+            <li>OpenCart 3.x</li>
             <li>ocStore 3.x</li>
         </ul>
     </p>
