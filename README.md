@@ -2,34 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>D.Menu Editor - README.md</title>
     <meta name="viewport" content="width=device-width">
 </head>
 <body>
     <h1>D.Menu Editor</h1>
     <h2>Overview</h2>
     <p>
-        <a href="https://php.net/" rel="nofollow" class="badge badge-php">
-            <img src="https://img.shields.io/badge/php->=7.3-8892bf?style=flat-square" alt="Minimum PHP Version">
-        </a>
-        <a href="https://php.net/" rel="nofollow" class="badge badge-release">
-            <img src="https://img.shields.io/badge/release-v1.2.0-0d7fc0" alt="GitHub release">
-        </a>
-        <a href="https://php.net/" rel="nofollow" class="badge badge-cms">
-            <img src="https://img.shields.io/badge/cms-opencart 3.x-2bbdec" alt="CMS OpenCart 3.x">
-        </a>
+        <a href="https://php.net/" rel="nofollow"><img src="https://img.shields.io/badge/php->=7.3-8892bf?style=flat-square" alt="Minimum PHP Version"></a>
+        <a href="https://php.net/" rel="nofollow"><img src="https://img.shields.io/badge/release-v1.2.0-0d7fc0" alt="GitHub release"></a>
+        <a href="https://php.net/" rel="nofollow"><img src="https://img.shields.io/badge/cms-opencart 3.x-2bbdec" alt="CMS OpenCart 3.x"></a>
     </p>
     <p>
-        <span style="font-weight: 600;">D.Menu Editor</span> for <span style="font-style: italic;">CMS OpenCart 3.x</span> allows you to replace the standard category menu in the site header with a more flexible and easily customizable multi-level menu. The module makes it very easy to add menu items using "Drag-and-drop" technology and has a modern "user-friendly" interface.
+        D.Menu Editor for CMS OpenCart 3.x allows you to replace the standard category menu in the site header with a more flexible and easily customizable multi-level menu. The module makes it very easy to add menu items using "Drag-and-drop" technology and has a modern "user-friendly" interface.
     </p>
-    <h3 style="color: #c56400; text-decoration: underline;">Note:</h3>
+    <h3>Note:</h3>
     <p>
         <ul>
             <li>Works with the default template (Default)</li>
             <li>The individual template may require modification</li>
         </ul>
     </p>
-    <h3 style="text-decoration: underline;">Groups of menu items to add:</h3>
+    <h3>Groups of menu items to add:</h3>
     <p>
         <ol>
             <li>Pages: Custom link, Home Page, OpenCart Pages.</li>
@@ -41,7 +34,7 @@
             <li>Blog categories (OpenCart 4.1+, ocStore 3.x).</li>
         </ol>
     </p>
-    <h3 style="text-decoration: underline;">Advantages:</h3>
+    <h3>Advantages:</h3>
     <p>
         <ul>
             <li>the module does not change the files of your site;</li>
@@ -61,7 +54,7 @@
             <li>search for information, product categories, products, manufacturers, blog categories (OpenCart 4.1+, ocStore 3.x), blog articles (OpenCart 4.1+, ocStore 3.x).</li>
         </ul>
     </p>
-    <h3 style="text-decoration: underline;">Compatibility:</h3>
+    <h3>Compatibility:</h3>
     <p>
         <ul>
             <li>Opencart 3.x</li>
