@@ -1,10 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>D.Menu Editor - CHANGELOG.md</title>
-    <meta name="viewport" content="width=device-width">
-</head>
+<head></head>
 <body>
     <h1>D.Menu Editor change log</h1>
     <h2>[v1.2.0] (Release date: 19.04.2025)</h2>
