@@ -25,8 +25,8 @@
             <li>Categories of products: Catalog (all categories), Categories.</li>
             <li>Products.</li>
             <li>Manufacturers.</li>
-            <li>Blog articles (OpenCart 4.1+, ocStore 3.x).</li>
-            <li>Blog categories (OpenCart 4.1+, ocStore 3.x).</li>
+            <li>Blog articles (ocStore 3.x).</li>
+            <li>Blog categories (ocStore 3.x).</li>
         </ol>
     </p>
     <h3>Advantages:</h3>
@@ -46,7 +46,7 @@
             <li>the ability to display 4 (four) menus: Main, Top, Footer, Social;</li>
             <li>the ability to specify an icon for each menu item;</li>
             <li>the ability to specify additional attributes for each menu item (except for the Catalog): target, rel, class;</li>
-            <li>search for information, product categories, products, manufacturers, blog categories (OpenCart 4.1+, ocStore 3.x), blog articles (OpenCart 4.1+, ocStore 3.x).</li>
+            <li>search for information, product categories, products, manufacturers, blog categories (ocStore 3.x), blog articles (ocStore 3.x).</li>
         </ul>
     </p>
     <h3>Compatibility:</h3>
