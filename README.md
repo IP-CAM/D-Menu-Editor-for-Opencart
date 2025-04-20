@@ -57,7 +57,7 @@
         </ul>
     </p>
     <h2>How to install</h2>
-    <p>Please read the <a href="/dart-maker/dmenu-opencart_3.x/blob/main/INSTALL.md">installation instructions</a> included in the repository or download file.</p>
+    <p>Please read the <a href="/INSTALL.md">installation instructions</a> included in the repository or download file.</p>
     <h2>Links</h2>
     <p>
         <ul>
