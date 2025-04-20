@@ -13,8 +13,8 @@
     <h3>Note:</h3>
     <p>
         <ul>
-            <li>Works with the default template (Default)</li>
-            <li>The individual template may require modification</li>
+            <li>Works with the default template (Default).</li>
+            <li>The individual template may require modification.</li>
         </ul>
     </p>
     <h3>Groups of menu items to add:</h3>
