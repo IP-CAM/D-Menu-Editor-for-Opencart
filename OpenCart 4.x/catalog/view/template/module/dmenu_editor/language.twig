@@ -1,0 +1,28 @@
+{% if languages|length > 1 %}
+    <a class="dmenu_editor-dropdown_toggle" role="button">
+        {% for language in languages %}
+            {% if language.code == code %}
+                <img src="catalog/language/{{ language.code }}/{{ language.code }}.png" alt="{{ language.name }}" title="{{ language.name }}">
+                <span>{{ language.name }}</span>
+            {% endif %}
+        {% endfor %}
+
+        {# <span>{{ text_language }}</span> #}
+    </a>
+
+    <div class="dmenu_editor-dropdown_inner">
+        <div id="dmenu-form-language" class="dmenu_editor-menu">
+            <ul class="dmenu_editor-menu_list">
+                <li class="dmenu_editor-back">
+                    <a class="button_back" role="button">{{ translated_text['text_back'] }}</a>
+                </li>
+
+                {% for language in languages %}
+                    <li class="dmenu_editor-item {% if language.code == code %}current{% endif %}">
+                        <a href="{{ language.href }}" class="language-select"><img src="catalog/language/{{ language.code }}/{{ language.code }}.png" alt="{{ language.name }}" title="{{ language.name }}" /> {{ language.name }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endif %}

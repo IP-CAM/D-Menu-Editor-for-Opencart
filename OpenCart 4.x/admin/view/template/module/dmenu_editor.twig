@@ -1,0 +1,675 @@
+{{ header }}
+{{ column_left }}
+
+<div id="content">
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="float-end">
+                <a href="{{ apply }}" onclick="$('#form-module_dmenu_editor').prop('action', $(this).prop('href')).submit();return false;" data-bs-toggle="tooltip" title="{{ button_save_stay }}" class="btn btn-success">
+                    <i class="fas fa-save"></i>
+                </a>
+                <a href="{{ action }}" onclick="$('#form-module_dmenu_editor').prop('action', $(this).prop('href')).submit();return false;" data-bs-toggle="tooltip" title="{{ button_save_leave }}" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                </a>
+                <a href="{{ back }}" data-bs-toggle="tooltip" title="{{ button_back }}" class="btn btn-light">
+                    <i class="fas fa-reply"></i>
+                </a>
+            </div>
+
+            <h1>{{ heading_title }}</h1>
+
+            <ol class="breadcrumb">
+                {% for breadcrumb in breadcrumbs %}
+                    <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+                {% endfor %}
+            </ol>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-pencil-alt"></i> {{ text_edit }}</div>
+            <div class="card-body">
+                {% set class_warning_menu_main = '' %}
+                {% set class_warning_menu_top = '' %}
+                {% set class_warning_menu_footer = '' %}
+                {% set class_warning_menu_social = '' %}
+
+                {% if success %}
+                    <div class="alert alert-success alert-dismissible">
+                        <div class="dmenu-alert-content">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>{{ success }}</span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% for store in stores %}
+                    {% if error_items['main']['store_' ~ store.store_id]['empty_fields'] %}
+                        {% set class_warning_menu_main = 'alert_warning' %}
+
+                        <div class="alert alert-warning alert-dismissible">
+                            <div class="dmenu-alert-title">{{ tab_menu_main }} - {{ text_store }} «{{ store.name }}»</div>
+                            <div class="dmenu-alert-content">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span>{{ error_items['main']['store_' ~ store.store_id]['empty_fields'] }}</span>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+                {% for store in stores %}
+                    {% if error_items['top']['store_' ~ store.store_id]['empty_fields'] %}
+                        {% set class_warning_menu_top = 'alert_warning' %}
+
+                        <div class="alert alert-warning alert-dismissible">
+                            <div class="dmenu-alert-title">{{ tab_menu_top }} - {{ text_store }} «{{ store.name }}»</div>
+                            <div class="dmenu-alert-content">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span>{{ error_items['top']['store_' ~ store.store_id]['empty_fields'] }}</span>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+                {% for store in stores %}
+                    {% if error_items['footer']['store_' ~ store.store_id]['empty_fields'] %}
+                        {% set class_warning_menu_footer = 'alert_warning' %}
+
+                        <div class="alert alert-warning alert-dismissible">
+                            <div class="dmenu-alert-title">{{ tab_menu_footer }} - {{ text_store }} «{{ store.name }}»</div>
+                            <div class="dmenu-alert-content">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span>{{ error_items['footer']['store_' ~ store.store_id]['empty_fields'] }}</span>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+                {% for store in stores %}
+                    {% if error_items['social']['store_' ~ store.store_id]['empty_fields'] %}
+                        {% set class_warning_menu_social = 'alert_warning' %}
+
+                        <div class="alert alert-warning alert-dismissible">
+                            <div class="dmenu-alert-title">{{ tab_menu_social }} - {{ text_store }} «{{ store.name }}»</div>
+                            <div class="dmenu-alert-content">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <span>{{ error_items['social']['store_' ~ store.store_id]['empty_fields'] }}</span>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+                <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-module_dmenu_editor" class="form-horizontal">
+                    <ul class="nav nav-tabs">
+                        <li class="nav-item">
+                            <a href="#tab-menu_general" data-bs-toggle="tab" class="nav-link active">{{ tab_menu_general }}</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="#tab-settings" data-bs-toggle="tab" class="nav-link">{{ tab_settings }}</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="tab-menu_general">
+                            <div class="module-dmenu_editor-menu">
+                                <div class="module-menu_items_add">
+                                    <div class="sticky-menu_items_button">
+                                        <button type="button">{{ entry_stycky_title }}</button>
+                                    </div>
+
+                                    <div class="sticky-menu_items_add">
+                                        <div class="form-group">
+                                            <div class="col-sm-12 text-left sticky-menu_items-title">{{ entry_stycky_title }}</div>
+                                        </div>
+
+                                        <div class="sticky-menu_items-content">
+                                            <div class="form-group sticky-menu_item_wrap open">
+                                                <div class="sticky-menu_item">
+                                                    <div class="text-left sticky-menu_item_title">
+                                                        <span>{{ entry_add_pages }}</span>
+                                                        <i class="fas fa-angle-down"></i>
+                                                    </div>
+
+                                                    <div class="sticky-menu_item_content tab-content" style="display: block;">
+                                                        <div class="sticky_menu_item_under_wrap">
+                                                            <div class="sticky_menu_item_last_wrap sticky-clone-sortable">
+                                                                <div class="sticky-menu_item-item sticky-menu_item-item_0">
+                                                                    <span data-id="0" data-url_link="" data-layout="custom" 
+                                                                        {% for language in languages %}
+                                                                            data-name_{{ language['language_id'] }}="{{ other_pages['custom']['names'][language.language_id] }}" 
+                                                                            data-url_seo_{{ language['language_id'] }}="" 
+                                                                        {% endfor %}
+                                                                    >{{ entry_add_custom_link }}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="sticky-menu_item_tabs">
+                                                            <ul class="nav nav-tabs">
+                                                                <li class="nav-item">
+                                                                    <a href="#tab-general_sticky_pages_last" data-bs-toggle="tab" class="nav-link active">{{ tab_sticky_all }}</a>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+
+                                                        <div class="tab-pane active" id="tab-general_sticky_pages_last">
+                                                            <div class="sticky_menu_item_last_wrap sticky-clone-sortable">
+                                                                {% for opencart_page in opencart_pages %}
+                                                                    <div class="sticky-menu_item-item sticky-menu_item-item_{{ loop.index0 }}">
+                                                                        <span data-id="{{ opencart_page['id'] }}" data-url_link="{{ opencart_page['url']['link'] }}" data-layout="{{ opencart_page['layout'] }}" 
+                                                                            {% for language in languages %}
+                                                                                data-name_{{ language['language_id'] }}="{{ opencart_page['names'][language.language_id] }}" 
+                                                                                data-url_seo_{{ language['language_id'] }}="{% if opencart_page['url']['seo'][language.language_id] is defined %}{{ opencart_page['url']['seo'][language.language_id] }}{% endif %}" 
+                                                                            {% endfor %}
+                                                                        >{{ opencart_page['title'] }}</span>
+                                                                    </div>
+                                                                {% endfor %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {% if information %}
+                                                <div class="form-group sticky-menu_item_wrap">
+                                                    <div class="sticky-menu_item">
+                                                        <div class="text-left sticky-menu_item_title">
+                                                            <span>{{ entry_add_info }}</span>
+                                                            <i class="fas fa-angle-down"></i>
+                                                        </div>
+
+                                                        <div class="sticky-menu_item_content tab-content">
+                                                            <div class="sticky-menu_item_tabs">
+                                                                <ul class="nav nav-tabs">
+                                                                    <li class="nav-item">
+                                                                        <a href="#tab-general_sticky_information_first" data-bs-toggle="tab" class="nav-link active">{{ tab_sticky_first ~ ' ' ~ information_limit }}</a>
+                                                                    </li>
+
+                                                                    <li class="nav-item">
+                                                                        <a href="#tab-general_sticky_information_search" data-bs-toggle="tab" class="nav-link">{{ tab_sticky_search }}</a>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+
+                                                            <div class="tab-pane active" id="tab-general_sticky_information_first">
+                                                                <div class="sticky_menu_item_last_wrap sticky-clone-sortable">
+                                                                    {% for key_info, info in information %}
+                                                                        <div class="sticky-menu_item-item sticky-menu_item-item_{{ key_info }}">
+                                                                            <span data-id="{{ info['id'] }}" data-url_link="{{ info['url']['link'] }}" data-layout="{{ info['layout'] }}" 
+                                                                                {% for language in languages %}
+                                                                                    data-name_{{ language['language_id'] }}="{% if info['names'][language.language_id] is defined %}{{ info['names'][language.language_id] }}{% endif %}" 
+                                                                                    data-url_seo_{{ language['language_id'] }}="{% if info['url']['seo'][language.language_id] is defined %}{{ info['url']['seo'][language.language_id] }}{% endif %}" 
+                                                                                {% endfor %}
+                                                                            >{% if info['title'] is not empty %}{{ info['title'] }}{% else %}{{ note_title_empty }}{% endif %}</span>
+                                                                        </div>
+                                                                    {% endfor %}
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="tab-pane" id="tab-general_sticky_information_search">
+                                                                <div class="sticky_menu_item_search_form">
+                                                                    <input type="search" id="sticky-information-search-field" class="form-control sticky_menu_item_search_input" value="">
+                                                                    <button type="button" class="sticky_menu_item_search_button" data-text_loading="{{ button_sticky_load }}" data-layout="information">{{ button_sticky_search }}</button>
+                                                                </div>
+
+                                                                <div class="sticky_menu_item_search_help">
+                                                                    <div style="color: #f00;">*</div>
+                                                                    <div>{{ search_limit_text }}</div>
+                                                                </div>
+
+                                                                <div class="sticky_menu_item_search_content">
+                                                                    <div class="sticky_menu_item_search_wrap sticky-clone-sortable"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+
+                                            <div class="form-group sticky-menu_item_wrap">
+                                                <div class="sticky-menu_item">
+                                                    <div class="text-left sticky-menu_item_title">
+                                                        <span>{{ entry_add_categories }}</span>
+                                                        <i class="fas fa-angle-down"></i>
+                                                    </div>
+
+                                                    <div class="sticky-menu_item_content tab-content">
+                                                        <div class="sticky_menu_item_under_wrap">
+                                                            <div class="sticky_menu_item_last_wrap sticky-clone-sortable">
+                                                                <div class="sticky-menu_item-item sticky-menu_item-item_0">
+                                                                    <span data-id="0" data-url_link="" data-layout="catalog" 
+                                                                        {% for language in languages %}
+                                                                            data-name_{{ language['language_id'] }}="{{ other_pages['catalog']['names'][language.language_id] }}" 
+                                                                            data-url_seo_{{ language['language_id'] }}="" 
+                                                                        {% endfor %}
+                                                                    >{{ text_all_category }}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {% if categories %}
+                                                            <div class="sticky-menu_item_tabs">
+                                                                <ul class="nav nav-tabs">
+                                                                    <li class="nav-item">
+                                                                        <a href="#tab-general_sticky_categories_last" data-bs-toggle="tab" class="nav-link active">{{ tab_sticky_first ~ ' ' ~ categories_limit }}</a>
+                                                                    </li>
+
+                                                                    <li class="nav-item">
+                                                                        <a href="#tab-general_sticky_categories_search" data-bs-toggle="tab" class="nav-link">{{ tab_sticky_search }}</a>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+
+                                                            <div class="tab-pane active" id="tab-general_sticky_categories_last">
+                                                                <div class="sticky_menu_item_last_wrap sticky-clone-sortable">
+                                                                    {% for key_category, category in categories %}
+                                                                        <div class="sticky-menu_item-item sticky-menu_item-item_{{ key_category }}">
+                                                                            <span data-id="{{ category['id'] }}" data-url_link="{{ category['url']['link'] }}" data-layout="{{ category['layout'] }}" 
+                                                                                {% for language in languages %}
+                                                                                    data-name_{{ language['language_id'] }}="{% if category['names'][language.language_id] is defined %}{{ category['names'][language.language_id] }}{% endif %}" 
+                                                                                    data-url_seo_{{ language['language_id'] }}="{% if category['url']['seo'][language.language_id] is defined %}{{ category['url']['seo'][language.language_id] }}{% endif %}" 
+                                                                                {% endfor %}
+                                                                            >{% if category['title'] is not empty %}{{ category['title'] }}{% else %}{{ note_title_empty }}{% endif %}</span>
+                                                                        </div>
+                                                                    {% endfor %}
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="tab-pane" id="tab-general_sticky_categories_search">
+                                                                <div class="sticky_menu_item_search_form">
+                                                                    <input type="search" id="sticky-categories-search-field" class="form-control sticky_menu_item_search_input" value="">
+                                                                    <button type="button" class="sticky_menu_item_search_button" data-text_loading="{{ button_sticky_load }}" data-layout="category">{{ button_sticky_search }}</button>
+                                                                </div>
+
+                                                                <div class="sticky_menu_item_search_help">
+                                                                    <div style="color: #f00;">*</div>
+                                                                    <div>{{ search_limit_text }}</div>
+                                                                </div>
+
+                                                                <div class="sticky_menu_item_search_content">
+                                                                    <div class="sticky_menu_item_search_wrap sticky-clone-sortable"></div>
+                                                                </div>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {% if products %}
+                                                <div class="form-group sticky-menu_item_wrap">
+                                                    <div class="sticky-menu_item">
+                                                        <div class="text-left sticky-menu_item_title">
+                                                            <span>{{ entry_add_products }}</span>
+                                                            <i class="fas fa-angle-down"></i>
+                                                        </div>
+
+                                                        <div class="sticky-menu_item_content tab-content">
+                                                            <div class="sticky-menu_item_tabs">
+                                                                <ul class="nav nav-tabs">
+                                                                    <li class="nav-item">
+                                                                        <a href="#tab-general_sticky_products_last" data-bs-toggle="tab" class="nav-link active">{{ tab_sticky_last ~ ' ' ~ products_limit }}</a>
+                                                                    </li>
+
+                                                                    <li class="nav-item">
+                                                                        <a href="#tab-general_sticky_products_search" data-bs-toggle="tab" class="nav-link">{{ tab_sticky_search }}</a>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+
+                                                            <div class="tab-pane active" id="tab-general_sticky_products_last">
+                                                                <div class="sticky_menu_item_last_wrap sticky-clone-sortable">
+                                                                    {% for key_product, product in products %}
+                                                                        <div class="sticky-menu_item-item sticky-menu_item-item_{{ key_product }}">
+                                                                            <span data-id="{{ product['id'] }}" data-url_link="{{ product['url']['link'] }}" data-layout="{{ product['layout'] }}" 
+                                                                                {% for language in languages %}
+                                                                                    data-name_{{ language['language_id'] }}="{% if product['names'][language.language_id] is defined %}{{ product['names'][language.language_id] }}{% endif %}" 
+                                                                                    data-url_seo_{{ language['language_id'] }}="{% if product['url']['seo'][language.language_id] is defined %}{{ product['url']['seo'][language.language_id] }}{% endif %}" 
+                                                                                {% endfor %}
+                                                                            >{% if product['title'] is not empty %}{{ product['title'] }}{% else %}{{ note_title_empty }}{% endif %}</span>
+                                                                        </div>
+                                                                    {% endfor %}
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="tab-pane" id="tab-general_sticky_products_search">
+                                                                <div class="sticky_menu_item_search_form">
+                                                                    <input type="search" id="sticky-products-search-field" class="form-control sticky_menu_item_search_input" value="">
+                                                                    <button type="button" class="sticky_menu_item_search_button" data-text_loading="{{ button_sticky_load }}" data-layout="product">{{ button_sticky_search }}</button>
+                                                                </div>
+
+                                                                <div class="sticky_menu_item_search_help">
+                                                                    <div style="color: #f00;">*</div>
+                                                                    <div>{{ search_limit_text }}</div>
+                                                                </div>
+
+                                                                <div class="sticky_menu_item_search_content">
+                                                                    <div class="sticky_menu_item_search_wrap sticky-clone-sortable"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+
+                                            {% if manufacturers %}
+                                                <div class="form-group sticky-menu_item_wrap">
+                                                    <div class="sticky-menu_item">
+                                                        <div class="text-left sticky-menu_item_title">
+                                                            <span>{{ entry_add_manufacturers }}</span>
+                                                            <i class="fas fa-angle-down"></i>
+                                                        </div>
+
+                                                        <div class="sticky-menu_item_content tab-content">
+                                                            <div class="sticky-menu_item_tabs">
+                                                                <ul class="nav nav-tabs">
+                                                                    <li class="nav-item">
+                                                                        <a href="#tab-general_sticky_manufacturers_first" data-bs-toggle="tab" class="nav-link active">{{ tab_sticky_first ~ ' ' ~ manufacturers_limit }}</a>
+                                                                    </li>
+
+                                                                    <li class="nav-item">
+                                                                        <a href="#tab-general_sticky_manufacturers_search" data-bs-toggle="tab" class="nav-link">{{ tab_sticky_search }}</a>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+
+                                                            <div class="tab-pane active" id="tab-general_sticky_manufacturers_first">
+                                                                <div class="sticky_menu_item_last_wrap sticky-clone-sortable">
+                                                                    {% for key_manufacturer, manufacturer in manufacturers %}
+                                                                        <div class="sticky-menu_item-item sticky-menu_item-item_{{ key_manufacturer }}">
+                                                                            <span data-id="{{ manufacturer['id'] }}" data-url_link="{{ manufacturer['url']['link'] }}" data-layout="{{ manufacturer['layout'] }}" 
+                                                                                {% for language in languages %}
+                                                                                    data-name_{{ language['language_id'] }}="{% if manufacturer['names'][language.language_id] is defined %}{{ manufacturer['names'][language.language_id] }}{% endif %}" 
+                                                                                    data-url_seo_{{ language['language_id'] }}="{% if manufacturer['url']['seo'][language.language_id] is defined %}{{ manufacturer['url']['seo'][language.language_id] }}{% endif %}" 
+                                                                                {% endfor %}
+                                                                            >{% if manufacturer['title'] is not empty %}{{ manufacturer['title'] }}{% else %}{{ note_title_empty }}{% endif %}</span>
+                                                                        </div>
+                                                                    {% endfor %}
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="tab-pane" id="tab-general_sticky_manufacturers_search">
+                                                                <div class="sticky_menu_item_search_form">
+                                                                    <input type="search" id="sticky-manufacturers-search-field" class="form-control sticky_menu_item_search_input" value="">
+                                                                    <button type="button" class="sticky_menu_item_search_button" data-text_loading="{{ button_sticky_load }}" data-layout="manufacturer">{{ button_sticky_search }}</button>
+                                                                </div>
+
+                                                                <div class="sticky_menu_item_search_help">
+                                                                    <div style="color: #f00;">*</div>
+                                                                    <div>{{ search_limit_text }}</div>
+                                                                </div>
+
+                                                                <div class="sticky_menu_item_search_content">
+                                                                    <div class="sticky_menu_item_search_wrap sticky-clone-sortable"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+
+                                            {% if blog_categories %}
+                                                <div class="form-group sticky-menu_item_wrap">
+                                                    <div class="sticky-menu_item">
+                                                        <div class="text-left sticky-menu_item_title">
+                                                            <span>{{ entry_add_blog_categories }}</span>
+                                                            <i class="fas fa-angle-down"></i>
+                                                        </div>
+
+                                                        <div class="sticky-menu_item_content tab-content">
+                                                            <div class="sticky-menu_item_tabs">
+                                                                <ul class="nav nav-tabs">
+                                                                    <li class="nav-item">
+                                                                        <a href="#tab-general_sticky_blog_categories_last" data-bs-toggle="tab" class="nav-link active">{{ tab_sticky_first ~ ' ' ~ blog_categories_limit }}</a>
+                                                                    </li>
+
+                                                                    <li class="nav-item">
+                                                                        <a href="#tab-general_sticky_blog_categories_search" data-bs-toggle="tab" class="nav-link">{{ tab_sticky_search }}</a>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+
+                                                            <div class="tab-pane active" id="tab-general_sticky_blog_categories_last">
+                                                                <div class="sticky_menu_item_last_wrap sticky-clone-sortable">
+                                                                    {% for key_b_category, b_category in blog_categories %}
+                                                                        <div class="sticky-menu_item-item sticky-menu_item-item_{{ key_b_category }}">
+                                                                            <span data-id="{{ b_category['id'] }}" data-url_link="{{ b_category['url']['link'] }}" data-layout="{{ b_category['layout'] }}" 
+                                                                                {% for language in languages %}
+                                                                                    data-name_{{ language['language_id'] }}="{% if b_category['names'][language.language_id] is defined %}{{ b_category['names'][language.language_id] }}{% endif %}" 
+                                                                                    data-url_seo_{{ language['language_id'] }}="{% if b_category['url']['seo'][language.language_id] is defined %}{{ b_category['url']['seo'][language.language_id] }}{% endif %}" 
+                                                                                {% endfor %}
+                                                                            >{% if b_category['title'] is not empty %}{{ b_category['title'] }}{% else %}{{ note_title_empty }}{% endif %}</span>
+                                                                        </div>
+                                                                    {% endfor %}
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="tab-pane" id="tab-general_sticky_blog_categories_search">
+                                                                <div class="sticky_menu_item_search_form">
+                                                                    <input type="search" id="sticky-blog_categories-search-field" class="form-control sticky_menu_item_search_input" value="">
+                                                                    <button type="button" class="sticky_menu_item_search_button" data-text_loading="{{ button_sticky_load }}" data-layout="blog_category">{{ button_sticky_search }}</button>
+                                                                </div>
+
+                                                                <div class="sticky_menu_item_search_help">
+                                                                    <div style="color: #f00;">*</div>
+                                                                    <div>{{ search_limit_text }}</div>
+                                                                </div>
+
+                                                                <div class="sticky_menu_item_search_content">
+                                                                    <div class="sticky_menu_item_search_wrap sticky-clone-sortable"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+
+                                            {% if blog_articles %}
+                                                <div class="form-group sticky-menu_item_wrap">
+                                                    <div class="sticky-menu_item">
+                                                        <div class="text-left sticky-menu_item_title">
+                                                            <span>{{ entry_add_blog_articles }}</span>
+                                                            <i class="fas fa-angle-down"></i>
+                                                        </div>
+
+                                                        <div class="sticky-menu_item_content tab-content">
+                                                            <div class="sticky-menu_item_tabs">
+                                                                <ul class="nav nav-tabs">
+                                                                    <li class="nav-item">
+                                                                        <a href="#tab-general_sticky_blog_articles_last" data-bs-toggle="tab" class="nav-link active">{{ tab_sticky_last ~ ' ' ~ blog_articles_limit }}</a>
+                                                                    </li>
+
+                                                                    <li class="nav-item">
+                                                                        <a href="#tab-general_sticky_blog_articles_search" data-bs-toggle="tab" class="nav-link">{{ tab_sticky_search }}</a>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+
+                                                            <div class="tab-pane active" id="tab-general_sticky_blog_articles_last">
+                                                                <div class="sticky_menu_item_last_wrap sticky-clone-sortable">
+                                                                    {% for key_b_article, b_article in blog_articles %}
+                                                                        <div class="sticky-menu_item-item sticky-menu_item-item_{{ key_b_article }}">
+                                                                            <span data-id="{{ b_article['id'] }}" data-url_link="{{ b_article['url']['link'] }}" data-layout="{{ b_article['layout'] }}" 
+                                                                                {% for language in languages %}
+                                                                                    data-name_{{ language['language_id'] }}="{% if b_article['names'][language.language_id] is defined %}{{ b_article['names'][language.language_id] }}{% endif %}" 
+                                                                                    data-url_seo_{{ language['language_id'] }}="{% if b_article['url']['seo'][language.language_id] is defined %}{{ b_article['url']['seo'][language.language_id] }}{% endif %}" 
+                                                                                {% endfor %}
+                                                                            >{% if b_article['title'] is not empty %}{{ b_article['title'] }}{% else %}{{ note_title_empty }}{% endif %}</span>
+                                                                        </div>
+                                                                    {% endfor %}
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="tab-pane" id="tab-general_sticky_blog_articles_search">
+                                                                <div class="sticky_menu_item_search_form">
+                                                                    <input type="search" id="sticky-blog_articles-search-field" class="form-control sticky_menu_item_search_input" value="">
+                                                                    <button type="button" class="sticky_menu_item_search_button" data-text_loading="{{ button_sticky_load }}" data-layout="blog_article">{{ button_sticky_search }}</button>
+                                                                </div>
+
+                                                                <div class="sticky_menu_item_search_help">
+                                                                    <div style="color: #f00;">*</div>
+                                                                    <div>{{ search_limit_text }}</div>
+                                                                </div>
+
+                                                                <div class="sticky_menu_item_search_content">
+                                                                    <div class="sticky_menu_item_search_wrap sticky-clone-sortable"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="module-dmenu_editor-menu_items">
+                                    <div class="form-group">
+                                        <div class="col-sm-12 text-center module-menu_items-title">{{ entry_items_title }}</div>
+                                    </div>
+
+                                    <ul class="nav nav-tabs">
+                                        <li class="nav-item">
+                                            <a href="#tab-menu_main" data-bs-toggle="tab" class="nav-link {{ class_warning_menu_main }} active">{{ tab_menu_main }}</a>
+                                        </li>
+
+                                        <li class="nav-item">
+                                            <a href="#tab-menu_top" data-bs-toggle="tab" class="nav-link {{ class_warning_menu_top }}">{{ tab_menu_top }}</a>
+                                        </li>
+
+                                        <li class="nav-item">
+                                            <a href="#tab-menu_footer" data-bs-toggle="tab" class="nav-link {{ class_warning_menu_footer }}">{{ tab_menu_footer }}</a>
+                                        </li>
+
+                                        <li class="nav-item">
+                                            <a href="#tab-menu_social" data-bs-toggle="tab" class="nav-link {{ class_warning_menu_social }}">{{ tab_menu_social }}</a>
+                                        </li>
+                                    </ul>
+
+                                    <div id="tab-content-menu" class="tab-content">
+                                        <div class="tab-pane active" id="tab-menu_main">{{ menu_main }}</div>
+                                        <div class="tab-pane" id="tab-menu_top">{{ menu_top }}</div>
+                                        <div class="tab-pane" id="tab-menu_footer">{{ menu_footer }}</div>
+                                        <div class="tab-pane" id="tab-menu_social">{{ menu_social }}</div>
+                                    </div>
+
+                                    <div class="module-copy">
+                                        <span class="copy-message">&nbsp;</span>
+
+                                        <label class="copy-title" for="module-menu-copy_stores">{{ entry_copy_select }}</label>
+
+                                        <div class="copy-content">
+                                            <select id="module-menu-copy_stores" class="form-select copy-select">
+                                                <option value="">{{ text_select }}</option>
+                                                <option value="all">{{ text_all_stores }}</option>
+
+                                                {% for store in stores %}
+                                                    <option value="{{ store['store_id'] }}">{{ store['name'] }}</option>
+                                                {% endfor %}
+                                            </select>
+
+                                            <button type="button" id="module-menu-copy_btn" class="btn btn-light copy-btn" data-bs-toggle="tooltip" aria-label="{{ button_copy }}" data-bs-original-title="{{ button_copy }}">
+                                                <i class="fas fa-regular fa-copy"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <hr>
+
+                                    <div class="form-module_dmenu_editor-notes">
+                                        <div>* <strong>{{ help_name_hide_label }}</strong> - {{ help_name_hide }}</div>
+                                        <div>* <strong>{{ help_xfn_label }}</strong> - {{ help_xfn }}</div>
+                                        <div>* <strong>{{ help_link_label }}</strong> - {{ help_link }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane" id="tab-settings">{{ settings }}</div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        // Translated Text.
+        const dmenu_translated_text = {
+            // Text.
+            entry_target              : '{{ entry_target }}',
+            text_select_none          : '{{ text_select_none }}',
+            text_target_self          : '{{ text_target_self }}',
+            text_target_blank         : '{{ text_target_blank }}',
+            text_target_parent        : '{{ text_target_parent }}',
+            text_target_top           : '{{ text_target_top }}',
+            text_result_categories    : '{{ text_result_categories }}',
+            text_item_desc_catalog    : '{{ text_item_desc_catalog }}',
+            text_yes                  : '{{ text_yes }}',
+            text_no                   : '{{ text_no }}',
+            text_menu_item_missing    : '{{ text_menu_item_missing }}',
+            text_item_desc_none       : '{{ text_item_desc_none }}',
+            text_search_missing       : '{{ text_search_missing }}',
+            text_message_success      : '{{ text_message_success }}',
+            text_message_error        : '{{ text_message_error }}',
+            text_store_not_selected   : '{{ text_store_not_selected }}',
+            text_unable_copy_to_store : '{{ text_unable_copy_to_store }}',
+            text_copying              : '{{ text_copying }}',
+
+            // Entry.
+            entry_status              : '{{ entry_status }}',
+            entry_name                : '{{ entry_name }}',
+            entry_name_hide           : '{{ entry_name_hide }}',
+            entry_url                 : '{{ entry_url }}',
+            entry_xfn                 : '{{ entry_xfn }}',
+            entry_class               : '{{ entry_class }}',
+            entry_icon                : '{{ entry_icon }}',
+            entry_category_menu       : '{{ entry_category_menu }}',
+            entry_category_menu_title : '{{ entry_category_menu_title }}',
+
+            // Button.
+            button_look_tip           : '{{ button_look_tip }}',
+            button_remove_item_tip    : '{{ button_remove_item_tip }}',
+            button_edit_item_tip      : '{{ button_edit_item_tip }}',
+            button_lock_tip           : '{{ button_lock_tip }}',
+            button_unlock_tip         : '{{ button_unlock_tip }}',
+            button_edit               : '{{ button_edit }}',
+            button_clear              : '{{ button_clear }}',
+
+            // Notification.
+            note_title_empty          : '{{ note_title_empty }}',
+            note_item_not_empty       : '{{ note_item_not_empty }}'
+        }
+
+        // User Token.
+        const dmenu_userToken = '{{ user_token }}';
+
+        // Current Language ID.
+        const dmenu_configLanguageID = '{{ config_language_id }}';
+
+        // Languages.
+        const dmenu_languages = JSON.parse('{{ languages | json_encode | raw }}');
+
+        // Module Layouts.
+        const dmenu_moduleLayouts = JSON.parse('{{ module_layouts | json_encode | raw }}');
+
+        // Stores.
+        const dmenu_stores = JSON.parse('{{ stores | json_encode | raw }}');
+
+        // Route method separator.
+        const dmenu_routeMethodSeparator = '{{ _x_ }}';
+
+        // Search Limit.
+        const dmenu_searchLimit = '{{ search_limit }}';
+
+        // Menu Item placeholder.
+        const dmenu_itemPlaceholder = '{{ item_placeholder }}';
+    </script>
+</div>
+
+{{ footer }}

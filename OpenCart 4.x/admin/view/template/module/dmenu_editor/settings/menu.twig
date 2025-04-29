@@ -1,0 +1,170 @@
+<div class="tab-pane active" id="tab-setting_menu_{{ menu_type }}" data-menu="{{ menu_type }}">
+    <div class="form-group row mb-3">
+        <label class="col-sm-3 control-label col-form-label" for="module_dmenu_editor-status_{{ menu_type }}">{{ entry_status }}</label>
+        <div class="col-sm-9">
+            <div class="input-group">
+                <div class="form-check form-switch form-switch-lg">
+                    <input type="hidden" name="module_dmenu_editor_settings[menu][{{ menu_type }}][status]" value="0" class="hidden"/>
+                    <input type="checkbox" name="module_dmenu_editor_settings[menu][{{ menu_type }}][status]" value="1" id="module_dmenu_editor-status_{{ menu_type }}" class="form-check-input"{% if module_settings['menu'][menu_type]['status'] %} checked{% endif %}/>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if menu_type != 'main' %}
+        <div class="form-group row mb-3">
+            <label class="col-sm-3 control-label col-form-label" for="module_dmenu_editor-menu_{{ menu_type }}_display">{{ entry_menu_display }}</label>
+            <div class="col-sm-9">
+                <select name="module_dmenu_editor_settings[menu][{{ menu_type }}][display]" id="module_dmenu_editor-menu_{{ menu_type }}_display" class="form-select select-setting-display">
+                    {% if module_settings['menu'][menu_type]['display'] %}
+                        <option value="0">{{ entry_menu_display_option_0 }}</option>
+                        <option value="1" selected="selected">{{ entry_menu_display_option_1 }}</option>
+                    {% else %}
+                        <option value="0" selected="selected">{{ entry_menu_display_option_0 }}</option>
+                        <option value="1">{{ entry_menu_display_option_1 }}</option>
+                    {% endif %}
+                </select>
+
+                <div class="field-display-info" {% if module_settings['menu'][menu_type]['display_hide'] %}style="display: none;"{% endif %}>
+                    <div id="alert-{{ menu_type }}_display-0" class="alert alert-info" {% if module_settings['menu'][menu_type]['display'] %}style="display: none;"{% endif %}>
+                        <div class="dmenu-alert-icon">
+                            <i class="fas fa-solid fa-info-circle"></i>
+                        </div>
+                        <div class="dmenu-alert-content">
+                            {% if menu_type == 'top' %}
+                                {{ help_alert_top_display_0 }}
+                            {% elseif menu_type == 'footer' %}
+                                {{ help_alert_footer_display_0 }}
+                            {% elseif menu_type == 'social' %}
+                                {{ help_alert_social_display_0 }}
+                            {% else %}
+                                <div></div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div id="alert-{{ menu_type }}_display-1" class="alert alert-info" {% if not module_settings['menu'][menu_type]['display'] %}style="display: none;"{% endif %}>
+                        <div class="dmenu-alert-icon">
+                            <i class="fas fa-solid fa-info-circle"></i>
+                        </div>
+                        <div class="dmenu-alert-content">
+                            {% if menu_type == 'top' %}
+                                {{ help_alert_top_display_1 }}
+                            {% elseif menu_type == 'footer' %}
+                                {{ help_alert_footer_display_1 }}
+                            {% elseif menu_type == 'social' %}
+                                {{ help_alert_social_display_1 }}
+                            {% else %}
+                                <div></div>
+                            {% endif %}
+
+                            <div class="block">
+                                <div class="block-title">{{ text_add_code }}</div>
+                                <div>
+                                    <code>&lt;div id="dmenu_editor-{{ menu_type }}"&gt;&lt;/div&gt;</code>
+                                </div>
+                            </div>
+
+                            <div class="block block-copy">
+                                <button type="button" class="btn btn-info copy-code">{{ button_copy_code }}</button>
+                                <span class="message">&nbsp;</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field-display-hide">
+                    <input type="checkbox" name="module_dmenu_editor_settings[menu][{{ menu_type }}][display_hide]" id="module_dmenu_editor-menu_{{ menu_type }}_display_hide" class="form-check-input" value="1" {% if module_settings['menu'][menu_type]['display_hide'] %}checked="checked"{% endif %}>
+                    <label for="module_dmenu_editor-menu_{{ menu_type }}_display_hide">{{ entry_menu_display_hide }}</label>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="form-group row mb-3">
+        <label class="col-sm-3 control-label col-form-label" for="module_dmenu_editor-menu_{{ menu_type }}_title_status">{{ entry_title_menu }}</label>
+        <div class="col-sm-9">
+            <div class="input-group" style="margin-bottom: 10px;">
+                <div class="form-check form-switch form-switch-lg">
+                    <input type="hidden" name="module_dmenu_editor_settings[menu][{{ menu_type }}][title][status]" value="0" class="hidden"/>
+                    <input type="checkbox" name="module_dmenu_editor_settings[menu][{{ menu_type }}][title][status]" value="1" id="module_dmenu_editor-menu_{{ menu_type }}_title_status" class="form-check-input"{% if module_settings['menu'][menu_type]['title']['status'] %} checked{% endif %}/>
+                </div>
+            </div>
+
+            <select name="module_dmenu_editor_settings[menu][{{ menu_type }}][title][display]" id="module_dmenu_editor-menu_{{ menu_type }}_title_display" class="form-select" style="margin-bottom: 10px;">
+                <option value="">{{ text_select_none }}</option>
+                <option value="desktop" {% if module_settings['menu'][menu_type]['title']['display'] == 'desktop' %}selected="selected"{% endif %}>{{ text_show_on_desktop }}</option>
+                <option value="mobile" {% if module_settings['menu'][menu_type]['title']['display'] == 'mobile' %}selected="selected"{% endif %}>{{ text_show_on_mobile }}</option>
+                <option value="desktop_mobile" {% if module_settings['menu'][menu_type]['title']['display'] == 'desktop_mobile' %}selected="selected"{% endif %}>{{ text_show_on_desktop_mobile }}</option>
+            </select>
+
+            {% for language in languages %}
+                <div class="input-group pull-left" style="margin-bottom: 5px;">
+                    <span class="input-group-text">
+                        <img src="language/{{ language['code'] }}/{{ language['code'] }}.png" title="{{ language['name'] }}" />
+                    </span>
+
+                    <input type="text" name="module_dmenu_editor_settings[menu][{{ menu_type }}][title][name][{{ language['language_id'] }}]" value="{% if module_settings['menu'][menu_type]['title']['name'][language.language_id] is defined %}{{ module_settings['menu'][menu_type]['title']['name'][language.language_id] }}{% endif %}" placeholder="{{ entry_title_menu }}" id="module_dmenu_editor-menu_{{ menu_type }}_title_name_{{ language['language_id'] }}" class="form-control title_name_{{ language['language_id'] }}">
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="form-group row mb-3">
+        <label class="col-sm-3 control-label col-form-label" for="module_dmenu_editor-menu_{{ menu_type }}_mobile_status">{{ entry_menu_mobile }}</label>
+        <div class="col-sm-9">
+            <div class="input-group" style="margin-bottom: 10px;">
+                <div class="form-check form-switch form-switch-lg">
+                    <input type="hidden" name="module_dmenu_editor_settings[menu][{{ menu_type }}][mobile][status]" value="0" class="hidden"/>
+                    <input type="checkbox" name="module_dmenu_editor_settings[menu][{{ menu_type }}][mobile][status]" value="1" id="module_dmenu_editor-menu_{{ menu_type }}_mobile_status" class="form-check-input"{% if module_settings['menu'][menu_type]['mobile']['status'] %} checked{% endif %}/>
+                </div>
+            </div>
+
+            <select name="module_dmenu_editor_settings[menu][{{ menu_type }}][mobile][close]" id="module_dmenu_editor-menu_{{ menu_type }}_mobile_close" class="form-select">
+                <option value="0" {% if module_settings['menu'][menu_type]['mobile']['close'] == '0' %}selected="selected"{% endif %}>{{ text_close_by_button }}</option>
+                <option value="1" {% if module_settings['menu'][menu_type]['mobile']['close'] == '1' %}selected="selected"{% endif %}>{{ text_close_by_gesture }}</option>
+                <option value="2" {% if module_settings['menu'][menu_type]['mobile']['close'] == '2' %}selected="selected"{% endif %}>{{ text_close_by_button_gesture }}</option>
+            </select>
+        </div>
+    </div>
+
+    {% if menu_type == 'top' %}
+        <div class="form-group row mb-3">
+            <label class="col-sm-3 control-label col-form-label" for="module_dmenu_editor-menu_{{ menu_type }}_currency">{{ entry_menu_currency }}</label>
+            <div class="col-sm-9">
+                <div class="input-group">
+                    <div class="form-check form-switch form-switch-lg">
+                        <input type="hidden" name="module_dmenu_editor_settings[menu][{{ menu_type }}][currency]" value="0" class="hidden"/>
+                        <input type="checkbox" name="module_dmenu_editor_settings[menu][{{ menu_type }}][currency]" value="1" id="module_dmenu_editor-menu_{{ menu_type }}_currency" class="form-check-input"{% if module_settings['menu'][menu_type]['currency'] %} checked{% endif %}/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group row mb-3">
+            <label class="col-sm-3 control-label col-form-label" for="module_dmenu_editor-menu_{{ menu_type }}_language">{{ entry_menu_language }}</label>
+            <div class="col-sm-9">
+                <div class="input-group">
+                    <div class="form-check form-switch form-switch-lg">
+                        <input type="hidden" name="module_dmenu_editor_settings[menu][{{ menu_type }}][language]" value="0" class="hidden"/>
+                        <input type="checkbox" name="module_dmenu_editor_settings[menu][{{ menu_type }}][language]" value="1" id="module_dmenu_editor-menu_{{ menu_type }}_language" class="form-check-input"{% if module_settings['menu'][menu_type]['language'] %} checked{% endif %}/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="form-group row mb-3">
+        <label class="col-sm-3 control-label col-form-label" for="module_dmenu_editor-menu_{{ menu_type }}_icon_width">{{ entry_icon_dimensions }}</label>
+        <div class="col-sm-9">
+            <div class="row">
+                <div class="col-sm-2">
+                    <input type="number" name="module_dmenu_editor_settings[menu][{{ menu_type }}][icon][width]" step="1" min="1" value="{{ icon_dimensions['menu'][menu_type]['width'] }}" id="module_dmenu_editor-menu_{{ menu_type }}_icon_width" class="form-control" placeholder="{{ text_icon_width }}">
+                </div>
+                <div class="col-sm-2">
+                    <input type="number" name="module_dmenu_editor_settings[menu][{{ menu_type }}][icon][height]" step="1" min="1" value="{{ icon_dimensions['menu'][menu_type]['height'] }}" id="module_dmenu_editor-menu_{{ menu_type }}_icon_height" class="form-control" placeholder="{{ text_icon_height }}">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

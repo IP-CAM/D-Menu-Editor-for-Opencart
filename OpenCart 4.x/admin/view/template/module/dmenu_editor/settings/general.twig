@@ -1,0 +1,27 @@
+<div class="form-group row mb-3" style="margin: 0 !important;">
+    <label class="col-sm-3 control-label col-form-label" for="module_dmenu_editor-status">{{ entry_status }}</label>
+    <div class="col-sm-9">
+        <div class="input-group">
+            <div class="form-check form-switch form-switch-lg">
+                <input type="hidden" name="module_dmenu_editor_status" value="0" class="hidden"/>
+                <input type="checkbox" name="module_dmenu_editor_status" value="1" id="module_dmenu_editor-status" class="form-check-input"{% if module_dmenu_editor_status %} checked{% endif %}/>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="form-group row mb-3" style="background-color: #ededed; margin: 20px 0 0 !important; padding-top: 20px !important;">
+    <div class="col-sm-3 control-label col-form-label" style="font-size: 1.2em;">{{ entry_dev_block }}</div>
+</div>
+
+<div class="form-group row mb-3 setting-cms_blog" style="background-color: #ededed; margin: 0 !important; padding-bottom: 20px !important;">
+    <label class="col-sm-3 control-label col-form-label" for="module_dmenu_editor-cms_blog">{{ entry_cms_blog }}</label>
+    <div class="col-sm-9">
+        <div class="input-group">
+            <div class="form-check form-switch form-switch-lg">
+                <input type="hidden" name="module_dmenu_editor_settings[general][cms_blog]" value="0" class="hidden"/>
+                <input type="checkbox" name="module_dmenu_editor_settings[general][cms_blog]" value="1" id="module_dmenu_editor-cms_blog" class="form-check-input"{% if module_settings['general']['cms_blog'] %} checked{% endif %}/>
+            </div>
+        </div>
+    </div>
+</div>

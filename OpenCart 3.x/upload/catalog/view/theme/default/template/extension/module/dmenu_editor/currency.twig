@@ -1,0 +1,40 @@
+{% if currencies|length > 1 %}
+    <a class="dmenu_editor-dropdown_toggle" role="button">
+        {# <span>{{ text_currency }}</span> #}
+
+        {% for currency in currencies %}
+            {% if currency.symbol_left and currency.code == code %}
+                <span>{{ currency.title }}</span>
+                (<strong>{{ currency.symbol_left }}</strong>)
+            {% elseif currency.symbol_right and currency.code == code %}
+                <span>{{ currency.title }}</span>
+                (<strong>{{ currency.symbol_right }}</strong>)
+            {% endif %}
+        {% endfor %}
+    </a>
+
+    <div class="dmenu_editor-dropdown_inner">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="dmenu-form-currency" class="dmenu_editor-menu">
+            <ul class="dmenu_editor-menu_list">
+                <li class="dmenu_editor-back">
+                    <a class="button_back" role="button">{{ translated_text['text_back'] }}</a>
+                </li>
+
+                {% for currency in currencies %}
+                    {% if currency.symbol_left %}
+                        <li class="dmenu_editor-item {% if currency.code == code %}current{% endif %}">
+                            <a class="currency-select" role="button" name="{{ currency.code }}">{{ currency.title }} ({{ currency.symbol_left }})</a>
+                        </li>
+                    {% else %}
+                        <li class="dmenu_editor-item {% if currency.code == code %}current{% endif %}">
+                            <a class="currency-select" role="button" name="{{ currency.code }}">{{ currency.title }} ({{ currency.symbol_right }})</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+
+            <input type="hidden" name="code" value="" />
+            <input type="hidden" name="redirect" value="{{ redirect }}" />
+        </form>
+    </div>
+{% endif %} 

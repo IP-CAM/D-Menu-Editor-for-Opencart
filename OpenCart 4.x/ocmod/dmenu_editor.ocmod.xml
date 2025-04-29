@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+    <name>D.Menu Editor</name>
+    <code>DMenuEditor</code>
+    <version>1.2.1</version>
+    <author>D.art</author>
+
+    <file path="catalog/controller/common/header.php">
+        <operation>
+            <search><![CDATA[Opencart\Catalog\Controller\Common]]></search>
+            <add position="replace"><![CDATA[Opencart\Catalog\Controller\Extension\Ocmod\Common]]></add>
+        </operation>
+
+        <operation>
+            <search><![CDATA[public function index]]></search>
+            <add position="after"><![CDATA[
+        /* Start --- Module D.Menu Editor --- Start */
+
+        // D.Menu Editor. Settings.
+        if ($this->config->get('module_dmenu_editor_settings')) {
+            $module_dmenu_editor_settings = $this->config->get('module_dmenu_editor_settings');
+        } else {
+            $module_dmenu_editor_settings = array();
+        }
+
+        /*   End --- Module D.Menu Editor --- End   */
+            ]]></add>
+        </operation>
+
+        <operation>
+            <search><![CDATA[$data['language'] = $this->load->controller('common/language');]]></search>
+            <add position="replace"><![CDATA[
+        /* Start --- Module D.Menu Editor --- Start */
+
+        // D.Menu Editor. Top Menu. Language.
+        if ($this->config->get('module_dmenu_editor_status') && $module_dmenu_editor_settings['menu']['top']['status']) {
+            $data['language'] = '';
+        } else {
+            $data['language'] = $this->load->controller('common/language');
+        }
+
+        /*   End --- Module D.Menu Editor --- End   */
+            ]]></add>
+        </operation>
+
+        <operation>
+            <search><![CDATA[$data['currency'] = $this->load->controller('common/currency');]]></search>
+            <add position="replace"><![CDATA[
+        /* Start --- Module D.Menu Editor --- Start */
+
+        // D.Menu Editor. Top Menu. Currency.
+        if ($this->config->get('module_dmenu_editor_status') && $module_dmenu_editor_settings['menu']['top']['status']) {
+            $data['currency'] = '';
+        } else {
+            $data['currency'] = $this->load->controller('common/currency');
+        }
+
+        /*   End --- Module D.Menu Editor --- End   */
+            ]]></add>
+        </operation>
+
+        <operation>
+            <search><![CDATA[$data['menu'] = $this->load->controller('common/menu');]]></search>
+            <add position="replace"><![CDATA[
+        /* Start --- Module D.Menu Editor --- Start */
+
+        // D.Menu Editor. Main Menu.
+        if ($this->config->get('module_dmenu_editor_status') && $module_dmenu_editor_settings['menu']['main']['status']) {
+            // Filter data.
+            $dmenu_filter_data = array(
+                'menu_type' => 'main'
+            );
+
+            // Main Menu HTML.
+            $data['menu'] = $this->load->controller('extension/dmenu_editor/module/dmenu_editor', $dmenu_filter_data);
+        } else {
+            $data['menu'] = $this->load->controller('common/menu');
+        }
+
+        /*   End --- Module D.Menu Editor --- End   */
+            ]]></add>
+        </operation>
+    </file>
+</modification>

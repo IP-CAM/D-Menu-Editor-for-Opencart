@@ -1,0 +1,328 @@
+<div class="module-menu_items" data-menu="{{ menu_type }}">
+    <div class="module_stores">
+        <div>
+            <ul class="nav nav-tabs">
+                {% for store in stores %}
+                    {% if error_items[menu_type]['store_' ~ store.store_id]['empty_fields'] %}
+                        {% set class_warning = 'alert_warning' %}
+                    {% else %}
+                        {% set class_warning = '' %}
+                    {% endif %}
+
+                    <li class="nav-item store-nav_item">
+                        <a href="#tab-menu_{{ menu_type }}_store_{{ store['store_id'] }}" data-bs-toggle="tab" class="nav-link {{ class_warning }} {% if loop.index0 == 0 %}active{% endif %}">{{ store['name'] }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="module_menu">
+        <div class="tab-content">
+            {% for store in stores %}
+                <div class="tab-pane store-tab_pane {% if loop.index0 == 0 %}active{% endif %}" id="tab-menu_{{ menu_type }}_store_{{ store['store_id'] }}" data-store="{{ store['store_id'] }}">
+                    <div id="module_menu_{{ menu_type }}_store_{{ store['store_id'] }}_sortable_wrap" class="module-menu_items_wrap nested-sortable">
+                        {% if menus[menu_type]['store_' ~ store.store_id] %}
+                            {{ _self.recursiveItems(menus[menu_type]['store_' ~ store.store_id], menu_type, module_layouts, languages, config_language_id, store['store_id'], 
+                                translated_text, item_placeholder) }}
+
+                            {% macro recursiveItems(menu_items, menu_type, module_layouts, languages, config_language_id, store_id, 
+                                translated_text, item_placeholder, item_id = '', item_name = '') %}
+
+                                {% for key_item, menu_item in menu_items %}
+                                    {% if item_id is empty %}
+                                        {% set item_id_prev = '' %}
+                                        {% set item_name_prev = '' %}
+
+                                        {% set item_id = key_item %}
+                                        {% set item_name = '[' ~ key_item ~ ']' %}
+                                    {% else %}
+                                        {% set item_id_prev = item_id %}
+                                        {% set item_name_prev = item_name %}
+
+                                        {% set item_id = item_id ~ '_' ~ key_item %}
+                                        {% set item_name = item_name ~ '[rows][' ~ key_item ~ ']' %}
+                                    {% endif %}
+
+                                    {% if menu_item['data']['layout'] != 'catalog' %}
+                                        <div id="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}" class="form-group module-menu_item_wrap" data-title="{% if menu_item['data']['names'][config_language_id] is defined and menu_item['data']['names'][config_language_id]|length %}{{ menu_item['data']['names'][config_language_id] }}{% else %}{{ translated_text['note_title_empty'] }}{% endif %}" data-row="{{ key_item }}">
+                                            <div class="module-dmenu_editor-item">
+                                                <div class="text-left module-dmenu_editor-item_title {% if menu_item['error'] is defined %}{{ 'alert_warning' }}{% endif %}">
+                                                    {% if menu_item['data']['layout'] in module_layouts|keys %}
+                                                        <span class="text">{% if menu_item['data']['names'][config_language_id] is defined and menu_item['data']['names'][config_language_id]|length %}{{ menu_item['data']['names'][config_language_id] }}{% else %}{{ translated_text['note_title_empty'] }}{% endif %}</span>
+                                                    {% else %}
+                                                        <span class="text">{{ translated_text['text_item_desc_none'] }}</span>
+                                                    {% endif %}
+
+                                                    <span class="buttons">
+                                                        {% if menu_item['data']['layout'] in module_layouts|keys %}
+                                                            <span class="notice">{{ module_layouts[menu_item.data.layout] }}</span>
+                                                        {% else %}
+                                                            <span class="notice">{{ translated_text['text_item_desc_none'] }}</span>
+                                                        {% endif %}
+
+                                                        {% if menu_item['data']['url']['link'] and menu_item['data']['layout'] != 'custom' %}
+                                                            <a href="/{{ menu_item['data']['url']['link'] }}" class="a_item_href" target="_blank">
+                                                                <i class="fas fa-eye fa_item_href" data-bs-toggle="tooltip" title="{{ translated_text['button_look_tip'] }}"></i>
+                                                            </a>
+                                                        {% else %}
+                                                            <a class="a_item_href"></a>
+                                                        {% endif %}
+
+                                                        <i class="fas fa-trash-alt fa_row_remove" data-bs-toggle="tooltip" title="{{ translated_text['button_remove_item_tip'] }}"></i>
+                                                        <i class="fas fa-angle-down fa_arrow_open" data-bs-toggle="tooltip" title="{{ translated_text['button_edit_item_tip'] }}"></i>
+                                                    </span>
+                                                </div>
+
+                                                <div class="module-dmenu_editor-item_content" style="display: none;">
+                                                    <div class="card-body">
+                                                        <div class="field row required">
+                                                            <label class="col-sm-2 control-label col-form-label" for="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-names_{{ config_language_id }}">{{ translated_text['entry_name'] }}</label>
+
+                                                            <div class="col-sm-10 module-dmenu_editor-item_title_languages">
+                                                                {% for language in languages %}
+                                                                    <div class="input-group pull-left">
+                                                                        <span class="input-group-text">
+                                                                            <img src="language/{{ language['code'] }}/{{ language['code'] }}.png" title="{{ language['name'] }}" />
+                                                                        </span>
+
+                                                                        <input type="text" name="module_dmenu_editor_items_{{ menu_type }}_{{ store_id }}{{ item_name }}[data][names][{{ language['language_id'] }}]" id="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-names_{{ language['language_id'] }}" class="form-control name_{{ language['language_id'] }}" value="{% if (menu_item['data']['names'][language.language_id] is defined) %}{{ menu_item['data']['names'][language.language_id] }}{% endif %}" required>
+                                                                    </div>
+
+                                                                    {% if menu_item['error']['names'][language.language_id] is defined %}
+                                                                        <div class="text-danger">{{ menu_item['error']['names'][language.language_id] }}</div>
+                                                                    {% endif %}
+                                                                {% endfor %}
+
+                                                                <div class="input-group pull-left">
+                                                                    <div class="form-check checkbox">
+                                                                        <input type="checkbox" name="module_dmenu_editor_items_{{ menu_type }}_{{ store_id }}{{ item_name }}[data][names_hide]" id="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-names_hide" class="form-check-input names_hide" value="1"{% if menu_item['data']['names_hide'] %} checked="checked"{% endif %}>
+                                                                        <label for="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-names_hide">{{ translated_text['entry_name_hide'] }}</label>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {% if menu_item['data']['layout'] == 'custom' %}
+                                                            <div class="field row required">
+                                                                <label class="col-sm-2 control-label col-form-label" for="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-url-seo_{{ config_language_id }}">{{ translated_text['entry_url'] }}</label>
+
+                                                                <div class="col-sm-10 module-dmenu_editor-item_title_languages item_url">
+                                                                    {% for language in languages %}
+                                                                        <div class="input-group pull-left">
+                                                                            <span class="input-group-text">
+                                                                                <img src="language/{{ language['code'] }}/{{ language['code'] }}.png" title="{{ language['name'] }}" />
+                                                                            </span>
+
+                                                                            <input type="text" name="module_dmenu_editor_items_{{ menu_type }}_{{ store_id }}{{ item_name }}[data][url][seo][{{ language['language_id'] }}]" id="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-url-seo_{{ language['language_id'] }}" class="form-control url_seo_{{ language['language_id'] }}" value="{% if menu_item['data']['url']['seo'][language.language_id] is defined %}{{ menu_item['data']['url']['seo'][language.language_id] }}{% endif %}" {% if menu_item['error']['seo'][language.language_id] is not defined %}{{ 'readonly' }}{% endif %}>
+
+                                                                            {% if menu_item['error']['seo'][language.language_id] is not defined %}
+                                                                                <i class="fas fa-lock" data-bs-toggle="tooltip" data-lock="{{ translated_text['button_lock_tip'] }}" data-unlock="{{ translated_text['button_unlock_tip'] }}" title="{{ translated_text['button_unlock_tip'] }}"></i>
+                                                                            {% endif %}
+                                                                        </div>
+
+                                                                        {% if menu_item['error']['seo'][language.language_id] is defined %}
+                                                                            <div class="text-danger">{{ menu_item['error']['seo'][language.language_id] }}</div>
+                                                                        {% endif %}
+                                                                    {% endfor %}
+                                                                </div>
+                                                            </div>
+                                                        {% endif %}
+
+                                                        <div class="field row">
+                                                            <label class="col-sm-2 control-label col-form-label" for="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-target">{{ translated_text['entry_target'] }}</label>
+
+                                                            <div class="col-sm-10 module-dmenu_editor-item_field">
+                                                                <select name="module_dmenu_editor_items_{{ menu_type }}_{{ store_id }}{{ item_name }}[data][target]" id="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-target" class="form-select">
+                                                                    <option value="" {% if menu_item['data']['target'] == '' %}{{ ' selected' }}{% endif %}>{{ translated_text['text_select_none'] }}</option>
+                                                                    <option value="_self" {% if menu_item['data']['target'] == '_self' %}{{ ' selected' }}{% endif %}>{{ translated_text['text_target_self'] }}</option>
+                                                                    <option value="_blank" {% if menu_item['data']['target'] == '_blank' %}{{ ' selected' }}{% endif %}>{{ translated_text['text_target_blank'] }}</option>
+                                                                    <option value="_parent" {% if menu_item['data']['target'] == '_parent' %}{{ ' selected' }}{% endif %}>{{ translated_text['text_target_parent'] }}</option>
+                                                                    <option value="_top" {% if menu_item['data']['target'] == '_top' %}{{ ' selected' }}{% endif %}>{{ translated_text['text_target_top'] }}</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="field row">
+                                                            <label class="col-sm-2 control-label col-form-label" for="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-xfn">{{ translated_text['entry_xfn'] }}</label>
+
+                                                            <div class="col-sm-10 module-dmenu_editor-item_field">
+                                                                <input name="module_dmenu_editor_items_{{ menu_type }}_{{ store_id }}{{ item_name }}[data][xfn]" id="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-xfn" class="form-control" value="{{ menu_item['data']['xfn'] }}">
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="field row">
+                                                            <label class="col-sm-2 control-label col-form-label" for="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-class">{{ translated_text['entry_class'] }}</label>
+
+                                                            <div class="col-sm-10 module-dmenu_editor-item_field">
+                                                                <input name="module_dmenu_editor_items_{{ menu_type }}_{{ store_id }}{{ item_name }}[data][class]" id="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-class" class="form-control" value="{{ menu_item['data']['class'] }}">
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="field row">
+                                                            <label class="col-sm-2 control-label col-form-label">{{ translated_text['entry_icon'] }}</label>
+
+                                                            <div class="col-sm-10 module-dmenu_editor-item_field">
+                                                                <div class="card image module_dmenu_editor-placeholder">
+                                                                    <img src="{% if menu_item['data']['icon']['thumb'] is defined %}{{ menu_item['data']['icon']['thumb'] }}{% else %}{{ item_placeholder }}{% endif %}" alt="{{ translated_text['entry_icon'] }}" title="{{ translated_text['entry_icon'] }}" data-oc-placeholder="{{ item_placeholder }}" id="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-icon-thumb" class="card-img-top">
+                                                                    <input type="hidden" name="module_dmenu_editor_items_{{ menu_type }}_{{ store_id }}{{ item_name }}[data][icon][image]" value="{% if menu_item['data']['icon']['image'] is defined %}{{ menu_item['data']['icon']['image'] }}{% endif %}" id="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-icon-image" class="hidden">
+
+                                                                    <div class="card-body">
+                                                                        <button type="button" data-oc-toggle="image" data-oc-target="#{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-icon-image" data-oc-thumb="#{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-icon-thumb" class="btn btn-primary btn-sm btn-block"><i class="fas fa-pencil-alt"></i> {{ translated_text['button_edit'] }}</button>
+                                                                        <button type="button" data-oc-toggle="clear" data-oc-target="#{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-icon-image" data-oc-thumb="#{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-icon-thumb" class="btn btn-warning btn-sm btn-block"><i class="fas fa-trash-alt"></i> {{ translated_text['button_clear'] }}</button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="field row">
+                                                            <label class="col-sm-2 control-label col-form-label" for="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-status">{{ translated_text['entry_status'] }}</label>
+
+                                                            <div class="col-sm-10 module-dmenu_editor-item_field">
+                                                                <div class="input-group">
+                                                                    <div class="form-check form-switch form-switch-lg">
+                                                                        <input type="hidden" name="module_dmenu_editor_items_{{ menu_type }}_{{ store_id }}{{ item_name }}[data][status]" value="0" class="hidden">
+                                                                        <input type="checkbox" name="module_dmenu_editor_items_{{ menu_type }}_{{ store_id }}{{ item_name }}[data][status]" value="1" id="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-status" class="form-check-input field-status"{% if menu_item['data']['status'] %} checked{% endif %}>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div>
+                                                            <input type="hidden" name="module_dmenu_editor_items_{{ menu_type }}_{{ store_id }}{{ item_name }}[data][url][link]" class="hidden" value="{{ menu_item['data']['url']['link'] }}">
+                                                            <input type="hidden" name="module_dmenu_editor_items_{{ menu_type }}_{{ store_id }}{{ item_name }}[data][id]" class="hidden" value="{{ menu_item['data']['id'] }}">
+                                                            <input type="hidden" name="module_dmenu_editor_items_{{ menu_type }}_{{ store_id }}{{ item_name }}[data][layout]" class="hidden" value="{{ menu_item['data']['layout'] }}">
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <span class="status {% if menu_item['data']['status'] %}enabled{% else %}disabled{% endif %}"></span>
+                                            </div>
+
+                                            <div class="module-dmenu_editor-item_content_sortable">
+                                                <div id="module_menu_{{ menu_type }}_store_{{ store_id }}_nested_sortable-{{ item_id }}" class="module-menu_items_wrap_content nested-sortable">
+                                                    {% if menu_item['rows'] is defined and menu_item['rows']|length > 0 %}
+                                                        {% import _self as macros %}
+
+                                                        {{ macros.recursiveItems(menu_item['rows'], menu_type, module_layouts, languages, config_language_id, store_id, 
+                                                            translated_text, item_placeholder, item_id, item_name) }}
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <div id="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}" class="form-group module-menu_item_wrap catalog_item" data-row="{{ key_item }}">
+                                            <div class="module-dmenu_editor-item">
+                                                <div class="text-left module-dmenu_editor-item_title {% if menu_item['error'] is defined %}{{ 'alert_warning' }}{% endif %}">
+                                                    <span class="text">{{ translated_text['text_result_categories'] }}</span>
+                                                    <span class="buttons">
+                                                        <span class="notice">{{ translated_text['text_item_desc_catalog'] }}</span>
+                                                        <a class="a_item_href"></a>
+                                                        <i class="fas fa-trash-alt fa_row_remove" data-bs-toggle="tooltip" title="{{ translated_text['button_remove_item_tip'] }}"></i>
+                                                        <i class="fas fa-angle-down fa_arrow_open" data-bs-toggle="tooltip" title="{{ translated_text['button_edit_item_tip'] }}"></i>
+                                                    </span>
+                                                </div>
+
+                                                <div class="module-dmenu_editor-item_content" style="display: none;">
+                                                    <div class="card-body">
+                                                        <div class="row setting-category_menu">
+                                                            <label class="col-sm-2 control-label col-form-label" for="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-category_menu">{{ translated_text['entry_category_menu'] }}</label>
+
+                                                            <div class="col-sm-10 module-dmenu_editor-item_field">
+                                                                <select name="module_dmenu_editor_items_{{ menu_type }}_{{ store_id }}{{ item_name }}[data][category_menu]" id="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-category_menu" class="form-select">
+                                                                    {% if menu_item['data']['category_menu'] %}
+                                                                        <option value="1" selected="selected">{{ translated_text['text_yes'] }}</option>
+                                                                        <option value="0">{{ translated_text['text_no'] }}</option>
+                                                                    {% else %}
+                                                                        <option value="1">{{ translated_text['text_yes'] }}</option>
+                                                                        <option value="0" selected="selected">{{ translated_text['text_no'] }}</option>
+                                                                    {% endif %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="setting-category_menu_hidden_block {% if not menu_item['data']['category_menu'] %}{{ 'hidden' }}{% endif %}">
+                                                            <div class="row setting-category_menu_title required">
+                                                                <label class="col-sm-2 control-label col-form-label" for="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-name_{{ config_language_id }}">{{ translated_text['entry_category_menu_title'] }}</label>
+
+                                                                <div class="col-sm-10 module-dmenu_editor-item_field">
+                                                                    {% for language in languages %}
+                                                                        <div class="input-group pull-left" {% if not loop.last %}style="margin-bottom: 5px;"{% endif %}>
+                                                                            <span class="input-group-text">
+                                                                                <img src="language/{{ language['code'] }}/{{ language['code'] }}.png" title="{{ language['name'] }}" />
+                                                                            </span>
+
+                                                                            <input type="text" id="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-name_{{ language['language_id'] }}" name="module_dmenu_editor_items_{{ menu_type }}_{{ store_id }}{{ item_name }}[data][category_menu_names][{{ language['language_id'] }}]" class="form-control name_{{ language['language_id'] }}" value="{% if (menu_item['data']['category_menu_names'][language.language_id] is defined) %}{{ menu_item['data']['category_menu_names'][language.language_id] }}{% else %}{{ opencart_pages['catalog']['names'][language.language_id] }}{% endif %}">
+                                                                        </div>
+
+                                                                        {% if menu_item['error']['category_menu_names'][language.language_id] is defined %}
+                                                                            <div class="text-danger">{{ menu_item['error']['category_menu_names'][language.language_id] }}</div>
+                                                                        {% endif %}
+                                                                    {% endfor %}
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="row setting-category_menu_icon">
+                                                                <label class="col-sm-2 control-label col-form-label">{{ translated_text['entry_icon'] }}</label>
+
+                                                                <div class="col-sm-10 module-dmenu_editor-item_field">
+                                                                    <div class="card image module_dmenu_editor-placeholder">
+                                                                        <img src="{% if menu_item['data']['icon']['thumb'] is defined %}{{ menu_item['data']['icon']['thumb'] }}{% else %}{{ item_placeholder }}{% endif %}" alt="{{ translated_text['entry_icon'] }}" title="{{ translated_text['entry_icon'] }}" data-oc-placeholder="{{ item_placeholder }}" id="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-icon-thumb" class="card-img-top">
+                                                                        <input type="hidden" name="module_dmenu_editor_items_{{ menu_type }}_{{ store_id }}{{ item_name }}[data][icon][image]" value="{% if menu_item['data']['icon']['image'] is defined %}{{ menu_item['data']['icon']['image'] }}{% endif %}" id="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-icon-image" class="hidden">
+
+                                                                        <div class="card-body">
+                                                                            <button type="button" data-oc-toggle="image" data-oc-target="#{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-icon-image" data-oc-thumb="#{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-icon-thumb" class="btn btn-primary btn-sm btn-block"><i class="fas fa-pencil-alt"></i> {{ translated_text['button_edit'] }}</button>
+                                                                            <button type="button" data-oc-toggle="clear" data-oc-target="#{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-icon-image" data-oc-thumb="#{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-icon-thumb" class="btn btn-warning btn-sm btn-block"><i class="fas fa-trash-alt"></i> {{ translated_text['button_clear'] }}</button>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row">
+                                                            <label class="col-sm-2 control-label col-form-label" for="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-status">{{ translated_text['entry_status'] }}</label>
+
+                                                            <div class="col-sm-10 module-dmenu_editor-item_field">
+                                                                <div class="input-group">
+                                                                    <div class="form-check form-switch form-switch-lg">
+                                                                        <input type="hidden" name="module_dmenu_editor_items_{{ menu_type }}_{{ store_id }}{{ item_name }}[data][status]" value="0" class="hidden">
+                                                                        <input type="checkbox" name="module_dmenu_editor_items_{{ menu_type }}_{{ store_id }}{{ item_name }}[data][status]" value="1" id="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-status" class="form-check-input field-status"{% if menu_item['data']['status'] %} checked{% endif %}>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <span class="status {% if menu_item['data']['status'] %}enabled{% else %}disabled{% endif %}"></span>
+                                            </div>
+
+                                            <div>
+                                                <input type="hidden" name="module_dmenu_editor_items_{{ menu_type }}_{{ store_id }}{{ item_name }}[data][url][link]" class="hidden" value="{{ menu_item['data']['url']['link'] }}">
+                                                <input type="hidden" name="module_dmenu_editor_items_{{ menu_type }}_{{ store_id }}{{ item_name }}[data][id]" class="hidden" value="{{ menu_item['data']['id'] }}">
+                                                <input type="hidden" name="module_dmenu_editor_items_{{ menu_type }}_{{ store_id }}{{ item_name }}[data][layout]" class="hidden" value="{{ menu_item['data']['layout'] }}">
+                                            </div>
+                                        </div>
+                                    {% endif %}
+
+                                    {% set item_id = item_id_prev %}
+                                    {% set item_name = item_name_prev %}
+                                {% endfor %}
+                            {% endmacro %}
+                        {% else %}
+                            <div class="not_repair sortable_filtered">
+                                <div class="module-menu_items_missing_text">{{ text_menu_item_missing }}</div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="module-toolbar">
+                        <span class="item_toolbar item_toolbar-store_default">
+                            <input type="checkbox" name="module_dmenu_editor_settings[general][store_default][{{ menu_type }}]" data-bs-toggle="tooltip" title="{{ button_toolbar_store_default }}" value="{{ store['store_id'] }}" class="form-check-input field-store_default"{% if module_settings['general']['store_default'][menu_type] is defined and module_settings['general']['store_default'][menu_type] == store.store_id %} checked{% endif %} />
+                        </span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
