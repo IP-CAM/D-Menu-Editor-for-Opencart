@@ -6,7 +6,7 @@
     <h2>Overview</h2>
     <p>
         <a href="https://php.net/" rel="nofollow"><img src="https://img.shields.io/badge/php->=7.3-8892bf?style=flat-square" alt="Minimum PHP Version"></a>
-        <a href="https://php.net/" rel="nofollow"><img src="https://img.shields.io/badge/release-v1.2.0-0d7fc0" alt="GitHub release"></a>
+        <a href="https://php.net/" rel="nofollow"><img src="https://img.shields.io/badge/release-v1.2.1-0d7fc0" alt="GitHub release"></a>
         <a href="https://php.net/" rel="nofollow"><img src="https://img.shields.io/badge/cms-opencart-2bbdec" alt="CMS OpenCart"></a>
         <a href="https://php.net/" rel="nofollow"><img src="https://img.shields.io/badge/opencart-3.x, 4.x-2bbdec" alt="CMS OpenCart 3.x, 4.x"></a>
     </p>
@@ -35,7 +35,7 @@
             <li>the ability to display 4 (four) menus: Main, Top, Footer, Social;</li>
             <li>the ability to specify an icon for each menu item;</li>
             <li>the ability to specify additional attributes for each menu item (except for the Catalog): target, rel, class;</li>
-            <li>search for information, product categories, products, manufacturers, blog categories (ocStore 3.x), blog articles (ocStore 3.x).</li>
+            <li>search for information, product categories, products, manufacturers, blog categories (OpenCart 4.1+, ocStore 3.x), blog articles (OpenCart 4.1+, ocStore 3.x).</li>
         </ul>
     </p>
     <h3>Groups of menu items to add:</h3>
@@ -46,15 +46,15 @@
             <li>Categories of products: Catalog (all categories), Categories.</li>
             <li>Products.</li>
             <li>Manufacturers.</li>
-            <li>Blog articles (ocStore 3.x).</li>
-            <li>Blog categories (ocStore 3.x).</li>
+            <li>Blog articles (OpenCart 4.1+, ocStore 3.x).</li>
+            <li>Blog categories (OpenCart 4.1+, ocStore 3.x).</li>
         </ol>
     </p>
     <h3>Compatibility:</h3>
     <p>
         <ul>
-            <li>OpenCart 4.x</li>
             <li>OpenCart 3.x</li>
+            <li>OpenCart 4.x</li>
             <li>ocStore 3.x</li>
         </ul>
     </p>
