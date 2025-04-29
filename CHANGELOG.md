@@ -3,6 +3,12 @@
 <head></head>
 <body>
     <h1>D.Menu Editor change log</h1>
+    <h2>[v1.2.1] (Release date: 19.04.2025)</h2>
+    <p>
+        <ul>
+            <li>Bugs fixed for OpenCart 4.1.0.3.</li>
+        </ul>
+    </p>
     <h2>[v1.2.0] (Release date: 18.04.2025)</h2>
     <p>
         <ul>
