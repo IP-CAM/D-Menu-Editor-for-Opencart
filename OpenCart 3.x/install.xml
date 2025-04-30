@@ -11,12 +11,12 @@
             <add position="after"><![CDATA[
         /* Start --- Module D.Menu Editor --- Start */
 
-        // D.Menu Editor. Settings.
-        if ($this->config->get('module_dmenu_editor_settings')) {
-            $module_dmenu_editor_settings = $this->config->get('module_dmenu_editor_settings');
-        } else {
-            $module_dmenu_editor_settings = array();
-        }
+		// D.Menu Editor. Settings.
+		if ($this->config->get('module_dmenu_editor_settings')) {
+			$module_dmenu_editor_settings = $this->config->get('module_dmenu_editor_settings');
+		} else {
+			$module_dmenu_editor_settings = array();
+		}
 
         /*   End --- Module D.Menu Editor --- End   */
             ]]></add>
