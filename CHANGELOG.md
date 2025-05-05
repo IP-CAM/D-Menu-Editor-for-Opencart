@@ -3,6 +3,13 @@
 <head></head>
 <body>
     <h1>D.Menu Editor change log</h1>
+    <h2>[v1.2.2] (Release date: 04.05.2025)</h2>
+    <p>
+        <ul>
+            <li>Improving the code;</li>
+            <li>Bugs fixed.</li>
+        </ul>
+    </p>
     <h2>[v1.2.1] (Release date: 19.04.2025)</h2>
     <p>
         <ul>
