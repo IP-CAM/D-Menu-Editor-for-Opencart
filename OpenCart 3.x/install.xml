@@ -2,8 +2,9 @@
 <modification>
     <name>D.Menu Editor</name>
     <code>DMenuEditor</code>
-    <version>1.2.0</version>
+    <version>1.2.2</version>
     <author>D.art</author>
+    <link>https://github.com/dart-maker/dmenu_editor-opencart</link>
 
     <file path="catalog/controller/common/header.php">
         <operation>
@@ -11,12 +12,12 @@
             <add position="after"><![CDATA[
         /* Start --- Module D.Menu Editor --- Start */
 
-		// D.Menu Editor. Settings.
-		if ($this->config->get('module_dmenu_editor_settings')) {
-			$module_dmenu_editor_settings = $this->config->get('module_dmenu_editor_settings');
-		} else {
-			$module_dmenu_editor_settings = array();
-		}
+        // D.Menu Editor. Settings.
+        if ($this->config->get('module_dmenu_editor_settings')) {
+            $module_dmenu_editor_settings = $this->config->get('module_dmenu_editor_settings');
+        } else {
+            $module_dmenu_editor_settings = array();
+        }
 
         /*   End --- Module D.Menu Editor --- End   */
             ]]></add>
