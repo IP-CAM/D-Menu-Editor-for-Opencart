@@ -95,7 +95,13 @@
                                     {% if menu_item['rows'] %}
                                         {% for row in menu_item['rows'] %}
                                             {% if row['data']['status'] %}
-                                                {% set status_rows = true %}
+                                                {% if row['data']['layout'] == 'catalog' %}
+                                                    {% if catalog|length > 0 %}
+                                                        {% set status_rows = true %}
+                                                    {% endif %}
+                                                {% else %}
+                                                    {% set status_rows = true %}
+                                                {% endif %}
                                             {% endif %}
                                         {% endfor %}
                                     {% endif %}

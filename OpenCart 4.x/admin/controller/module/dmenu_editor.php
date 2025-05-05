@@ -41,6 +41,8 @@ class DMenuEditor extends \Opencart\System\Engine\Controller {
     );
 
     public function index(): void {
+        $x = version_compare(VERSION, '4.0.2.0', '>=') ? '.' : '|';
+
         $this->load->language('extension/dmenu_editor/module/dmenu_editor');
 
         $this->document->setTitle($this->language->get('heading_title'));
@@ -81,8 +83,6 @@ class DMenuEditor extends \Opencart\System\Engine\Controller {
             }
         }
 
-        $data['_x_'] = version_compare(VERSION, '4.0.2.0', '>=') ? '.' : '|';
-
         $this->document->addStyle(HTTP_CATALOG . '/extension/dmenu_editor/admin/view/javascript/module-dmenu_editor/dmenu_editor.css');
         $this->document->addScript(HTTP_CATALOG . '/extension/dmenu_editor/admin/view/javascript/module-dmenu_editor/sortable/sortable.min.js');
         $this->document->addScript(HTTP_CATALOG . '/extension/dmenu_editor/admin/view/javascript/module-dmenu_editor/dmenu_editor.js');
@@ -116,46 +116,12 @@ class DMenuEditor extends \Opencart\System\Engine\Controller {
         $data['action'] = $this->url->link('extension/dmenu_editor/module/dmenu_editor', 'user_token=' . $this->session->data['user_token']);
 		$data['back'] = $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=module');
 
-        // User Token.
-        $data['user_token'] = $this->session->data['user_token'];
+        // Set extended data.
+        $this->setExtendedData($data);
 
-        // Current language ID.
-        $data['config_language_id'] = (int)$this->config->get('config_language_id');
-
-        // Translated Text.
-        $data['translated_text'] = array(
-            'text_item_desc_none'       => $this->language->get('text_item_desc_none'),
-            'text_item_desc_catalog'    => $this->language->get('text_item_desc_catalog'),
-            'text_result_categories'    => $this->language->get('text_result_categories'),
-            'text_select_none'          => $this->language->get('text_select_none'),
-            'text_target_self'          => $this->language->get('text_target_self'),
-            'text_target_blank'         => $this->language->get('text_target_blank'),
-            'text_target_parent'        => $this->language->get('text_target_parent'),
-            'text_target_top'           => $this->language->get('text_target_top'),
-            'text_yes'                  => $this->language->get('text_yes'),
-            'text_no'                   => $this->language->get('text_no'),
-
-            'entry_status'              => $this->language->get('entry_status'),
-            'entry_name'                => $this->language->get('entry_name'),
-            'entry_name_hide'           => $this->language->get('entry_name_hide'),
-            'entry_url'                 => $this->language->get('entry_url'),
-            'entry_target'              => $this->language->get('entry_target'),
-            'entry_xfn'                 => $this->language->get('entry_xfn'),
-            'entry_class'               => $this->language->get('entry_class'),
-            'entry_icon'                => $this->language->get('entry_icon'),
-            'entry_category_menu'       => $this->language->get('entry_category_menu'),
-            'entry_category_menu_title' => $this->language->get('entry_category_menu_title'),
-
-            'button_look_tip'           => $this->language->get('button_look_tip'),
-            'button_remove_item_tip'    => $this->language->get('button_remove_item_tip'),
-            'button_edit_item_tip'      => $this->language->get('button_edit_item_tip'),
-            'button_lock_tip'           => $this->language->get('button_lock_tip'),
-            'button_unlock_tip'         => $this->language->get('button_unlock_tip'),
-            'button_edit'               => $this->language->get('button_edit'),
-            'button_clear'              => $this->language->get('button_clear'),
-
-            'note_title_empty'          => $this->language->get('note_title_empty')
-        );
+        // AJAX-actions.
+        $data['action_ajax_item'] = $this->url->link('extension/dmenu_editor/module/dmenu_editor' . $x . 'item', 'user_token=' . $this->session->data['user_token']);
+        $data['action_ajax_search'] = $this->url->link('extension/dmenu_editor/module/dmenu_editor' . $x . 'search', 'user_token=' . $this->session->data['user_token']);
 
         // Setting 'Status'.
         if (isset($this->request->post['module_dmenu_editor_status'])) {
@@ -248,44 +214,9 @@ class DMenuEditor extends \Opencart\System\Engine\Controller {
             }
         }
 
-        // Menu Item placeholder.
-        $data['item_placeholder'] = $this->model_tool_image->resize('no_image.png', 100, 100);
-
-        // Menu Item layouts.
-        $data['module_layouts'] = array(
-            'home'          => $this->language->get('text_item_desc_home'),          // Home
-            'account'       => $this->language->get('text_item_desc_account'),       // Account
-            'login'         => $this->language->get('text_item_desc_login'),         // Account Login
-            'logout'        => $this->language->get('text_item_desc_logout'),        // Account Logout
-            'register'      => $this->language->get('text_item_desc_register'),      // Account Register
-            'contact'       => $this->language->get('text_item_desc_contact'),       // Contact Us
-            'sitemap'       => $this->language->get('text_item_desc_sitemap'),       // Sitemap
-            'compare'       => $this->language->get('text_item_desc_compare'),       // Compare
-            'wishlist'      => $this->language->get('text_item_desc_wishlist'),      // Wishlist
-            'cart'          => $this->language->get('text_item_desc_cart'),          // Cart
-            'checkout'      => $this->language->get('text_item_desc_checkout'),      // Checkout
-            'special'       => $this->language->get('text_item_desc_special'),       // Special
-            'search'        => $this->language->get('text_item_desc_search'),        // Search
-            'information'   => $this->language->get('text_item_desc_information'),   // Information
-            'catalog'       => $this->language->get('text_item_desc_catalog'),       // Catalog
-            'category'      => $this->language->get('text_item_desc_category'),      // Category
-            'product'       => $this->language->get('text_item_desc_product'),       // Product
-            'manufacturers' => $this->language->get('text_item_desc_manufacturers'), // Manufacturers
-            'manufacturer'  => $this->language->get('text_item_desc_manufacturer'),  // Manufacturer
-            'blog_category' => $this->language->get('text_item_desc_blog_category'), // ocStore Blog Category
-            'blog_article'  => $this->language->get('text_item_desc_blog_article'),  // ocStore Blog Article
-            'custom'        => $this->language->get('text_item_desc_custom'),        // Custom
-            'html'          => $this->language->get('text_item_desc_html'),          // HTML
-            'none'          => $this->language->get('text_item_desc_none')           // None
-        );
-
         // Search limit.
         $data['search_limit'] = $this->settings['search_limit'];
         $data['search_limit_text'] = sprintf($this->language->get('help_sticky_search'), $data['search_limit']);
-
-        // All languages.
-        $this->languages = $this->model_localisation_language->getLanguages();
-        $data['languages'] = $this->languages;
 
         // Information.
         $data['information_limit'] = $this->settings['items_limit'];
@@ -471,19 +402,19 @@ class DMenuEditor extends \Opencart\System\Engine\Controller {
 
         // Main Menu HTML.
         $data['menu_type'] = 'main';
-        $data['menu_main'] = $this->load->controller('extension/dmenu_editor/module/dmenu_editor/menu', $data);
+        $this->getItemsMenu($data);
 
         // Top Menu HTML.
         $data['menu_type'] = 'top';
-        $data['menu_top'] = $this->load->controller('extension/dmenu_editor/module/dmenu_editor/menu', $data);
+        $this->getItemsMenu($data);
 
         // Footer Menu HTML.
         $data['menu_type'] = 'footer';
-        $data['menu_footer'] = $this->load->controller('extension/dmenu_editor/module/dmenu_editor/menu', $data);
+        $this->getItemsMenu($data);
 
         // Social Menu HTML.
         $data['menu_type'] = 'social';
-        $data['menu_social'] = $this->load->controller('extension/dmenu_editor/module/dmenu_editor/menu', $data);
+        $this->getItemsMenu($data);
 
         // Settings HTML.
         $data['menu_type'] = '';
@@ -498,6 +429,7 @@ class DMenuEditor extends \Opencart\System\Engine\Controller {
 
     /**
      * Search data in Titles.
+     * AJAX.
      * 
      * @return void
      */
@@ -529,6 +461,88 @@ class DMenuEditor extends \Opencart\System\Engine\Controller {
     }
 
     /**
+     * Get Store Menu Item.
+     * AJAX.
+     *
+     * @return void
+     */
+    public function item(): void {
+        $data = array();
+        $json = array();
+
+        if ($this->request->server['REQUEST_METHOD'] == 'POST') {
+            if (!isset($this->request->post['menu_type'])) {
+                $json['error'] = 'DATA ERROR';
+            }
+
+            if (!$json) {
+                $this->load->language('extension/dmenu_editor/module/dmenu_editor');
+
+                $this->load->model('localisation/language');
+                $this->load->model('tool/image');
+
+                // Menu type.
+                if (isset($this->request->post['menu_type'])) {
+                    $data['menu_type'] = $this->request->post['menu_type'];
+                } else {
+                    $data['menu_type'] = 'none';
+                }
+
+                // Store ID.
+                if (isset($this->request->post['store_id'])) {
+                    $data['store_id'] = $this->request->post['store_id'];
+                } else {
+                    $data['store_id'] = 0;
+                }
+
+                $store_id = $data['store_id'];
+
+                // Row.
+                if (isset($this->request->post['row'])) {
+                    $row = $this->request->post['row'];
+                } else {
+                    $row = 0;
+                }
+
+                // Item ID.
+                if (isset($this->request->post['item_id'])) {
+                    $item_id = $this->request->post['item_id'];
+                } else {
+                    $item_id = '';
+                }
+
+                // Item NAME.
+                if (isset($this->request->post['item_name'])) {
+                    $item_name = $this->request->post['item_name'];
+                } else {
+                    $item_name = '';
+                }
+
+                // Set extended data.
+                $this->setExtendedData($data);
+
+                // Menu Item formatting.
+                $data['menus'][$data['menu_type']]['store_' . $data['store_id']][$row] = array(
+                    'data' => $this->request->post
+                );
+
+                // HTML Menu Item from 'items.twig'.
+                $this->getItemsMenu($data, 'items', $item_id, $item_name);
+
+                // Set Menu Item to JSON array.
+                $json['html'] = $data['items_menu']['store_' . $store_id];
+
+                $json['success'] = true;
+            }
+        } else {
+            $json['error'] = 'REQUEST_METHOD ERROR';
+        }
+
+        $this->response->addHeader('Content-Type: application/json');
+        $this->response->setOutput(json_encode($json));
+    }
+
+    /**
      * Change Menu Items. Recursion.
      * 
      * @param array $items
@@ -550,13 +564,13 @@ class DMenuEditor extends \Opencart\System\Engine\Controller {
                     // Validate Menu Item.
                     if (in_array('validate', $meaning)) {
                         if ($items[$i]['data']['category_menu']) {
-                            foreach ($items[$i]['data']['category_menu_names'] as $key_name => $name) {
+                            foreach ($items[$i]['data']['names'] as $key_name => $name) {
                                 if (empty($name)) {
                                     if (!array_key_exists('error', $items[$i])) {
                                         $items[$i]['error'] = array();
                                     }
 
-                                    $items[$i]['error']['category_menu_names'][$key_name] = $this->language->get('error_empty_field');
+                                    $items[$i]['error']['names'][$key_name] = $this->language->get('error_empty_field');
 
                                     $this->error['error_items'][$menu_type]['store_' . $store_id]['empty_fields'] = $this->language->get('error_empty_fields');
                                 }
@@ -629,6 +643,131 @@ class DMenuEditor extends \Opencart\System\Engine\Controller {
                 }
             }
         }
+    }
+
+    /**
+     * Get Menu Items (HTML).
+     * 
+     * @param array $data
+     * @param string $meaning
+     * @param string $item_id
+     * @param string $item_name
+     * 
+     * @return void
+     */
+    private function getItemsMenu(array &$data, string $meaning = 'container', string $item_id = '', string $item_name = ''): void {
+        $data['item_id'] = $item_id;
+        $data['item_name'] = $item_name;
+        $data['items_menu'] = array();
+
+        foreach ($data['menus'][$data['menu_type']] as $store => $menu) {
+            $data['store_id'] = str_replace('store_', '', $store);
+            $data['items_store'] = $menu;
+
+            // Store Menu Items (HTML).
+            $data['items_menu'][$store] = $this->load->view('extension/dmenu_editor/module/dmenu_editor/menu/items', $data);
+        }
+
+        // Cleaning the array $data.
+        unset($data['store_id']);
+        unset($data['items_store']);
+
+        // Menu HTML.
+        switch ($meaning) {
+            case 'container':
+                $data['menu_' . $data['menu_type']] = $this->load->view('extension/dmenu_editor/module/dmenu_editor/menu/container', $data);
+
+                // Cleaning the array $data.
+                unset($data['items_menu']);
+
+                break;
+            case 'item':
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Set extended data.
+     * 
+     * @param array $data
+     * 
+     * @return void
+     */
+    private function setExtendedData(array &$data): void {
+        // Translated Text.
+        $data['translated_text'] = array(
+            'text_item_desc_none'       => $this->language->get('text_item_desc_none'),
+            'text_item_desc_catalog'    => $this->language->get('text_item_desc_catalog'),
+            'text_result_categories'    => $this->language->get('text_result_categories'),
+            'text_select_none'          => $this->language->get('text_select_none'),
+            'text_target_self'          => $this->language->get('text_target_self'),
+            'text_target_blank'         => $this->language->get('text_target_blank'),
+            'text_target_parent'        => $this->language->get('text_target_parent'),
+            'text_target_top'           => $this->language->get('text_target_top'),
+            'text_yes'                  => $this->language->get('text_yes'),
+            'text_no'                   => $this->language->get('text_no'),
+
+            'entry_status'              => $this->language->get('entry_status'),
+            'entry_name'                => $this->language->get('entry_name'),
+            'entry_name_hide'           => $this->language->get('entry_name_hide'),
+            'entry_url'                 => $this->language->get('entry_url'),
+            'entry_target'              => $this->language->get('entry_target'),
+            'entry_xfn'                 => $this->language->get('entry_xfn'),
+            'entry_class'               => $this->language->get('entry_class'),
+            'entry_icon'                => $this->language->get('entry_icon'),
+            'entry_category_menu'       => $this->language->get('entry_category_menu'),
+            'entry_category_menu_title' => $this->language->get('entry_category_menu_title'),
+
+            'button_look_tip'           => $this->language->get('button_look_tip'),
+            'button_remove_item_tip'    => $this->language->get('button_remove_item_tip'),
+            'button_edit_item_tip'      => $this->language->get('button_edit_item_tip'),
+            'button_lock_tip'           => $this->language->get('button_lock_tip'),
+            'button_unlock_tip'         => $this->language->get('button_unlock_tip'),
+            'button_edit'               => $this->language->get('button_edit'),
+            'button_clear'              => $this->language->get('button_clear'),
+
+            'note_title_empty'          => $this->language->get('note_title_empty')
+        );
+
+        // Menu Item layouts.
+        $data['module_layouts'] = array(
+            'home'          => $this->language->get('text_item_desc_home'),          // Home
+            'account'       => $this->language->get('text_item_desc_account'),       // Account
+            'login'         => $this->language->get('text_item_desc_login'),         // Account Login
+            'logout'        => $this->language->get('text_item_desc_logout'),        // Account Logout
+            'register'      => $this->language->get('text_item_desc_register'),      // Account Register
+            'contact'       => $this->language->get('text_item_desc_contact'),       // Contact Us
+            'sitemap'       => $this->language->get('text_item_desc_sitemap'),       // Sitemap
+            'compare'       => $this->language->get('text_item_desc_compare'),       // Compare
+            'wishlist'      => $this->language->get('text_item_desc_wishlist'),      // Wishlist
+            'cart'          => $this->language->get('text_item_desc_cart'),          // Cart
+            'checkout'      => $this->language->get('text_item_desc_checkout'),      // Checkout
+            'special'       => $this->language->get('text_item_desc_special'),       // Special
+            'search'        => $this->language->get('text_item_desc_search'),        // Search
+            'information'   => $this->language->get('text_item_desc_information'),   // Information
+            'catalog'       => $this->language->get('text_item_desc_catalog'),       // Catalog
+            'category'      => $this->language->get('text_item_desc_category'),      // Category
+            'product'       => $this->language->get('text_item_desc_product'),       // Product
+            'manufacturers' => $this->language->get('text_item_desc_manufacturers'), // Manufacturers
+            'manufacturer'  => $this->language->get('text_item_desc_manufacturer'),  // Manufacturer
+            'blog_category' => $this->language->get('text_item_desc_blog_category'), // ocStore Blog Category
+            'blog_article'  => $this->language->get('text_item_desc_blog_article'),  // ocStore Blog Article
+            'custom'        => $this->language->get('text_item_desc_custom'),        // Custom
+            'html'          => $this->language->get('text_item_desc_html'),          // HTML
+            'none'          => $this->language->get('text_item_desc_none')           // None
+        );
+
+        // Current language ID.
+        $data['config_language_id'] = (int)$this->config->get('config_language_id');
+
+        // All languages.
+        $this->languages = $this->model_localisation_language->getLanguages();
+        $data['languages'] = $this->languages;
+
+        // Menu Item placeholder.
+        $data['item_placeholder'] = $this->model_tool_image->resize('no_image.png', 100, 100);
     }
 
     /**
@@ -743,7 +882,7 @@ class DMenuEditor extends \Opencart\System\Engine\Controller {
     */
     public function install(): void {
         // Registering events.
-        $this->__registerEvents();
+        $this->registerEvents();
     }
 
     /**
@@ -770,7 +909,7 @@ class DMenuEditor extends \Opencart\System\Engine\Controller {
     *
     * @return void
     */
-    protected function __registerEvents(): void {
+    protected function registerEvents(): void {
         $x = version_compare(VERSION, '4.0.2.0', '>=') ? '.' : '|';
 
         // Events array.

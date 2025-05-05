@@ -357,20 +357,22 @@
     white-space: nowrap;
 }
 
-.module-dmenu_editor-item span.status {
+.module-dmenu_editor-item::before {
+    content: '';
     width: 4px;
     height: 100%;
     display: block;
     position: absolute;
     top: 0;
     left: 0;
+    z-index: 2;
 }
 
-.module-dmenu_editor-item span.status.enabled {
+.module-dmenu_editor-item.enabled::before {
     background-color: #4abf2c;
 }
 
-.module-dmenu_editor-item span.status.disabled {
+.module-dmenu_editor-item.disabled::before {
     background-color: #ed5b5b;
 }
 

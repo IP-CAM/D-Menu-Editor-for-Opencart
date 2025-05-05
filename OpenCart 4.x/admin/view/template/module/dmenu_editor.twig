@@ -646,8 +646,9 @@
             note_item_not_empty       : '{{ note_item_not_empty }}'
         }
 
-        // User Token.
-        const dmenu_userToken = '{{ user_token }}';
+        // AJAX-actions.
+        const dmenu_actionAjaxItem = '{{ action_ajax_item }}';
+        const dmenu_actionAjaxSearch = '{{ action_ajax_search }}';
 
         // Current Language ID.
         const dmenu_configLanguageID = '{{ config_language_id }}';
@@ -655,14 +656,8 @@
         // Languages.
         const dmenu_languages = JSON.parse('{{ languages | json_encode | raw }}');
 
-        // Module Layouts.
-        const dmenu_moduleLayouts = JSON.parse('{{ module_layouts | json_encode | raw }}');
-
         // Stores.
         const dmenu_stores = JSON.parse('{{ stores | json_encode | raw }}');
-
-        // Route method separator.
-        const dmenu_routeMethodSeparator = '{{ _x_ }}';
 
         // Search Limit.
         const dmenu_searchLimit = '{{ search_limit }}';

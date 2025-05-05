@@ -135,9 +135,9 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
         // Change Language, if not defined.
         foreach ($data['menu_items'] as $item) {
             if ($item['data']['layout'] == 'catalog') {
-                if (!array_key_exists($this->settings['language_id'], $item['data']['category_menu_names'])) {
+                if (!array_key_exists($this->settings['language_id'], $item['data']['names'])) {
                     foreach ($this->languages as $language) {
-                        if (array_key_exists($language['language_id'], $item['data']['category_menu_names'])) {
+                        if (array_key_exists($language['language_id'], $item['data']['names'])) {
                             $this->settings['language_id'] = $language['language_id'];
                             break;
                         }
@@ -271,7 +271,7 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
                 $this->getCatalog($parts);
 
                 // Title Menu Item.
-                $item['data']['title'] = $item['data']['category_menu_names'][$this->settings['language_id']];
+                $item['data']['title'] = $item['data']['names'][$this->settings['language_id']];
             } else {
                 // Change Menu Item array.
                 switch ($layout) {

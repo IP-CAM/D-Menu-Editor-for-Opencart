@@ -91,7 +91,13 @@
                                     {% if menu_item['rows'] %}
                                         {% for row in menu_item['rows'] %}
                                             {% if row['data']['status'] %}
-                                                {% set status_rows = true %}
+                                                {% if row['data']['layout'] == 'catalog' %}
+                                                    {% if catalog|length > 0 %}
+                                                        {% set status_rows = true %}
+                                                    {% endif %}
+                                                {% else %}
+                                                    {% set status_rows = true %}
+                                                {% endif %}
                                             {% endif %}
                                         {% endfor %}
                                     {% endif %}
@@ -141,7 +147,7 @@
                         {% endif %}
 
                         {% for category in categories %}
-                            {% if category['children']|length > 0 %}
+                            {% if category['children'] %}
                                 <li class="dmenu_editor-item dmenu_editor-level_{{ index_item }} dmenu_editor-dropdown dmenu_editor-catalog_item{% if catalog_menu == 0 and index_item == 1 and depth == 0 %} depth-zero{% endif %}{% if category['current'] %} {{ category['current'] }}{% endif %}">
                                     <a href="{{ category['href'] }}" class="dmenu_editor-dropdown_toggle">{{ category['name'] }}</a>
 

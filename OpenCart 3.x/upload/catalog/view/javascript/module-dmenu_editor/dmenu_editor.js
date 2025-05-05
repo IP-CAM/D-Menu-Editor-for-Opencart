@@ -13,7 +13,7 @@ jQuery(function($) {
     var widthWindowDMenu = $(window).width();
 
     // Remove Default Top Menu.
-    if ((typeof dmenuSettings.menu.top !== 'undefined')) {
+    if (typeof dmenuSettings.menu.top !== 'undefined') {
         if (!dmenuSettings.menu.top.display) {
             $('#top').remove();
         }

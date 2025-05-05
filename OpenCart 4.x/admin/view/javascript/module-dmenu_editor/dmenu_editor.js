@@ -90,9 +90,9 @@ jQuery(function($) {
 
             // Display Status on Item.
             if (field.is(':checked')) {
-                field.closest('.module-dmenu_editor-item').find('span.status').removeClass('enabled disabled').addClass('enabled');
+                field.closest('.module-dmenu_editor-item').removeClass('enabled disabled').addClass('enabled');
             } else {
-                field.closest('.module-dmenu_editor-item').find('span.status').removeClass('enabled disabled').addClass('disabled');
+                field.closest('.module-dmenu_editor-item').removeClass('enabled disabled').addClass('disabled');
             }
         });
 
@@ -118,7 +118,7 @@ jQuery(function($) {
             var textLoading = _this.data('text_loading');
 
             $.ajax({
-                url: 'index.php?route=extension/dmenu_editor/module/dmenu_editor' + dmenu_routeMethodSeparator + 'search&user_token=' + dmenu_userToken,
+                url: dmenu_actionAjaxSearch.replaceAll('&amp;','&'),
                 type: 'post',
                 data: 'layout=' + layout + '&limit=' + dmenu_searchLimit + '&search=' + search,
                 dataType: 'json',
@@ -452,8 +452,11 @@ jQuery(function($) {
                     if (!$(event.to).hasClass('sticky-clone-sortable')) {
                         var _item = $(event.item);
                         var container = _item.closest('.module-menu_items_wrap').prop('id');
-                        var menu = _item.closest('.module-menu_items').data('menu');
-                        var store = _item.closest('.store-tab_pane').data('store');
+                        var menu_type = _item.closest('.module-menu_items').data('menu');
+                        var store_id = _item.closest('.store-tab_pane').data('store');
+
+                        // Add visual loader.
+                        $('#' + container).closest('.module_menu').append('<div class="loader-repair"><div class="lds-dual-ring"></div></div>');
 
                         // Remove Missing message.
                         _item.closest('.module-menu_items_wrap').find('.not_repair').remove();
@@ -462,7 +465,6 @@ jQuery(function($) {
                         var id = _item.children().data('id');
                         var layout = _item.children().data('layout');
                         var urlLink = _item.children().data('url_link');
-                        var title = _item.children().text();
 
                         var urlSeo = [];
                         var names = [];
@@ -484,96 +486,41 @@ jQuery(function($) {
                         // Row number.
                         var row = event.newIndex;
 
-                        // Get current Layout and attribute 'readonly'.
-                        var titleNotice = '';
-                        var fieldReadonly = 'readonly';
-                        var seoDisplay = false;
-
-                        if (layout in dmenu_moduleLayouts) {
-                            titleNotice = dmenu_moduleLayouts[layout];
-
-                            switch (layout) {
-                                case 'custom':
-                                    fieldReadonly = '';
-                                    seoDisplay = true;
-                                    break;
-                                default:
-                                    break;
-                            }
-                        } else {
-                            titleNotice = dmenu_translated_text['text_item_desc_none'];
-                            fieldReadonly = '';
-                        }
-
                         // Get depth of attributes: FOR, ID, NAME
                         var attrIdDepth = '';
                         var attrNameDepth = '';
 
                         if ($(event.to).is('.module-menu_items_wrap')) {
-                            attrIdDepth = row;
-                            attrNameDepth = '[' + row + ']';
+                            attrIdDepth = '';
+                            attrNameDepth = '';
                         } else {
                             var targetID = $(event.to).closest('.module-menu_item_wrap').prop('id');
                             var targetIdRows = targetID.match(/\w+$/);
                             var targetNameRows = targetIdRows[0].replaceAll('_', '][rows][');
 
-                            attrIdDepth = targetIdRows[0] + '_' + row;
-                            attrNameDepth = '[' + targetNameRows + '][rows][' + row + ']';
+                            attrIdDepth = targetIdRows[0];
+                            attrNameDepth = '[' + targetNameRows + ']';
                         }
 
-                        // Get Menu Item.
-                        if (layout == 'catalog') {
-                            // Params to get Menu Item HTML.
-                            var dataItem = {
-                                menu          : menu,
-                                store         : store,
-                                layout        : layout,
-                                names         : names,
-                                attrIdDepth   : attrIdDepth,
-                                attrNameDepth : attrNameDepth
-                            };
+                        // Params Menu Item.
+                        var params = {
+                            status        : 1,
+                            menu_type     : menu_type,
+                            store_id      : store_id,
+                            layout        : layout,
+                            names         : names,
+                            id            : id,
+                            url           : {
+                                link : urlLink,
+                                seo  : urlSeo
+                            },
+                            row           : row,
+                            item_id       : attrIdDepth,
+                            item_name     : attrNameDepth
+                        };
 
-                            // Menu Item HTML.
-                            var menuItemHTML = dmenuGetCatalogMenuItem(dataItem);
-
-                            // Prepare Menu Item container.
-                            _item.prop('id', menu + '-store_' + store + '-item-' + attrIdDepth).prop('class', 'form-group module-menu_item_wrap catalog_item').attr('data-row', row).data('row', row);
-                        } else {
-                            // Params to get Menu Item HTML.
-                            var dataItem = {
-                                menu          : menu,
-                                store         : store,
-                                id            : id,
-                                layout        : layout,
-                                title         : title,
-                                titleNotice   : titleNotice,
-                                urlLink       : urlLink,
-                                names         : names,
-                                urlSeo        : urlSeo,
-                                attrIdDepth   : attrIdDepth,
-                                attrNameDepth : attrNameDepth,
-                                fieldReadonly : fieldReadonly,
-                                seoDisplay    : seoDisplay
-                            };
-
-                            // Menu Item HTML.
-                            var menuItemHTML = dmenuGetMenuItem(dataItem);
-
-                            // Prepare Menu Item container.
-                            _item.prop('id', menu + '-store_' + store + '-item-' + attrIdDepth).prop('class', 'form-group module-menu_item_wrap').attr('data-title', title).data('title', title).attr('data-row', row).data('row', row);
-                        }
-
-                        // Set Menu Item.
-                        _item.html(menuItemHTML);
-
-                        // Repair Menu Items.
-                        dmenuRepairMenuItems(container);
-
-                        // Refresh tooltips.
-                        _item.closest('.module-menu_items_wrap').find('[data-bs-toggle="tooltip"]').tooltip();
-
-                        // Refresh Sortable Menu Items.
-                        dmenuSortableMenuItems();
+                        // Change Menu Item.
+                        dmenuChangeSortableStickyItem(event.item, container, params);
                     }
                 }
             });
@@ -767,246 +714,47 @@ jQuery(function($) {
     }
 
     // HTML Menu Item.
-    function dmenuGetMenuItem(data) {
-        var menuItemHTML = '';
+    function dmenuChangeSortableStickyItem(item, container, params) {
+        $.ajax({
+            url: dmenu_actionAjaxItem.replaceAll('&amp;','&'),
+            type: 'post',
+            data: params,
+            dataType: 'json',
+            beforeSend: function() {
+                // Add visual loader.
+                //$('#' + container).closest('.module_menu').append('<div class="loader-repair"><div class="lds-dual-ring"></div></div>');
+            },
+            complete: function() {
+                // Remove visual loader.
+                $('#' + container).closest('.module_menu').find('.loader-repair').remove();
+            },
+            success: function(json) {
+                //console.log(json);
 
-        menuItemHTML += '<div class="module-dmenu_editor-item">';
-            menuItemHTML += '<div class="text-left module-dmenu_editor-item_title">';
-                menuItemHTML += '<span class="text">' + data.title + '</span>';
+                if (json['success']) {
+                    _item = $(item);
 
-                menuItemHTML += '<span class="buttons">';
-                    menuItemHTML += '<span class="notice">' + data.titleNotice + '</span>';
+                    // Replace Menu Item.
+                    _item.replaceWith(json['html']);
 
-                    if (data.urlLink && data.layout != 'custom') {
-                        menuItemHTML += '<a href="/' + data.urlLink + '" class="a_item_href" target="_blank">';
-                            menuItemHTML += '<i class="fas fa-eye fa_item_href" data-bs-toggle="tooltip" title="' + dmenu_translated_text['button_look_tip'] + '"></i>';
-                        menuItemHTML += '</a>';
-                    } else {
-                        menuItemHTML += '<a class="a_item_href"></a>';
+                    // Repair Menu Items.
+                    dmenuRepairMenuItems(container);
+
+                    // Refresh tooltips.
+                    _item.closest('.module-menu_items_wrap').find('[data-bs-toggle="tooltip"]').tooltip();
+
+                    // Refresh Sortable Menu Items.
+                    dmenuSortableMenuItems();
+                } else {
+                    if (json['error']) {
+                        console.log(json['error']);
                     }
-
-                    menuItemHTML += '<i class="fas fa-trash-alt fa_row_remove" data-bs-toggle="tooltip" title="' + dmenu_translated_text['button_remove_item_tip'] + '"></i>';
-                    menuItemHTML += '<i class="fas fa-angle-down fa_arrow_open" data-bs-toggle="tooltip" title="' + dmenu_translated_text['button_edit_item_tip'] + '"></i>';
-                menuItemHTML += '</span>';
-            menuItemHTML += '</div>';
-
-            menuItemHTML += '<div class="module-dmenu_editor-item_content" style="display: none;">';
-                menuItemHTML += '<div class="card-body">';
-                    menuItemHTML += '<div class="field row required">';
-                        menuItemHTML += '<label class="col-sm-2 control-label col-form-label" for="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-names_' + dmenu_configLanguageID + '">' + dmenu_translated_text['entry_name'] + '</label>';
-                        menuItemHTML += '<div class="col-sm-10 module-dmenu_editor-item_title_languages">';
-
-                            for (language in dmenu_languages) {
-                                menuItemHTML += '<div class="input-group pull-left">';
-                                    menuItemHTML += '<span class="input-group-text">';
-                                        menuItemHTML += '<img src="language/' + dmenu_languages[language]["code"] + '/' + dmenu_languages[language]["code"] + '.png" title="' + dmenu_languages[language]["name"] + '" />';
-                                    menuItemHTML += '</span>';
-
-                                    menuItemHTML += '<input type="text" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][names][' + dmenu_languages[language]["language_id"] + ']" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-names_' + dmenu_languages[language]["language_id"] + '" class="form-control name_' + dmenu_languages[language]["language_id"] + '" value="' + data.names[dmenu_languages[language]["language_id"]] + '" required>';
-                                menuItemHTML += '</div>';
-                            }
-
-                            menuItemHTML += '<div class="input-group pull-left">';
-                                menuItemHTML += '<div class="form-check checkbox">';
-                                    menuItemHTML += '<input type="checkbox" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][names_hide]" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-names_hide" class="form-check-input names_hide" value="1">';
-                                    menuItemHTML += '<label for="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-names_hide">' + dmenu_translated_text['entry_name_hide'] + '</label>';
-                                menuItemHTML += '</div>';
-                            menuItemHTML += '</div>';
-
-                        menuItemHTML += '</div>';
-                    menuItemHTML += '</div>';
-
-                    if (data.seoDisplay) {
-                        menuItemHTML += '<div class="field row required">';
-                            menuItemHTML += '<label class="col-sm-2 control-label col-form-label" for="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-url-seo_' + dmenu_configLanguageID + '">' + dmenu_translated_text['entry_url'] + '</label>';
-                            menuItemHTML += '<div class="col-sm-10 module-dmenu_editor-item_title_languages item_url">';
-
-                                for (language in dmenu_languages) {
-                                    menuItemHTML += '<div class="input-group pull-left">';
-                                        menuItemHTML += '<span class="input-group-text">';
-                                            menuItemHTML += '<img src="language/' + dmenu_languages[language]["code"] + '/' + dmenu_languages[language]["code"] + '.png" title="' + dmenu_languages[language]["name"] + '" />';
-                                        menuItemHTML += '</span>';
-
-                                        menuItemHTML += '<input type="text" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][url][seo][' + dmenu_languages[language]["language_id"] + ']" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-url-seo_' + dmenu_languages[language]["language_id"] + '" class="form-control url_seo_' + dmenu_languages[language]["language_id"] + '" value="" ' + data.fieldReadonly + '>';
-
-                                        if (data.fieldReadonly) {
-                                            menuItemHTML += '<i class="fas fa-lock" data-bs-toggle="tooltip" data-lock="' + dmenu_translated_text['button_lock_tip'] + '" data-unlock="' + dmenu_translated_text['button_unlock_tip'] + '" title="' + dmenu_translated_text['button_unlock_tip'] + '"></i>';
-                                        } else {
-                                            menuItemHTML += '<i class="fas fa-unlock" data-bs-toggle="tooltip" data-lock="' + dmenu_translated_text['button_lock_tip'] + '" data-unlock="' + dmenu_translated_text['button_unlock_tip'] + '" title="' + dmenu_translated_text['button_lock_tip'] + '"></i>';
-                                        }
-                                    menuItemHTML += '</div>';
-                                }
-
-                            menuItemHTML += '</div>';
-                        menuItemHTML += '</div>';
-                    }
-
-                    menuItemHTML += '<div class="field row">';
-                        menuItemHTML += '<label class="col-sm-2 control-label col-form-label" for="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-target">' + dmenu_translated_text['entry_target'] + '</label>';
-                        menuItemHTML += '<div class="col-sm-10 module-dmenu_editor-item_field">';
-                            menuItemHTML += '<select name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][target]" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-target" class="form-select">';
-                                menuItemHTML += '<option value="">' + dmenu_translated_text['text_select_none'] + '</option>';
-                                menuItemHTML += '<option value="_self">' + dmenu_translated_text['text_target_self'] + '</option>';
-                                menuItemHTML += '<option value="_blank">' + dmenu_translated_text['text_target_blank'] + '</option>';
-                                menuItemHTML += '<option value="_parent">' + dmenu_translated_text['text_target_parent'] + '</option>';
-                                menuItemHTML += '<option value="_top">' + dmenu_translated_text['text_target_top'] + '</option>';
-                            menuItemHTML += '</select>';
-                        menuItemHTML += '</div>';
-                    menuItemHTML += '</div>';
-
-                    menuItemHTML += '<div class="field row">';
-                        menuItemHTML += '<label class="col-sm-2 control-label col-form-label" for="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-xfn">' + dmenu_translated_text['entry_xfn'] + '</label>';
-
-                        menuItemHTML += '<div class="col-sm-10 module-dmenu_editor-item_field">';
-                            menuItemHTML += '<input name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][xfn]" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-xfn" class="form-control" value="">';
-                        menuItemHTML += '</div>';
-                    menuItemHTML += '</div>';
-
-                    menuItemHTML += '<div class="field row">';
-                        menuItemHTML += '<label class="col-sm-2 control-label col-form-label" for="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-class">' + dmenu_translated_text['entry_class'] + '</label>';
-                        menuItemHTML += '<div class="col-sm-10 module-dmenu_editor-item_field">';
-                            menuItemHTML += '<input name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][class]" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-class" class="form-control" value="">';
-                        menuItemHTML += '</div>';
-                    menuItemHTML += '</div>';
-
-                    menuItemHTML += '<div class="field row">';
-                        menuItemHTML += '<label class="col-sm-2 control-label col-form-label">' + dmenu_translated_text['entry_icon'] + '</label>';
-                        menuItemHTML += '<div class="col-sm-10 module-dmenu_editor-item_field">';
-                            menuItemHTML += '<div class="card image module_dmenu_editor-placeholder">';
-                                menuItemHTML += '<img src="' + dmenu_itemPlaceholder + '" alt="' + dmenu_translated_text['entry_icon'] + '" title="' + dmenu_translated_text['entry_icon'] + '" data-oc-placeholder="' + dmenu_itemPlaceholder + '" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-icon-thumb" class="card-img-top">';
-                                menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][icon][image]" value="" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-icon-image" class="hidden">';
-
-                                menuItemHTML += '<div class="card-body">';
-                                    menuItemHTML += '<button type="button" data-oc-toggle="image" data-oc-target="#' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-icon-image" data-oc-thumb="#' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-icon-thumb" class="btn btn-primary btn-sm btn-block"><i class="fas fa-pencil-alt"></i> ' + dmenu_translated_text['button_edit'] + '</button> ';
-                                    menuItemHTML += '<button type="button" data-oc-toggle="clear" data-oc-target="#' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-icon-image" data-oc-thumb="#' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-icon-thumb" class="btn btn-warning btn-sm btn-block"><i class="fas fa-trash-alt"></i> ' + dmenu_translated_text['button_clear'] + '</button>';
-                                menuItemHTML += '</div>';
-                            menuItemHTML += '</div>';
-                        menuItemHTML += '</div>';
-                    menuItemHTML += '</div>';
-
-                    menuItemHTML += '<div class="field row">';
-                        menuItemHTML += '<label class="col-sm-2 control-label col-form-label" for="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-status">' + dmenu_translated_text['entry_status'] + '</label>';
-
-                        menuItemHTML += '<div class="col-sm-10 module-dmenu_editor-item_field">';
-                            menuItemHTML += '<div class="input-group">';
-                                menuItemHTML += '<div class="form-check form-switch form-switch-lg">';
-                                    menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][status]" value="0" class="hidden"/>';
-                                    menuItemHTML += '<input type="checkbox" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][status]" value="1" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-status" class="form-check-input field-status" checked>';
-                                menuItemHTML += '</div>';
-                            menuItemHTML += '</div>';
-                        menuItemHTML += '</div>';
-                    menuItemHTML += '</div>';
-
-                    menuItemHTML += '<div>';
-                        menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][url][link]" class="hidden" value="' + data.urlLink + '">';
-                        menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][id]" class="hidden" value="' + data.id + '">';
-                        menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][layout]" class="hidden" value="' + data.layout + '">';
-                    menuItemHTML += '</div>';
-                menuItemHTML += '</div>';
-            menuItemHTML += '</div>';
-
-            menuItemHTML += '<span class="status enabled"></span>';
-        menuItemHTML += '</div>';
-
-        menuItemHTML += '<div class="module-dmenu_editor-item_content_sortable">';
-            menuItemHTML += '<div id="module_menu_' + data.menu + '_store_' + data.store + '_nested_sortable-' + data.attrIdDepth + '" class="module-menu_items_wrap_content nested-sortable"></div>';
-        menuItemHTML += '</div>';
-
-        // Return.
-        return menuItemHTML;
-    }
-
-    // HTML Catalog Menu Item.
-    function dmenuGetCatalogMenuItem(data) {
-        var menuItemHTML = '';
-
-        menuItemHTML += '<div class="module-dmenu_editor-item">';
-            menuItemHTML += '<div class="text-left module-dmenu_editor-item_title">';
-                menuItemHTML += '<span class="text">' + dmenu_translated_text['text_result_categories'] + '</span>';
-
-                menuItemHTML += '<span class="buttons">';
-                    menuItemHTML += '<span class="notice">' + dmenu_translated_text['text_item_desc_catalog'] + '</span>';
-                    menuItemHTML += '<a class="a_item_href"></a>';
-                    menuItemHTML += '<i class="fas fa-trash-alt fa_row_remove" data-bs-toggle="tooltip" title="' + dmenu_translated_text['button_remove_item_tip'] + '"></i>';
-                    menuItemHTML += '<i class="fas fa-angle-down fa_arrow_open" data-bs-toggle="tooltip" title="' + dmenu_translated_text['button_edit_item_tip'] + '"></i>';
-                menuItemHTML += '</span>';
-            menuItemHTML += '</div>';
-
-            menuItemHTML += '<div class="module-dmenu_editor-item_content" style="display: none;">';
-                menuItemHTML += '<div class="card-body">';
-                    menuItemHTML += '<div class="row setting-category_menu">';
-                        menuItemHTML += '<label class="col-sm-2 control-label col-form-label" for="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-category_menu">' + dmenu_translated_text['entry_category_menu'] + '</label>';
-
-                        menuItemHTML += '<div class="col-sm-10 module-dmenu_editor-item_field">';
-                            menuItemHTML += '<select name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][category_menu]" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-category_menu" class="form-select">';
-                                menuItemHTML += '<option value="1">' + dmenu_translated_text['text_yes'] + '</option>';
-                                menuItemHTML += '<option value="0" selected="selected">' + dmenu_translated_text['text_no'] + '</option>';
-                            menuItemHTML += '</select>';
-                        menuItemHTML += '</div>';
-                    menuItemHTML += '</div>';
-
-                    menuItemHTML += '<div class="setting-category_menu_hidden_block hidden">';
-                        menuItemHTML += '<div class="row setting-category_menu_title required">';
-                            menuItemHTML += '<label class="col-sm-2 control-label col-form-label" for="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-name_' + dmenu_configLanguageID + '">' + dmenu_translated_text['entry_category_menu_title'] + '</label>';
-
-                            menuItemHTML += '<div class="col-sm-10 module-dmenu_editor-item_field">';
-
-                                for (language in dmenu_languages) {
-                                    menuItemHTML += '<div class="input-group pull-left" style="margin-bottom: 5px;">';
-                                        menuItemHTML += '<span class="input-group-text">';
-                                            menuItemHTML += '<img src="language/' + dmenu_languages[language]["code"] + '/' + dmenu_languages[language]["code"] + '.png" title="' + dmenu_languages[language]["name"] + '" />';
-                                        menuItemHTML += '</span>';
-
-                                        menuItemHTML += '<input type="text" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-name_' + dmenu_languages[language]["language_id"] + '" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][category_menu_names][' + dmenu_languages[language]["language_id"] + ']" class="form-control name_' + dmenu_languages[language]["language_id"] + '" value="' + data.names[dmenu_languages[language]["language_id"]] + '">';
-                                    menuItemHTML += '</div>';
-                                }
-
-                            menuItemHTML += '</div>';
-                        menuItemHTML += '</div>';
-
-                        menuItemHTML += '<div class="row setting-category_menu_icon">';
-                            menuItemHTML += '<label class="col-sm-2 control-label col-form-label">' + dmenu_translated_text['entry_icon'] + '</label>';
-
-                            menuItemHTML += '<div class="col-sm-10 module-dmenu_editor-item_field">';
-                                menuItemHTML += '<div class="card image module_dmenu_editor-placeholder">';
-                                    menuItemHTML += '<img src="' + dmenu_itemPlaceholder + '" alt="' + dmenu_translated_text['entry_icon'] + '" title="' + dmenu_translated_text['entry_icon'] + '" data-oc-placeholder="' + dmenu_itemPlaceholder + '" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-icon-thumb" class="card-img-top">';
-                                    menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][icon][image]" value="" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-icon-image" class="hidden">';
-
-                                    menuItemHTML += '<div class="card-body">';
-                                        menuItemHTML += '<button type="button" data-oc-toggle="image" data-oc-target="#' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-icon-image" data-oc-thumb="#' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-icon-thumb" class="btn btn-primary btn-sm btn-block"><i class="fas fa-pencil-alt"></i> ' + dmenu_translated_text['button_edit'] + '</button> ';
-                                        menuItemHTML += '<button type="button" data-oc-toggle="clear" data-oc-target="#' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-icon-image" data-oc-thumb="#' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-icon-thumb" class="btn btn-warning btn-sm btn-block"><i class="fas fa-trash-alt"></i> ' + dmenu_translated_text['button_clear'] + '</button>';
-                                    menuItemHTML += '</div>';
-                                menuItemHTML += '</div>';
-                            menuItemHTML += '</div>';
-                        menuItemHTML += '</div>';
-                    menuItemHTML += '</div>';
-
-                    menuItemHTML += '<div class="field row">';
-                        menuItemHTML += '<label class="col-sm-2 control-label col-form-label" for="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-status">' + dmenu_translated_text['entry_status'] + '</label>';
-
-                        menuItemHTML += '<div class="col-sm-10 module-dmenu_editor-item_field">';
-                            menuItemHTML += '<div class="input-group">';
-                                menuItemHTML += '<div class="form-check form-switch form-switch-lg">';
-                                    menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][status]" value="0" class="hidden"/>';
-                                    menuItemHTML += '<input type="checkbox" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][status]" value="1" id="' + data.menu + '-store_' + data.store + '-item-' + data.attrIdDepth + '-data-status" class="form-check-input field-status" checked>';
-                                menuItemHTML += '</div>';
-                            menuItemHTML += '</div>';
-                        menuItemHTML += '</div>';
-                    menuItemHTML += '</div>';
-                menuItemHTML += '</div>';
-            menuItemHTML += '</div>';
-
-            menuItemHTML += '<span class="status enabled"></span>';
-        menuItemHTML += '</div>';
-
-        menuItemHTML += '<div>';
-            menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][url][link]" class="hidden" value="">';
-            menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][id]" class="hidden" value="0">';
-            menuItemHTML += '<input type="hidden" name="module_dmenu_editor_items_' + data.menu + '_' + data.store + data.attrNameDepth + '[data][layout]" class="hidden" value="' + data.layout + '">';
-        menuItemHTML += '</div>';
-
-        // Return.
-        return menuItemHTML;
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                console.log(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+            }
+        });
     }
 
     // HTML Missing message.
