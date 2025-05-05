@@ -1,0 +1,43 @@
+<div class="module-menu_items" data-menu="{{ menu_type }}">
+    <div class="module_stores">
+        <div>
+            <ul class="nav nav-tabs">
+                {% for store in stores %}
+                    {% if error_items[menu_type]['store_' ~ store.store_id]['empty_fields'] %}
+                        {% set class_warning = 'alert_warning' %}
+                    {% else %}
+                        {% set class_warning = '' %}
+                    {% endif %}
+
+                    <li class="nav-item store-nav_item">
+                        <a href="#tab-menu_{{ menu_type }}_store_{{ store['store_id'] }}" data-bs-toggle="tab" class="nav-link {{ class_warning }} {% if loop.index0 == 0 %}active{% endif %}">{{ store['name'] }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="module_menu">
+        <div class="tab-content">
+            {% for store in stores %}
+                <div class="tab-pane store-tab_pane {% if loop.index0 == 0 %}active{% endif %}" id="tab-menu_{{ menu_type }}_store_{{ store['store_id'] }}" data-store="{{ store['store_id'] }}">
+                    <div id="module_menu_{{ menu_type }}_store_{{ store['store_id'] }}_sortable_wrap" class="module-menu_items_wrap nested-sortable">
+                        {% if menus[menu_type]['store_' ~ store.store_id] %}
+                            {{ items_menu['store_' ~ store.store_id] }}
+                        {% else %}
+                            <div class="not_repair sortable_filtered">
+                                <div class="module-menu_items_missing_text">{{ text_menu_item_missing }}</div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="module-toolbar">
+                        <span class="item_toolbar item_toolbar-store_default">
+                            <input type="checkbox" name="module_dmenu_editor_settings[general][store_default][{{ menu_type }}]" data-bs-toggle="tooltip" title="{{ button_toolbar_store_default }}" value="{{ store['store_id'] }}" class="form-check-input field-store_default"{% if module_settings['general']['store_default'][menu_type] is defined and module_settings['general']['store_default'][menu_type] == store.store_id %} checked{% endif %} />
+                        </span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
