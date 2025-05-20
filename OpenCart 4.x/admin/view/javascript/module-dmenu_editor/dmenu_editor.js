@@ -97,14 +97,14 @@ jQuery(function($) {
         });
 
         // Show/Hide Title Catalog Settings.
-        $('.module-menu_items_wrap').on('change', '.setting-category_menu select', function(){
+        $('.module-menu_items_wrap').on('change', '.setting-dropdown select', function(){
             var field = $(this);
             var categoryDisplay = field.val();
 
             if (categoryDisplay == '1') {
-                field.closest('.module-dmenu_editor-item_content').find('.setting-category_menu_hidden_block').removeClass('hidden');
+                field.closest('.module-dmenu_editor-item_content').find('.setting-dropdown_hidden_block').removeClass('hidden');
             } else {
-                field.closest('.module-dmenu_editor-item_content').find('.setting-category_menu_hidden_block').addClass('hidden');
+                field.closest('.module-dmenu_editor-item_content').find('.setting-dropdown_hidden_block').addClass('hidden');
             }
         });
 
@@ -331,7 +331,7 @@ jQuery(function($) {
             }
         });
 
-        // Select Info-block.
+        // Select 'Show on site' info-block.
         $('#tab-settings_menu .select-setting-display').on('change', function(){
             var _this = $(this);
             var value = _this.val();
@@ -342,7 +342,7 @@ jQuery(function($) {
             _this.closest('.form-group').find('#alert-' + menu + '_display-' + value).css('display', '');
         });
 
-        // Hide Info-block.
+        // Hide 'Show on site' info-block.
         $('#tab-settings_menu .field-display-hide input').on('change', function(){
             var checkbox = $(this);
 

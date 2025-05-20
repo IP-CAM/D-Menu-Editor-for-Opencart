@@ -1,4 +1,4 @@
-{% if module_dmenu_editor_status and menu_items_status and (menu_items or settings_menu['currency'] or settings_menu['language']) %}
+{% if module_dmenu_editor_status and settings_menu['status'] and (menu_items or settings_menu['currency'] or settings_menu['language']) %}
     {% if settings_menu['title']['status'] %}
         <div class="dmenu_editor-title_inner {{ settings_menu['title']['display'] }}">
             <div class="container">
@@ -65,11 +65,13 @@
                                     {% if catalog|length > 0 %}
                                         {% set index_r = 0 %}
 
-                                        {% if menu_item['data']['category_menu'] %}
+                                        {% if menu_item['data']['dropdown'] %}
                                             {% set index_item = index + 1 %}
 
-                                            <li class="dmenu_editor-item dmenu_editor-level_{{ index }} dmenu_editor-dropdown dmenu_editor-catalog{% if index == 1 %} depth-zero{% endif %} {{ menu_item['data']['current'] }}{% if menu_item['data']['icon']['thumb'] is defined %} dmenu_editor-icon{% endif %}">
-                                                <a class="dmenu_editor-dropdown_toggle" role="button"{% if menu_item['data']['icon']['thumb'] is defined %} style="background-image: url({{ menu_item['data']['icon']['thumb'] }});"{% endif %}>{{ menu_item['data']['title'] }}</a>
+                                            <li class="dmenu_editor-item dmenu_editor-level_{{ index }} dmenu_editor-dropdown dmenu_editor-catalog{% if index == 1 %} depth-zero{% endif %}{{ menu_item['extra']['class']['el'] }}">
+                                                <a class="dmenu_editor-dropdown_toggle" role="button">
+                                                    {% if additional['icon_status'] and (menu_item['extra']['sprite'] or menu_item['data']['icon']['thumb']) %}<span class="icon" style="{{ menu_item['extra']['style']['icon'] }}"></span>{% endif %}<span class="title">{{ menu_item['data']['title'] }}</span>
+                                                </a>
 
                                                 <div class="dmenu_editor-dropdown_inner">
                                                     <div class="dmenu_editor-menu">
@@ -105,8 +107,10 @@
                                     {% if status_rows %}
                                         {% set index_r = index + 1 %}
 
-                                        <li class="dmenu_editor-item dmenu_editor-level_{{ index }} dmenu_editor-dropdown{% if index == 1 %} depth-zero{% endif %}{% if menu_item['data']['class'] %} {{ menu_item['data']['class'] }}{% endif %}{% if menu_item['data']['current'] %} {{ menu_item['data']['current'] }}{% endif %}{% if menu_item['data']['names_hide'] is defined %} dmenu_editor-title_hidden{% endif %}{% if menu_item['data']['icon']['thumb'] is defined %} dmenu_editor-icon{% endif %}">
-                                            <a href="{{ menu_item['data']['url']['href'] }}" class="dmenu_editor-dropdown_toggle"{% if menu_item['data']['target'] %} target="{{ menu_item['data']['target'] }}"{% endif %}{% if menu_item['data']['xfn'] %} rel="{{ menu_item['data']['xfn'] }}"{% endif %}{% if menu_item['data']['icon']['thumb'] is defined %} style="background-image: url({{ menu_item['data']['icon']['thumb'] }});"{% endif %}>{{ menu_item['data']['title'] }}</a>
+                                        <li class="dmenu_editor-item dmenu_editor-level_{{ index }} dmenu_editor-dropdown{% if index == 1 %} depth-zero{% endif %}{{ menu_item['extra']['class']['el'] }}">
+                                            <a href="{{ menu_item['data']['url']['href'] }}" class="dmenu_editor-dropdown_toggle"{% if menu_item['data']['target'] %} target="{{ menu_item['data']['target'] }}"{% endif %}{% if menu_item['data']['xfn'] %} rel="{{ menu_item['data']['xfn'] }}"{% endif %}>
+                                                {% if additional['icon_status'] and (menu_item['extra']['sprite'] or menu_item['data']['icon']['thumb']) %}<span class="icon" style="{{ menu_item['extra']['style']['icon'] }}"></span>{% endif %}<span class="title">{{ menu_item['data']['title'] }}</span>
+                                            </a>
 
                                             <div class="dmenu_editor-dropdown_inner">
                                                 <div class="dmenu_editor-menu">
@@ -122,8 +126,10 @@
                                             </div>
                                         </li>
                                     {% else %}
-                                        <li class="dmenu_editor-item dmenu_editor-level_{{ index }}{% if index == 1 %} depth-zero{% endif %}{% if menu_item['data']['class'] %} {{ menu_item['data']['class'] }}{% endif %}{% if menu_item['data']['current'] %} {{ menu_item['data']['current'] }}{% endif %}{% if menu_item['data']['names_hide'] is defined %} dmenu_editor-title_hidden{% endif %}{% if menu_item['data']['icon']['thumb'] is defined %} dmenu_editor-icon{% endif %}">
-                                            <a href="{{ menu_item['data']['url']['href'] }}"{% if menu_item['data']['target'] %} target="{{ menu_item['data']['target'] }}"{% endif %}{% if menu_item['data']['xfn'] %} rel="{{ menu_item['data']['xfn'] }}"{% endif %}{% if menu_item['data']['icon']['thumb'] is defined %} style="background-image: url({{ menu_item['data']['icon']['thumb'] }});"{% endif %}>{{ menu_item['data']['title'] }}</a>
+                                        <li class="dmenu_editor-item dmenu_editor-level_{{ index }}{% if index == 1 %} depth-zero{% endif %}{{ menu_item['extra']['class']['el'] }}">
+                                            <a href="{{ menu_item['data']['url']['href'] }}"{% if menu_item['data']['target'] %} target="{{ menu_item['data']['target'] }}"{% endif %}{% if menu_item['data']['xfn'] %} rel="{{ menu_item['data']['xfn'] }}"{% endif %}>
+                                                {% if additional['icon_status'] and (menu_item['extra']['sprite'] or menu_item['data']['icon']['thumb']) %}<span class="icon" style="{{ menu_item['extra']['style']['icon'] }}"></span>{% endif %}<span class="title">{{ menu_item['data']['title'] }}</span>
+                                            </a>
                                         </li>
                                     {% endif %}
                                 {% endif %}
@@ -148,8 +154,10 @@
 
                         {% for category in categories %}
                             {% if category['children'] %}
-                                <li class="dmenu_editor-item dmenu_editor-level_{{ index_item }} dmenu_editor-dropdown dmenu_editor-catalog_item{% if catalog_menu == 0 and index_item == 1 and depth == 0 %} depth-zero{% endif %}{% if category['current'] %} {{ category['current'] }}{% endif %}">
-                                    <a href="{{ category['href'] }}" class="dmenu_editor-dropdown_toggle">{{ category['name'] }}</a>
+                                <li class="dmenu_editor-item dmenu_editor-level_{{ index_item }} dmenu_editor-dropdown dmenu_editor-catalog_item{% if catalog_menu == 0 and index_item == 1 and depth == 0 %} depth-zero{% endif %} {{ category['class'] }} {{ category['current'] }}">
+                                    <a href="{{ category['href'] }}" class="dmenu_editor-dropdown_toggle">
+                                        {% if additional['icon_status'] and (menu_item['extra']['sprite'] or menu_item['data']['icon']['thumb']) %}<span class="icon"></span>{% endif %}<span class="title">{{ category['name'] }}</span>
+                                    </a>
 
                                     <div class="dmenu_editor-dropdown_inner">
                                         <div class="dmenu_editor-menu">
@@ -180,8 +188,10 @@
                                     </div>
                                 </li>
                             {% else %}
-                                <li class="dmenu_editor-item dmenu_editor-level_{{ index_item }} dmenu_editor-catalog_item{% if catalog_menu == 0 and index_item == 1 and depth == 0 %} depth-zero{% endif %}{% if category['current'] %} {{ category['current'] }}{% endif %}">
-                                    <a href="{{ category['href'] }}">{{ category['name'] }}</a>
+                                <li class="dmenu_editor-item dmenu_editor-level_{{ index_item }} dmenu_editor-catalog_item{% if catalog_menu == 0 and index_item == 1 and depth == 0 %} depth-zero{% endif %} {{ category['class'] }} {{ category['current'] }}">
+                                    <a href="{{ category['href'] }}">
+                                        {% if additional['icon_status'] and (menu_item['extra']['sprite'] or menu_item['data']['icon']['thumb']) %}<span class="icon"></span>{% endif %}<span class="title">{{ category['name'] }}</span>
+                                    </a>
                                 </li>
                             {% endif %}
                         {% endfor %}

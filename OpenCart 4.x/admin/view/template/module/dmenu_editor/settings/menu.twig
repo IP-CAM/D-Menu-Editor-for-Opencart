@@ -155,16 +155,29 @@
     {% endif %}
 
     <div class="form-group row mb-3">
-        <label class="col-sm-3 control-label col-form-label" for="module_dmenu_editor-menu_{{ menu_type }}_icon_width">{{ entry_icon_dimensions }}</label>
+        <label class="col-sm-3 control-label col-form-label" for="module_dmenu_editor-menu_{{ menu_type }}_icon_status">{{ entry_icon }}</label>
         <div class="col-sm-9">
-            <div class="row">
-                <div class="col-sm-2">
-                    <input type="number" name="module_dmenu_editor_settings[menu][{{ menu_type }}][icon][width]" step="1" min="1" value="{{ icon_dimensions['menu'][menu_type]['width'] }}" id="module_dmenu_editor-menu_{{ menu_type }}_icon_width" class="form-control" placeholder="{{ text_icon_width }}">
-                </div>
-                <div class="col-sm-2">
-                    <input type="number" name="module_dmenu_editor_settings[menu][{{ menu_type }}][icon][height]" step="1" min="1" value="{{ icon_dimensions['menu'][menu_type]['height'] }}" id="module_dmenu_editor-menu_{{ menu_type }}_icon_height" class="form-control" placeholder="{{ text_icon_height }}">
+            <div class="input-group" style="margin-bottom: 10px;">
+                <div class="form-check form-switch form-switch-lg">
+                    <input type="hidden" name="module_dmenu_editor_settings[menu][{{ menu_type }}][icon][status]" value="0" class="hidden"/>
+                    <input type="checkbox" name="module_dmenu_editor_settings[menu][{{ menu_type }}][icon][status]" value="1" id="module_dmenu_editor-menu_{{ menu_type }}_icon_status" class="form-check-input"{% if module_settings['menu'][menu_type]['icon']['status'] %} checked{% endif %}/>
                 </div>
             </div>
+
+            <div class="row" style="margin-bottom: 10px;">
+                <div class="col-sm-2">
+                    <input type="number" name="module_dmenu_editor_settings[menu][{{ menu_type }}][icon][width]" step="1" min="1" max="100" value="{{ module_settings['menu'][menu_type]['icon']['width'] }}" id="module_dmenu_editor-menu_{{ menu_type }}_icon_width" class="form-control" placeholder="{{ text_icon_width }}">
+                </div>
+                <div class="col-sm-2">
+                    <input type="number" name="module_dmenu_editor_settings[menu][{{ menu_type }}][icon][height]" step="1" min="1" max="100" value="{{ module_settings['menu'][menu_type]['icon']['height'] }}" id="module_dmenu_editor-menu_{{ menu_type }}_icon_height" class="form-control" placeholder="{{ text_icon_height }}">
+                </div>
+            </div>
+
+            <select name="module_dmenu_editor_settings[menu][{{ menu_type }}][icon][sprite]" id="module_dmenu_editor-menu_{{ menu_type }}_icon_sprite" class="form-select">
+                <option value="0" {% if module_settings['menu'][menu_type]['icon']['sprite'] == '0' %}selected="selected"{% endif %}>{{ text_icon_sprite_off }}</option>
+                <option value="1" {% if module_settings['menu'][menu_type]['icon']['sprite'] == '1' %}selected="selected"{% endif %}>{{ text_icon_sprite_on }}</option>
+            </select>
+            <div class="form-text">{{ help_icon_sprite }}</div>
         </div>
     </div>
 </div>

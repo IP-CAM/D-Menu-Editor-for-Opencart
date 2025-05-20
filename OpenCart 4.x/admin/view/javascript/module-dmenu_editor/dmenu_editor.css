@@ -560,6 +560,33 @@
     border-color: #f9d5a2;
 }
 
+#tab-support {
+    font-size: 1.1em;
+    font-style: italic;
+    line-height: 1.5;
+    background-color: #e5f3fb;
+    padding: 20px 25px;
+}
+
+#tab-support .title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 5px;
+}
+
+#tab-support ul {
+    margin: 2px 0;
+}
+
+#tab-support ul,
+#tab-support ul a {
+    color: #1874a6;
+}
+
+#tab-support ul a:hover {
+    color: #3e8eb9;
+}
+
 /* Loader */
 
 .loader-repair {
@@ -627,6 +654,12 @@
     }
 }
 
+@media (min-width: 481px) {
+    .nav-support {
+        margin-left: auto;
+    }
+}
+
 @media (max-width: 1200px) {
     .module-dmenu_editor-menu {
         display: block;
@@ -684,13 +717,13 @@
         width: calc(100% - 150px);
     }
 
-    .setting-category_menu > label,
-    .setting-category_menu_title > label {
+    .setting-dropdown > label,
+    .setting-dropdown_title > label {
         width: 200px;
     }
 
-    .setting-category_menu > div,
-    .setting-category_menu_title > div {
+    .setting-dropdown > div,
+    .setting-dropdown_title > div {
         width: calc(100% - 200px);
     }
 }

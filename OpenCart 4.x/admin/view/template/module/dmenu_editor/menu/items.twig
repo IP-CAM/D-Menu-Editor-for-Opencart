@@ -198,12 +198,12 @@
 
                     <div class="module-dmenu_editor-item_content" style="display: none;">
                         <div class="card-body">
-                            <div class="row setting-category_menu">
-                                <label class="col-sm-2 control-label col-form-label" for="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-category_menu">{{ translated_text['entry_category_menu'] }}</label>
+                            <div class="row setting-dropdown">
+                                <label class="col-sm-2 control-label col-form-label" for="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-dropdown">{{ translated_text['entry_dropdown'] }}</label>
 
                                 <div class="col-sm-10 module-dmenu_editor-item_field">
-                                    <select name="module_dmenu_editor_items_{{ menu_type }}_{{ store_id }}{{ item_name }}[data][category_menu]" id="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-category_menu" class="form-select">
-                                        {% if menu_item['data']['category_menu'] %}
+                                    <select name="module_dmenu_editor_items_{{ menu_type }}_{{ store_id }}{{ item_name }}[data][dropdown]" id="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-dropdown" class="form-select">
+                                        {% if menu_item['data']['dropdown'] %}
                                             <option value="1" selected="selected">{{ translated_text['text_yes'] }}</option>
                                             <option value="0">{{ translated_text['text_no'] }}</option>
                                         {% else %}
@@ -214,9 +214,9 @@
                                 </div>
                             </div>
 
-                            <div class="setting-category_menu_hidden_block {% if not menu_item['data']['category_menu'] %}{{ 'hidden' }}{% endif %}">
-                                <div class="row setting-category_menu_title required">
-                                    <label class="col-sm-2 control-label col-form-label" for="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-name_{{ config_language_id }}">{{ translated_text['entry_category_menu_title'] }}</label>
+                            <div class="setting-dropdown_hidden_block {% if not menu_item['data']['dropdown'] %}{{ 'hidden' }}{% endif %}">
+                                <div class="row setting-dropdown_title required">
+                                    <label class="col-sm-2 control-label col-form-label" for="{{ menu_type }}-store_{{ store_id }}-item-{{ item_id }}-data-name_{{ config_language_id }}">{{ translated_text['entry_dropdown_title'] }}</label>
 
                                     <div class="col-sm-10 module-dmenu_editor-item_field">
                                         {% for language in languages %}
@@ -235,7 +235,7 @@
                                     </div>
                                 </div>
 
-                                <div class="row setting-category_menu_icon">
+                                <div class="row setting-dropdown_icon">
                                     <label class="col-sm-2 control-label col-form-label">{{ translated_text['entry_icon'] }}</label>
 
                                     <div class="col-sm-10 module-dmenu_editor-item_field">

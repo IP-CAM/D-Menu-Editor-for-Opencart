@@ -9,6 +9,7 @@
 
 namespace Opencart\Catalog\Controller\Extension\DMenuEditor\Module;
 class DMenuEditor extends \Opencart\System\Engine\Controller {
+    private $menu_type = 'main';
     private $languages = array();
 
     private $catalog = array();
@@ -21,29 +22,10 @@ class DMenuEditor extends \Opencart\System\Engine\Controller {
     private $current_ancestor_class = 'current-ancestor';
 
     private $settings = array(
-        'menu' => array(
-            'main' => array(
-                'icon' => array(
-                    'dimensions' => array('width' => 16, 'height' => 16)
-                )
-            ),
-            'top' => array(
-                'icon' => array(
-                    'dimensions' => array('width' => 16, 'height' => 16)
-                )
-            ),
-            'footer' => array(
-                'icon' => array(
-                    'dimensions' => array('width' => 16, 'height' => 16)
-                )
-            ),
-            'social' => array(
-                'icon' => array(
-                    'dimensions' => array('width' => 16, 'height' => 16)
-                )
-            )
-        ),
-        'language_id' => 0
+        'menu'        => array(),
+        'store_id'    => 0,
+        'language_id' => 0,
+        'PATH_IMAGE'  => '' // IMAGE_CATALOG directory path. Can be specified manually.
     );
 
     private $x = '|';
@@ -57,6 +39,9 @@ class DMenuEditor extends \Opencart\System\Engine\Controller {
         $this->load->model('catalog/product');
         $this->load->model('extension/dmenu_editor/module/dmenu_editor');
 
+        // Menu Type.
+        $this->menu_type = $data['menu_type'];
+
         // All active languages.
         $this->languages = $this->model_localisation_language->getLanguages();
 
@@ -64,70 +49,67 @@ class DMenuEditor extends \Opencart\System\Engine\Controller {
         $this->settings['language_id'] = $this->config->get('config_language_id');
 
         // Setting 'Status'.
-        if ($this->config->get('module_dmenu_editor_status')) {
-            $data['module_dmenu_editor_status'] = $this->config->get('module_dmenu_editor_status');
-        } else {
-            $data['module_dmenu_editor_status'] = 0;
-        }
+        $data['module_dmenu_editor_status'] = $this->config->get('module_dmenu_editor_status');
 
         // Module Settings.
-        if ($this->config->get('module_dmenu_editor_settings')) {
-            $module_settings = $this->config->get('module_dmenu_editor_settings');
-        } else {
-            $module_settings = array();
-        }
+        $module_settings = $this->config->get('module_dmenu_editor_settings');
 
         // Store ID.
-        if (isset($module_settings['general']['store_default'][$data['menu_type']])) {
+        if (isset($module_settings['general']['store_default'][$this->menu_type])) {
             // If Default Store ID is checked (in settings).
-            $data['store_id'] = $module_settings['general']['store_default'][$data['menu_type']];
+            $data['store_id'] = $module_settings['general']['store_default'][$this->menu_type];
         } else {
             $data['store_id'] = $this->config->get('config_store_id');
         }
 
-        // Settings Current Menu.
-        if (isset($module_settings['menu'][$data['menu_type']])) {
-            $data['settings_menu'] = $module_settings['menu'][$data['menu_type']];
-        } else {
-            $data['settings_menu'] = array(
-                'status'   => 0,
-                'title'    => array(
-                    'status'  => 0,
-                    'display' => '',
-                    'name'    => array()
-                ),
-                'mobile'   => array(
-                    'status' => 0,
-                    'close'  => 0
-                ),
-                'currency' => 0,
-                'language' => 0,
-                'icon'     => $this->settings['menu'][$data['menu_type']]['icon']
-            );
-        }
+        $this->settings['store_id'] = $data['store_id'];
 
-        // Additional data.
-        $data['additional'] = array();
+        // Settings Current Menu.
+        $data['settings_menu'] = $module_settings['menu'][$this->menu_type];
+        $this->settings['menu']['icon'] = $data['settings_menu']['icon'];
 
         // Items Menu.
-        if ($this->config->get('module_dmenu_editor_items_' . $data['menu_type'] . '_' . $data['store_id'])) {
-            $data['menu_items'] = $this->config->get('module_dmenu_editor_items_' . $data['menu_type'] . '_' . $data['store_id']);
+        if ($this->config->get('module_dmenu_editor_items_' . $this->menu_type . '_' . $this->settings['store_id'])) {
+            $data['menu_items'] = $this->config->get('module_dmenu_editor_items_' . $this->menu_type . '_' . $this->settings['store_id']);
         } else {
             $data['menu_items'] = array();
         }
 
-        // Setting 'Status Menu'.
-        $data['menu_items_status'] = $data['settings_menu']['status'];
+        // Extra data from DB.
+        if ($this->config->get('module_dmenu_editor_extra')) {
+            $extra = $this->config->get('module_dmenu_editor_extra');
+        } else {
+            $extra = array();
+        }
 
         // Prepared data.
-        if ($this->config->get('module_dmenu_editor_prepared')) {
-            $prepared = $this->config->get('module_dmenu_editor_prepared');
-
-            if (isset($prepared['menu'][$data['menu_type']]['store_' . $data['store_id']]['IDs'])) {
-                foreach ($prepared['menu'][$data['menu_type']]['store_' . $data['store_id']]['IDs'] as $layout => $IDs) {
+        if (isset($extra['prepared'])) {
+            if (isset($extra['prepared']['menu'][$this->menu_type]['store_' . $this->settings['store_id']]['IDs'])) {
+                foreach ($extra['prepared']['menu'][$this->menu_type]['store_' . $this->settings['store_id']]['IDs'] as $layout => $IDs) {
                     $this->prepared['menu']['IDs'] = $IDs;
                     $this->prepared['menu']['data'][$layout] = $this->model_extension_dmenu_editor_module_dmenu_editor->getItemsPrepared($IDs, $layout);
                 }
+            }
+        }
+
+        // IMAGE_CATALOG directory path.
+        if (isset($extra['PATH_IMAGE'])) {
+            $this->settings['PATH_IMAGE'] = $extra['PATH_IMAGE'];
+        } else {
+            if (!$this->settings['PATH_IMAGE']) {
+                $DIR_IMAGE = explode('/', DIR_IMAGE);
+                $HTTP_SERVER = explode('/', HTTP_SERVER);
+
+                if (!$this->endc($DIR_IMAGE)) array_pop($DIR_IMAGE);
+                if (!$this->endc($HTTP_SERVER)) array_pop($HTTP_SERVER);
+
+                foreach (array_keys($DIR_IMAGE) as $index) {
+                    $dir = $DIR_IMAGE[$index];
+                    unset($DIR_IMAGE[$index]);
+                    if ($dir == $this->endc($HTTP_SERVER)) break;
+                }
+
+                $this->settings['PATH_IMAGE'] = implode('/', array_values($DIR_IMAGE));
             }
         }
 
@@ -167,7 +149,7 @@ class DMenuEditor extends \Opencart\System\Engine\Controller {
             trim($data['settings_menu']['title']['name'][$this->settings['language_id']])) {
                 $data['entry_menu_type'] = $data['settings_menu']['title']['name'][$this->settings['language_id']];
         } else {
-            $data['entry_menu_type'] = sprintf($this->language->get('entry_menu_type'), $this->language->get('entry_menu_' . $data['menu_type']));
+            $data['entry_menu_type'] = sprintf($this->language->get('entry_menu_type'), $this->language->get('entry_menu_' . $this->menu_type));
         }
 
         // Change Menu Items.
@@ -180,11 +162,17 @@ class DMenuEditor extends \Opencart\System\Engine\Controller {
             $data['catalog'] = array();
         }
 
-        // Catalog columns.
+        // Additional data.
+        $data['additional'] = array();
+
+        // Setting 'Icon Status' to additional data.
+        $data['additional']['icon_status'] = $this->settings['menu']['icon']['status'];
+
+        // Catalog columns to additional data.
         $data['additional']['catalog_column'] = version_compare(VERSION, '4.1.0.0', '<') ? true : false;
 
         // Top Menu additional data.
-        if ($data['menu_type'] == 'top') {
+        if ($this->menu_type == 'top') {
             // Alert location.
             $data['additional']['alert'] = version_compare(VERSION, '4.0.2.0', '>=') ? 'outer' : 'inner';
 
@@ -203,7 +191,7 @@ class DMenuEditor extends \Opencart\System\Engine\Controller {
             }
         }
 
-        return $this->load->view('extension/dmenu_editor/module/dmenu_editor/menu/' . $data['menu_type'], $data);
+        return $this->load->view('extension/dmenu_editor/module/dmenu_editor/menu/' . $this->menu_type, $data);
     }
 
     /**
@@ -214,7 +202,7 @@ class DMenuEditor extends \Opencart\System\Engine\Controller {
      * @param string $search_value
      * @param int $depth
      * 
-     * @return bool
+     * @return bool $ancestor
      */
     private function changeMenuItems(array &$items, string $search_key, string $search_value, int $depth = 0): bool {
         $ancestor = false;
@@ -239,21 +227,26 @@ class DMenuEditor extends \Opencart\System\Engine\Controller {
 
                 // Set 'current' class.
                 $item['data'][$search_key] = $this->current_ancestor_class;
+
+                // Attribute 'class' for element.
+                if ($search_key == 'current') {
+                    $item['extra']['class']['el'] .= ' ' . $item['data'][$search_key];
+                }
             } else if ($item['data']['status'] && !empty($item['rows']) && $this->changeMenuItems($item['rows'], $search_key, $search_value, ($depth + 1))) {
                 // Set ancestor.
                 $ancestor = true;
 
                 // Set 'current' class.
                 $item['data'][$search_key] = $this->current_ancestor_class;
+
+                // Attribute 'class' for element.
+                if ($search_key == 'current') {
+                    $item['extra']['class']['el'] .= ' ' . $item['data'][$search_key];
+                }
             }
         }
 
-        // Return.
-        if ($ancestor) {
-            return true;
-        } else {
-            return false;
-        }
+        return $ancestor;
     }
 
     /**
@@ -464,6 +457,44 @@ class DMenuEditor extends \Opencart\System\Engine\Controller {
                 // Title Menu Item.
                 $item['data']['title'] = $item['data']['names'][$this->settings['language_id']];
             }
+
+            // Set attribute 'class'.
+            $item['extra']['class'] = array();
+
+            // Attribute 'class' for element.
+            $item['extra']['class']['el']  = '';
+            $item['extra']['class']['el'] .= isset($item['data']['names_hide']) ? ' dmenu_editor-title_hidden' : '';
+            $item['extra']['class']['el'] .= ' ' . $layout;
+            $item['extra']['class']['el'] .= ' item-' . $item['data']['id'];
+            $item['extra']['class']['el'] .= !empty($item['data']['class']) ? ' ' . $item['data']['class'] : '';
+            $item['extra']['class']['el'] .= $item['data']['current'] ? ' ' . $item['data']['current'] : '';
+
+            // Set attribute 'style'.
+            $item['extra']['style'] = array();
+            $item['extra']['style']['icon']  = '';
+
+            // Attributes for image.
+            if ($this->settings['menu']['icon']['status']) {
+                $item['extra']['style']['icon'] .= 'width: ' . $this->settings['menu']['icon']['width'] . 'px;';
+                $item['extra']['style']['icon'] .= ' height: ' . $this->settings['menu']['icon']['height'] . 'px;';
+
+                if (isset($item['extra']['sprite'])) {
+                    // Attribute 'class' for element.
+                    $item['extra']['class']['el'] .= ' dmenu_editor-icon icon-sprite';
+
+                    // Attribute 'style' for sprite.
+                    $item['extra']['style']['icon'] .= ' background-image: url(/' . $this->settings['PATH_IMAGE'] . '/' . $item['extra']['sprite']['src'] . ');';
+                    $item['extra']['style']['icon'] .= ' background-position: ' . ($item['extra']['sprite']['coords']['x'] * -1) . 'px ' . ($item['extra']['sprite']['coords']['y'] * -1) . 'px;';
+                } else {
+                    // Attribute 'class' for element.
+                    $item['extra']['class']['el'] .= isset($item['data']['icon']['thumb']) ? ' dmenu_editor-icon icon-simple' : '';
+
+                    // Attribute 'style' for icon.
+                    if (isset($item['data']['icon']['thumb'])) {
+                        $item['extra']['style']['icon'] .= ' background-image: url(' . $item['data']['icon']['thumb'] . ');';
+                    }
+                }
+            }
         } else {
             // Set 'current' class.
             $item['data']['current'] = '';
@@ -560,6 +591,7 @@ class DMenuEditor extends \Opencart\System\Engine\Controller {
                     'children' => $children_data,
                     'column'   => isset($categories[$i]['column']) && $categories[$i]['column'] ? $categories[$i]['column'] : 1,
                     'href'     => $href,
+					'class'    => 'catalog_item-' . $categories[$i]['category_id'],
 					'current'  => $current_class
                 );
             }
@@ -656,6 +688,7 @@ class DMenuEditor extends \Opencart\System\Engine\Controller {
         }
 
         // Set other data.
+        // Regular Item.
         if (isset($item_info['status']) && $item_info['status']) {
             // Set href.
             switch ($layout) {

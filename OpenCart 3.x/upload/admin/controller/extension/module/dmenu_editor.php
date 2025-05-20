@@ -9,34 +9,39 @@
 
 class ControllerExtensionModuleDMenuEditor extends Controller {
     private $error = array();
+    private $stores = array();
     private $languages = array();
     private $prepared = array();
+    private $sprite = array();
 
     private $settings = array(
         'menu' => array(
             'main' => array(
-                'icon' => array(
-                    'dimensions' => array('width' => 16, 'height' => 16)
-                )
+                'icon' => array('width' => 16, 'height' => 16, 'sprite' => 0)
             ),
             'top' => array(
-                'icon' => array(
-                    'dimensions' => array('width' => 16, 'height' => 16)
-                )
+                'icon' => array('width' => 16, 'height' => 16, 'sprite' => 0)
             ),
             'footer' => array(
-                'icon' => array(
-                    'dimensions' => array('width' => 16, 'height' => 16)
-                )
+                'icon' => array('width' => 16, 'height' => 16, 'sprite' => 0)
             ),
             'social' => array(
-                'icon' => array(
-                    'dimensions' => array('width' => 16, 'height' => 16)
-                )
+                'icon' => array('width' => 16, 'height' => 16, 'sprite' => 0)
             )
         ),
-        'items_limit' => 50,
-        'search_limit' => 20
+        'sprite' => array(
+            'icon_border' => 1,      // Icon border (padding), px
+            'icon_max'    => 100,    // Max Icon dimensions (width x height), px
+            'columns'     => 10,     // Number of Icons in 1 (one) row
+            'format'      => 'webp', // Sprite image format
+
+            'extension'   => array('gif','jpg','jpeg','png','webp'),
+            'mime'        => array('image/gif','image/jpeg','image/png','image/webp')
+        ),
+        'limit_items'  => 50,
+        'limit_search' => 20,
+        'HTTP_CATALOG' => HTTP_CATALOG,
+        'PATH_IMAGE'   => ''  // IMAGE_CATALOG directory path. Can be specified manually.
     );
 
     public function index() {
@@ -49,6 +54,28 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
         $this->load->model('tool/image');
         $this->load->model('extension/module/dmenu_editor');
 
+        // OpenCart data.
+        if ($this->request->server['HTTPS']) {
+            $HTTP_SERVER = HTTPS_SERVER;
+            $this->settings['HTTP_CATALOG'] = HTTPS_CATALOG;
+        } else {
+            $HTTP_SERVER = HTTP_SERVER;
+            $this->settings['HTTP_CATALOG'] = HTTP_CATALOG;
+        }
+
+        // Stores.
+		$this->stores[] = array(
+			'store_id' => 0,
+			'name'     => $this->language->get('text_store_default'),
+            'url'      => ''
+		);
+
+        $results = $this->model_extension_module_dmenu_editor->getStores();
+
+        foreach ($results as $result) {
+            $this->stores[] = $result;
+        }
+
         // Module Settings.
         if (isset($this->request->post['module_dmenu_editor_settings'])) {
             $data['module_settings'] = $this->request->post['module_dmenu_editor_settings'];
@@ -58,15 +85,38 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
             $data['module_settings'] = array();
         }
 
-        // Setting 'Icon Dimensions'.
+        // Setting 'Icon'.
         foreach ($this->settings['menu'] as $menu_type => $menu) {
-            $this->dimensions($data['module_settings'], $menu_type);
+            $this->icon($data, $menu_type);
+        }
+
+        // IMAGE_CATALOG directory path.
+        if (!$this->settings['PATH_IMAGE']) {
+            $dir_image = explode('/', DIR_IMAGE);
+            $http_catalog = explode('/', $this->settings['HTTP_CATALOG']);
+
+            if (!$this->endc($dir_image)) array_pop($dir_image);
+            if (!$this->endc($http_catalog)) array_pop($http_catalog);
+
+            foreach (array_keys($dir_image) as $index) {
+                $dir = $dir_image[$index];
+                unset($dir_image[$index]);
+                if ($dir == $this->endc($http_catalog)) break;
+            }
+
+            $this->settings['PATH_IMAGE'] = implode('/', array_values($dir_image));
         }
 
         // Save Module data.
-        if ($this->request->server['REQUEST_METHOD'] == 'POST' && $this->validate($this->request->post, array('validate', 'edit'))) {
+        if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate($this->request->post, array('validate', 'edit'))) {
+            // Set PATH_IMAGE to POST.
+            $this->request->post['module_dmenu_editor_extra']['PATH_IMAGE'] = $this->settings['PATH_IMAGE'];
+
             // Set prepared data to POST.
-            $this->request->post['module_dmenu_editor_prepared'] = $this->prepared;
+            $this->request->post['module_dmenu_editor_extra']['prepared'] = $this->prepared;
+
+            // Create Sprite.
+            $this->makeSprite($this->request->post);
 
             // Set POST data to DB.
             $this->model_setting_setting->editSetting('module_dmenu_editor', $this->request->post);
@@ -80,15 +130,9 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
             }
         }
 
-        if ($this->request->server['HTTPS']) {
-            $http_server = HTTPS_SERVER;
-        } else {
-            $http_server = HTTP_SERVER;
-        }
-
-        $this->document->addStyle($http_server . 'view/javascript/module-dmenu_editor/dmenu_editor.css');
-        $this->document->addScript($http_server . 'view/javascript/module-dmenu_editor/sortable/sortable.min.js');
-        $this->document->addScript($http_server . 'view/javascript/module-dmenu_editor/dmenu_editor.js');
+        $this->document->addStyle($HTTP_SERVER . 'view/javascript/module-dmenu_editor/dmenu_editor.css');
+        $this->document->addScript($HTTP_SERVER . 'view/javascript/module-dmenu_editor/sortable/sortable.min.js');
+        $this->document->addScript($HTTP_SERVER . 'view/javascript/module-dmenu_editor/dmenu_editor.js');
 
         // Module Warnings.
         if (isset($this->error['error_items'])) {
@@ -123,6 +167,9 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
         // Set extended data.
         $this->setExtendedData($data);
 
+        // Stores to $data array.
+		$data['stores'] = $this->stores;
+
         // AJAX-actions.
         $data['action_ajax_item'] = $this->url->link('extension/module/dmenu_editor/item', 'user_token=' . $this->session->data['user_token'], true);
         $data['action_ajax_search'] = $this->url->link('extension/module/dmenu_editor/search', 'user_token=' . $this->session->data['user_token'], true);
@@ -136,111 +183,34 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
             $data['module_dmenu_editor_status'] = 0;
         }
 
-        // Settings 'Icon Dimensions' to $data.
-        $data['icon_dimensions'] = array(
-            'menu' => array(
-                'main'   => $this->settings['menu']['main']['icon']['dimensions'],
-                'top'    => $this->settings['menu']['top']['icon']['dimensions'],
-                'footer' => $this->settings['menu']['footer']['icon']['dimensions'],
-                'social' => $this->settings['menu']['social']['icon']['dimensions']
-            )
-        );
-
         // Setting 'ocStore Blog Support'.
         if (empty($data['module_settings']['general']['ocstore_blog'])) {
             $data['module_settings']['general']['ocstore_blog'] = 0;
         }
 
-        // Stores.
-		$data['stores'] = array();
-
-		$data['stores'][] = array(
-			'store_id' => 0,
-			'name'     => $this->language->get('text_store_default'),
-            'url'      => ''
-		);
-
-        $results = $this->model_extension_module_dmenu_editor->getStores();
-
-        foreach ($results as $result) {
-            $data['stores'][] = $result;
-        }
-
-        // Main Menu Items.
-        $data['menus']['main'] = array();
-
-        foreach ($data['stores'] as $store) {
-            if (isset($this->request->post['module_dmenu_editor_items_main_' . $store['store_id']])) {
-                $data['menus']['main']['store_' . $store['store_id']] = $this->request->post['module_dmenu_editor_items_main_' . $store['store_id']];
-            } else if (is_array($this->config->get('module_dmenu_editor_items_main_' . $store['store_id']))) {
-                $data['menus']['main']['store_' . $store['store_id']] = $this->config->get('module_dmenu_editor_items_main_' . $store['store_id']);
-            } else {
-                $data['menus']['main']['store_' . $store['store_id']] = array();
-            }
-        }
-
-        // Top Menu Items.
-        $data['menus']['top'] = array();
-
-        foreach ($data['stores'] as $store) {
-            if (isset($this->request->post['module_dmenu_editor_items_top_' . $store['store_id']])) {
-                $data['menus']['top']['store_' . $store['store_id']] = $this->request->post['module_dmenu_editor_items_top_' . $store['store_id']];
-            } else if (is_array($this->config->get('module_dmenu_editor_items_top_' . $store['store_id']))) {
-                $data['menus']['top']['store_' . $store['store_id']] = $this->config->get('module_dmenu_editor_items_top_' . $store['store_id']);
-            } else {
-                $data['menus']['top']['store_' . $store['store_id']] = array();
-            }
-        }
-
-        // Footer Menu Items.
-        $data['menus']['footer'] = array();
-
-        foreach ($data['stores'] as $store) {
-            if (isset($this->request->post['module_dmenu_editor_items_footer_' . $store['store_id']])) {
-                $data['menus']['footer']['store_' . $store['store_id']] = $this->request->post['module_dmenu_editor_items_footer_' . $store['store_id']];
-            } else if (is_array($this->config->get('module_dmenu_editor_items_footer_' . $store['store_id']))) {
-                $data['menus']['footer']['store_' . $store['store_id']] = $this->config->get('module_dmenu_editor_items_footer_' . $store['store_id']);
-            } else {
-                $data['menus']['footer']['store_' . $store['store_id']] = array();
-            }
-        }
-
-        // Social Menu Items.
-        $data['menus']['social'] = array();
-
-        foreach ($data['stores'] as $store) {
-            if (isset($this->request->post['module_dmenu_editor_items_social_' . $store['store_id']])) {
-                $data['menus']['social']['store_' . $store['store_id']] = $this->request->post['module_dmenu_editor_items_social_' . $store['store_id']];
-            } else if (is_array($this->config->get('module_dmenu_editor_items_social_' . $store['store_id']))) {
-                $data['menus']['social']['store_' . $store['store_id']] = $this->config->get('module_dmenu_editor_items_social_' . $store['store_id']);
-            } else {
-                $data['menus']['social']['store_' . $store['store_id']] = array();
-            }
-        }
-
         // Search limit.
-        $data['search_limit'] = $this->settings['search_limit'];
+        $data['search_limit'] = $this->settings['limit_search'];
         $data['search_limit_text'] = sprintf($this->language->get('help_sticky_search'), $data['search_limit']);
 
         // Information.
-        $data['information_limit'] = $this->settings['items_limit'];
+        $data['information_limit'] = $this->settings['limit_items'];
         $data['information'] = $this->model_extension_module_dmenu_editor->getInformation($data['information_limit']);
 
         // Categories.
-        $data['categories_limit'] = $this->settings['items_limit'];
+        $data['categories_limit'] = $this->settings['limit_items'];
         $data['categories'] = $this->model_extension_module_dmenu_editor->getCategories($data['categories_limit']);
 
         // Products.
-        $data['products_limit'] = $this->settings['items_limit'];
+        $data['products_limit'] = $this->settings['limit_items'];
         $data['products'] = $this->model_extension_module_dmenu_editor->getProducts($data['products_limit']);
 
         // Manufacturers.
-        $data['manufacturers_limit'] = $this->settings['items_limit'];
+        $data['manufacturers_limit'] = $this->settings['limit_items'];
         $data['manufacturers'] = $this->model_extension_module_dmenu_editor->getManufacturers($data['manufacturers_limit']);
 
         // ocStore Blog Categories.
         if ($data['module_settings']['general']['ocstore_blog']) {
-            $data['blog_categories_limit'] = $this->settings['items_limit'];
+            $data['blog_categories_limit'] = $this->settings['limit_items'];
             $data['blog_categories'] = $this->model_extension_module_dmenu_editor->getBlogCategories($data['blog_categories_limit']);
         } else {
             $data['blog_categories_limit'] = 0;
@@ -249,7 +219,7 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
 
         // ocStore Blog Articles.
         if ($data['module_settings']['general']['ocstore_blog']) {
-            $data['blog_articles_limit'] = $this->settings['items_limit'];
+            $data['blog_articles_limit'] = $this->settings['limit_items'];
             $data['blog_articles'] = $this->model_extension_module_dmenu_editor->getBlogArticles($data['blog_articles_limit']);
         } else {
             $data['blog_articles_limit'] = 0;
@@ -390,7 +360,7 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
         $data['other_pages']['catalog'] = array(
             'id'     => 0,
             'layout' => 'catalog',
-            'names'  => $this->names('text_category_menu_catalog'),
+            'names'  => $this->names('text_dropdown_catalog'),
             'url'    => '',
             'title'  => ''
         );
@@ -404,21 +374,25 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
             'title'  => ''
         );
 
-        // Main Menu HTML.
-        $data['menu_type'] = 'main';
-        $this->getItemsMenu($data);
+        // Menu Items.
+        foreach ($this->settings['menu'] as $menu_type => $menu) {
+            // Menu Items (Array).
+            $data['menus'][$menu_type] = array();
 
-        // Top Menu HTML.
-        $data['menu_type'] = 'top';
-        $this->getItemsMenu($data);
+            foreach ($this->stores as $store) {
+                if (isset($this->request->post['module_dmenu_editor_items_' . $menu_type . '_' . $store['store_id']])) {
+                    $data['menus'][$menu_type]['store_' . $store['store_id']] = $this->request->post['module_dmenu_editor_items_' . $menu_type . '_' . $store['store_id']];
+                } else if (is_array($this->config->get('module_dmenu_editor_items_' . $menu_type . '_' . $store['store_id']))) {
+                    $data['menus'][$menu_type]['store_' . $store['store_id']] = $this->config->get('module_dmenu_editor_items_' . $menu_type . '_' . $store['store_id']);
+                } else {
+                    $data['menus'][$menu_type]['store_' . $store['store_id']] = array();
+                }
+            }
 
-        // Footer Menu HTML.
-        $data['menu_type'] = 'footer';
-        $this->getItemsMenu($data);
-
-        // Social Menu HTML.
-        $data['menu_type'] = 'social';
-        $this->getItemsMenu($data);
+            // Menu Items (HTML).
+            $data['menu_type'] = $menu_type;
+            $this->getItemsMenu($data);
+        }
 
         // Settings HTML.
         $data['menu_type'] = '';
@@ -429,6 +403,511 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
         $data['footer'] = $this->load->controller('common/footer');
 
         $this->response->setOutput($this->load->view('extension/module/dmenu_editor', $data));
+    }
+
+    /**
+     * Set extended data.
+     * 
+     * @param array $data
+     * 
+     * @return void
+     */
+    private function setExtendedData(&$data) {
+        // Translated Text.
+        $data['translated_text'] = array(
+            'text_item_desc_none'       => $this->language->get('text_item_desc_none'),
+            'text_item_desc_catalog'    => $this->language->get('text_item_desc_catalog'),
+            'text_result_categories'    => $this->language->get('text_result_categories'),
+            'text_select_none'          => $this->language->get('text_select_none'),
+            'text_target_self'          => $this->language->get('text_target_self'),
+            'text_target_blank'         => $this->language->get('text_target_blank'),
+            'text_target_parent'        => $this->language->get('text_target_parent'),
+            'text_target_top'           => $this->language->get('text_target_top'),
+            'text_enabled'              => $this->language->get('text_enabled'),
+            'text_disabled'             => $this->language->get('text_disabled'),
+            'text_yes'                  => $this->language->get('text_yes'),
+            'text_no'                   => $this->language->get('text_no'),
+
+            'entry_status'              => $this->language->get('entry_status'),
+            'entry_name'                => $this->language->get('entry_name'),
+            'entry_name_hide'           => $this->language->get('entry_name_hide'),
+            'entry_url'                 => $this->language->get('entry_url'),
+            'entry_target'              => $this->language->get('entry_target'),
+            'entry_xfn'                 => $this->language->get('entry_xfn'),
+            'entry_class'               => $this->language->get('entry_class'),
+            'entry_icon'                => $this->language->get('entry_icon'),
+            'entry_dropdown'            => $this->language->get('entry_dropdown'),
+            'entry_dropdown_title'      => $this->language->get('entry_dropdown_title'),
+
+            'button_look_tip'           => $this->language->get('button_look_tip'),
+            'button_remove_item_tip'    => $this->language->get('button_remove_item_tip'),
+            'button_edit_item_tip'      => $this->language->get('button_edit_item_tip'),
+            'button_lock_tip'           => $this->language->get('button_lock_tip'),
+            'button_unlock_tip'         => $this->language->get('button_unlock_tip'),
+
+            'note_title_empty'          => $this->language->get('note_title_empty')
+        );
+
+        // Menu Item layouts.
+        $data['module_layouts'] = array(
+            'home'          => $this->language->get('text_item_desc_home'),          // Home
+            'account'       => $this->language->get('text_item_desc_account'),       // Account
+            'login'         => $this->language->get('text_item_desc_login'),         // Account Login
+            'logout'        => $this->language->get('text_item_desc_logout'),        // Account Logout
+            'register'      => $this->language->get('text_item_desc_register'),      // Account Register
+            'contact'       => $this->language->get('text_item_desc_contact'),       // Contact Us
+            'sitemap'       => $this->language->get('text_item_desc_sitemap'),       // Sitemap
+            'compare'       => $this->language->get('text_item_desc_compare'),       // Compare
+            'wishlist'      => $this->language->get('text_item_desc_wishlist'),      // Wishlist
+            'cart'          => $this->language->get('text_item_desc_cart'),          // Cart
+            'checkout'      => $this->language->get('text_item_desc_checkout'),      // Checkout
+            'special'       => $this->language->get('text_item_desc_special'),       // Special
+            'search'        => $this->language->get('text_item_desc_search'),        // Search
+            'information'   => $this->language->get('text_item_desc_information'),   // Information
+            'catalog'       => $this->language->get('text_item_desc_catalog'),       // Catalog
+            'category'      => $this->language->get('text_item_desc_category'),      // Category
+            'product'       => $this->language->get('text_item_desc_product'),       // Product
+            'manufacturers' => $this->language->get('text_item_desc_manufacturers'), // Manufacturers
+            'manufacturer'  => $this->language->get('text_item_desc_manufacturer'),  // Manufacturer
+            'blog_category' => $this->language->get('text_item_desc_blog_category'), // ocStore Blog Category
+            'blog_article'  => $this->language->get('text_item_desc_blog_article'),  // ocStore Blog Article
+            'custom'        => $this->language->get('text_item_desc_custom'),        // Custom
+            'html'          => $this->language->get('text_item_desc_html'),          // HTML
+            'none'          => $this->language->get('text_item_desc_none')           // None
+        );
+
+        // Current language ID.
+        $data['config_language_id'] = (int)$this->config->get('config_language_id');
+
+        // All languages.
+        $this->languages = $this->model_localisation_language->getLanguages();
+        $data['languages'] = $this->languages;
+
+        // Menu Item placeholder.
+        $data['item_placeholder'] = $this->model_tool_image->resize('no_image.png', 100, 100);
+    }
+
+    /**
+     * Change Menu Items. Recursion.
+     * 
+     * @param array $items
+     * @param string $menu_type
+     * @param int $store_id
+     * @param array $meaning
+     * 
+     * @return void
+     */
+    private function changeMenuItems(&$items, $menu_type, $store_id, $meaning = array()) {
+        $items_count = count($items);
+
+        for ($i = 0; $i < $items_count; $i++) {
+            $layout = $items[$i]['data']['layout'];
+
+            switch ($layout) {
+                // Layout 'Catalog'.
+                case 'catalog':
+                    // Validate Menu Item.
+                    if (in_array('validate', $meaning)) {
+                        if ($items[$i]['data']['dropdown']) {
+                            foreach ($items[$i]['data']['names'] as $key_name => $name) {
+                                if (empty($name)) {
+                                    if (!array_key_exists('error', $items[$i])) {
+                                        $items[$i]['error'] = array();
+                                    }
+
+                                    $items[$i]['error']['names'][$key_name] = $this->language->get('error_empty_field');
+
+                                    $this->error['error_items'][$menu_type]['store_' . $store_id]['empty_fields'] = $this->language->get('error_empty_fields');
+                                }
+                            }
+                        }
+                    }
+
+                    // Edit Menu Item.
+                    //if (in_array('edit', $meaning)) {}
+
+                    break;
+
+                // Layout Other.
+                default:
+                    // Validate Menu Item.
+                    if (in_array('validate', $meaning)) {
+                        foreach ($items[$i]['data']['names'] as $key_name => $name) {
+                            if (empty($name)) {
+                                if (!array_key_exists('error', $items[$i])) {
+                                    $items[$i]['error'] = array();
+                                }
+
+                                $items[$i]['error']['names'][$key_name] = $this->language->get('error_empty_field');
+
+                                $this->error['error_items'][$menu_type]['store_' . $store_id]['empty_fields'] = $this->language->get('error_empty_fields');
+                            }
+                        }
+
+                        if (array_key_exists('seo', $items[$i]['data']['url'])) {
+                            foreach ($items[$i]['data']['url']['seo'] as $key_seo => $seo) {
+                                if (empty(trim($seo))) {
+                                    if (!array_key_exists('error', $items[$i])) {
+                                        $items[$i]['error'] = array();
+                                    }
+
+                                    $items[$i]['error']['seo'][$key_seo] = $this->language->get('error_empty_field');
+
+                                    $this->error['error_items'][$menu_type]['store_' . $store_id]['empty_fields'] = $this->language->get('error_empty_fields');
+                                }
+                            }
+                        }
+                    }
+
+                    // Edit Menu Item.
+                    //if (in_array('edit', $meaning)) {}
+
+                    // Recursion.
+                    if (array_key_exists('rows', $items[$i]) && count($items[$i]['rows']) > 0) {
+                        $this->changeMenuItems($items[$i]['rows'], $menu_type, $store_id, $meaning);
+                    }
+
+                    break;
+            }
+
+            // Edit Menu Item.
+            if (in_array('edit', $meaning)) {
+                // Set ID Menu Item.
+                $items[$i]['data']['slug'] = $this->generateRandomString() . '-' . $items[$i]['data']['id'] . $i;
+
+                // Menu Item Icon.
+                if (isset($items[$i]['data']['icon']['image']) && is_file(DIR_IMAGE . $items[$i]['data']['icon']['image'])) {
+                    // Menu Item thumbnail.
+                    $items[$i]['data']['icon']['thumb'] = $this->model_tool_image->resize($items[$i]['data']['icon']['image'], $this->settings['menu'][$menu_type]['icon']['width'], $this->settings['menu'][$menu_type]['icon']['height']);
+
+                    // Set item thumb to sprite array.
+                    if ($this->settings['menu'][$menu_type]['icon']['sprite']) {
+                        $this->sprite[$menu_type]['store_' . $store_id][] = array(
+                            'slug'  => $items[$i]['data']['slug'],
+                            'thumb' => $items[$i]['data']['icon']['thumb']
+                        );
+                    }
+                }
+
+                // Set prepared item ID.
+                if (isset($this->prepared['menu'][$menu_type]['store_' . $store_id]['IDs'][$layout])) {
+                    if (!in_array($items[$i]['data']['id'], $this->prepared['menu'][$menu_type]['store_' . $store_id]['IDs'][$layout])) {
+                        $this->prepared['menu'][$menu_type]['store_' . $store_id]['IDs'][$layout][] = $items[$i]['data']['id'];
+                    }
+                } else {
+                    $this->prepared['menu'][$menu_type]['store_' . $store_id]['IDs'][$layout][] = $items[$i]['data']['id'];
+                }
+            }
+
+            // Set Sprite data to Menu Item.
+            if (in_array('sprite', $meaning)) {
+                // Set sprite data.
+                foreach ($this->sprite[$menu_type]['store_' . $store_id] as $sprite_item) {
+                    if ($sprite_item['slug'] == $items[$i]['data']['slug']) {
+                        $items[$i]['extra']['sprite'] = array(
+                            'src'    => $sprite_item['src'],
+                            'coords' => $sprite_item['coords']
+                        );
+
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Get Menu Items (HTML).
+     * 
+     * @param array $data
+     * @param string $meaning
+     * @param string $item_id
+     * @param string $item_name
+     * 
+     * @return void
+     */
+    private function getItemsMenu(&$data, $meaning = 'container', $item_id = '', $item_name = '') {
+        $data['item_id'] = $item_id;
+        $data['item_name'] = $item_name;
+        $data['items_menu'] = array();
+
+        foreach ($data['menus'][$data['menu_type']] as $store => $menu) {
+            $data['store_id'] = str_replace('store_', '', $store);
+            $data['items_store'] = $menu;
+
+            // Store Menu Items (HTML).
+            $data['items_menu'][$store] = $this->load->view('extension/module/dmenu_editor/menu/items', $data);
+        }
+
+        // Cleaning the array $data.
+        unset($data['store_id']);
+        unset($data['items_store']);
+
+        // Menu HTML.
+        switch ($meaning) {
+            case 'container':
+                $data['menu_' . $data['menu_type']] = $this->load->view('extension/module/dmenu_editor/menu/container', $data);
+
+                // Cleaning the array $data.
+                unset($data['items_menu']);
+
+                break;
+            case 'item':
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Make sprite.
+     * 
+     * @param array $data
+     * 
+     * @return void
+     */
+    private function makeSprite(&$data) {
+        $sprite = array(
+            'valid' => array(),
+            'image' => array(),
+            'count' => array()
+        );
+
+        if (!extension_loaded('gd')) {
+            return;
+        }
+
+        // Settings.
+        $settings = $this->settings['sprite'];
+
+        // Delete sprites.
+        $dirPath = DIR_IMAGE . 'module-dmenu_editor/sprite/';
+        $this->deleteDir($dirPath, 'file');
+
+        // Fill $sprite array.
+        foreach ($this->settings['menu'] as $menu_type => $menu) {
+            foreach ($this->stores as $store) {
+                $sprite['valid'][$menu_type]['store_' . $store['store_id']] = array();
+                $sprite['image'][$menu_type]['store_' . $store['store_id']] = array();
+                $sprite['count'][$menu_type]['store_' . $store['store_id']] = 0;
+            }
+        }
+
+        // Get some Sprite data.
+        foreach ($this->sprite as $menu_type => $menu) {
+            foreach ($menu as $store_id => $store) {
+                foreach ($store as $item) {
+                    $filepath = str_replace($this->settings['HTTP_CATALOG'] . $this->settings['PATH_IMAGE'] . '/', '', $item['thumb']);
+                    $realpath = DIR_IMAGE . $filepath;
+
+                    if (is_file($realpath)) {
+                        $extension = strtolower(pathinfo($filepath, PATHINFO_EXTENSION));
+
+                        if (in_array($extension, $settings['extension'])) {
+                            $info = getimagesize($realpath);
+
+                            if (isset($info['mime']) && in_array($info['mime'], $settings['mime'])) {
+                                $width = $info[0];
+                                $height = $info[1];
+
+                                if (!$width || ($width > $settings['icon_max']) || 
+                                    !$height || ($height > $settings['icon_max'])) {
+                                    continue;
+                                }
+
+                                // Add valid icon to $sprite array.
+                                $sprite['valid'][$menu_type][$store_id][] = $item;
+
+                                // Update Number of icons (increment).
+                                ++$sprite['count'][$menu_type][$store_id];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Make sprite.
+        foreach ($sprite['valid'] as $menu_type => $menu) {
+            foreach ($menu as $store_id => $store) {
+                $number = $sprite['count'][$menu_type][$store_id];
+
+                if ($number) {
+                    $sprite_path = 'module-dmenu_editor/sprite/menu_' . $menu_type . '-' . $store_id . '-' . $this->generateRandomString() . '.' . $settings['format'];
+
+                    // Icon Border size.
+                    $border = $settings['icon_border'];
+
+                    /* Create Sprite image for Store */
+
+                    // Sprite Rows.
+                    if ($number <= $settings['columns']) $rows = 1;
+                    else $rows = ceil($number / $settings['columns']);
+
+                    // Sprite image sizes.
+                    $width = ($this->settings['menu'][$menu_type]['icon']['width'] + ($border * 2)) * $settings['columns'];
+                    $height = ($this->settings['menu'][$menu_type]['icon']['height'] + ($border * 2)) * $rows;
+
+                    // Create Sprite image.
+                    $GdSprite = imagecreatetruecolor($width, $height);
+
+                    imagealphablending($GdSprite, false);
+                    imagesavealpha($GdSprite, true);
+
+                    $background = imagecolorallocatealpha($GdSprite, 255, 255, 255, 127);
+
+                    imagecolortransparent($GdSprite, $background);
+                    imagefilledrectangle($GdSprite, 0, 0, $width, $height, $background);
+
+                    /* Icons to Sprite */
+
+                    $column = 0;
+                    $row = 0;
+
+                    foreach ($store as $item) {
+                        $filepath = str_replace($this->settings['HTTP_CATALOG'] . $this->settings['PATH_IMAGE'] . '/', '', $item['thumb']);
+                        $realpath = DIR_IMAGE . $filepath;
+
+                        $image = null;
+                        $info = getimagesize($realpath);
+
+                        $width = $info[0];
+                        $height = $info[1];
+                        $mime = $info['mime'] ?? '';
+
+                        // Create image.
+                        switch ($mime) {
+                            case 'image/gif':
+                                $image = imagecreatefromgif($realpath);
+                                break;
+                            case 'image/jpeg':
+                                $image = imagecreatefromjpeg($realpath);
+                                break;
+                            case 'image/png':
+                                $image = imagecreatefrompng($realpath);
+                                imageinterlace($image, false);
+                                break;
+                            case 'image/webp':
+                                $image = imagecreatefromwebp($realpath);
+                                break;
+                            default:
+                                break;
+                        }
+
+                        // Add icon to Sprite image.
+                        if ($image) {
+                            $xpos = ($column * ($width + ($border * 2))) + $border;
+                            $ypos = ($row * ($height + ($border * 2))) + $border;
+
+                            imagecopy($GdSprite, $image, $xpos, $ypos, 0, 0, $width, $height);
+
+                            imagedestroy($image);
+
+                            // Add icon data to $sprite array.
+                            $sprite['image'][$menu_type][$store_id][] = array(
+                                'slug'   => $item['slug'],
+                                'src'    => $sprite_path,
+                                'coords' => array('x' => $xpos, 'y' => $ypos)
+                            );
+
+                            // Correction Column and Row.
+                            if ($column >= $settings['columns']) {
+                                $column = 0;
+                                ++$row;
+                            } else {
+                                ++$column;
+                            }
+                        }
+                    }
+
+                    // Create Sprite image.
+                    switch ($settings['format']) {
+                        case 'gif':
+                            imagegif($GdSprite, DIR_IMAGE . $sprite_path);
+                            break;
+                        case 'jpg':
+                        case 'jpeg':
+                            imagejpeg($GdSprite, DIR_IMAGE . $sprite_path);
+                            break;
+                        case 'png':
+                            imagepng($GdSprite, DIR_IMAGE . $sprite_path);
+                            break;
+                        case 'webp':
+                            imagewebp($GdSprite, DIR_IMAGE . $sprite_path);
+                            break;
+                        default:
+                            break;
+                    }
+
+                    // Destroy Sprite GdImage.
+                    imagedestroy($GdSprite);
+                }
+            }
+        }
+
+        // Change data in $this->sprite array.
+        $this->sprite = $sprite['image'];
+
+        // Set sprite data to Menu Items.
+        foreach ($this->settings['menu'] as $menu_type => $menu) {
+            foreach ($this->stores as $store) {
+                if (!empty($data['module_dmenu_editor_items_' . $menu_type . '_' . $store['store_id']])) {
+                    if ($sprite['image'][$menu_type]['store_' . $store['store_id']]) {
+                        $this->changeMenuItems($data['module_dmenu_editor_items_' . $menu_type . '_' . $store['store_id']], $menu_type, $store['store_id'], array('sprite'));
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Change Icon Data.
+     * 
+     * @param array $data
+     * @param string $menu_type
+     * 
+     * @return void
+     */
+    private function icon(&$data, $menu_type) {
+        if (!empty($data['module_settings']['menu'][$menu_type]['icon'])) {
+            // Icon Width.
+            if ((int)$data['module_settings']['menu'][$menu_type]['icon']['width'] > 0) {
+                $this->settings['menu'][$menu_type]['icon']['width'] = (int)$data['module_settings']['menu'][$menu_type]['icon']['width'];
+            }
+
+            // Icon Height.
+            if ((int)$data['module_settings']['menu'][$menu_type]['icon']['height'] > 0) {
+                $this->settings['menu'][$menu_type]['icon']['height'] = (int)$data['module_settings']['menu'][$menu_type]['icon']['height'];
+            }
+
+            // Status Icon Sprite.
+            $this->settings['menu'][$menu_type]['icon']['sprite'] = (int)$data['module_settings']['menu'][$menu_type]['icon']['sprite'];
+        }
+
+        // Setting 'Icon' to $data.
+        $data['module_settings']['menu'][$menu_type]['icon']['width'] = $this->settings['menu'][$menu_type]['icon']['width'];
+        $data['module_settings']['menu'][$menu_type]['icon']['height'] = $this->settings['menu'][$menu_type]['icon']['height'];
+        $data['module_settings']['menu'][$menu_type]['icon']['sprite'] = $this->settings['menu'][$menu_type]['icon']['sprite'];
+    }
+
+    /**
+     * Set names.
+     * 
+     * @param string $text
+     * 
+     * @return array $names
+     */
+    private function names($text) {
+        $names = array();
+
+        foreach($this->languages as $language) {
+            $lang = new Language($language['code']);
+            $lang->load('extension/module/dmenu_editor');
+
+            $names[$language['language_id']] = $lang->get($text);
+        }
+
+        return $names;
     }
 
     /**
@@ -451,7 +930,7 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
         if (isset($this->request->post['limit']) && !empty($this->request->post['limit'])) {
             $limit = (int)$this->request->post['limit'];
         } else {
-            $limit = $this->settings['search_limit'];
+            $limit = $this->settings['limit_search'];
         }
 
         if (isset($this->request->post['search']) && !empty($this->request->post['search'])) {
@@ -526,7 +1005,7 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
                 $this->setExtendedData($data);
 
                 // Menu Item formatting.
-                $data['menus'][$data['menu_type']]['store_' . $data['store_id']][$row] = array(
+                $data['menus'][$data['menu_type']]['store_' . $store_id][$row] = array(
                     'data' => $this->request->post
                 );
 
@@ -547,274 +1026,6 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
     }
 
     /**
-     * Change Menu Items. Recursion.
-     * 
-     * @param array $items
-     * @param string $menu_type
-     * @param int $store_id
-     * @param array $meaning
-     * 
-     * @return void
-     */
-    private function changeMenuItems(&$items, $menu_type, $store_id, $meaning = array()) {
-        $items_count = count($items);
-
-        for ($i = 0; $i < $items_count; $i++) {
-            $layout = $items[$i]['data']['layout'];
-
-            switch ($layout) {
-                // Layout 'Catalog'.
-                case 'catalog':
-                    // Validate Menu Item.
-                    if (in_array('validate', $meaning)) {
-                        if ($items[$i]['data']['category_menu']) {
-                            foreach ($items[$i]['data']['names'] as $key_name => $name) {
-                                if (empty($name)) {
-                                    if (!array_key_exists('error', $items[$i])) {
-                                        $items[$i]['error'] = array();
-                                    }
-
-                                    $items[$i]['error']['names'][$key_name] = $this->language->get('error_empty_field');
-
-                                    $this->error['error_items'][$menu_type]['store_' . $store_id]['empty_fields'] = $this->language->get('error_empty_fields');
-                                }
-                            }
-                        }
-                    }
-
-                    // Edit Menu Item.
-                    //if (in_array('edit', $meaning)) {}
-
-                    break;
-
-                // Layout Other.
-                default:
-                    // Validate Menu Item.
-                    if (in_array('validate', $meaning)) {
-                        foreach ($items[$i]['data']['names'] as $key_name => $name) {
-                            if (empty($name)) {
-                                if (!array_key_exists('error', $items[$i])) {
-                                    $items[$i]['error'] = array();
-                                }
-
-                                $items[$i]['error']['names'][$key_name] = $this->language->get('error_empty_field');
-
-                                $this->error['error_items'][$menu_type]['store_' . $store_id]['empty_fields'] = $this->language->get('error_empty_fields');
-                            }
-                        }
-
-                        if (array_key_exists('seo', $items[$i]['data']['url'])) {
-                            foreach ($items[$i]['data']['url']['seo'] as $key_seo => $seo) {
-                                if (empty(trim($seo))) {
-                                    if (!array_key_exists('error', $items[$i])) {
-                                        $items[$i]['error'] = array();
-                                    }
-
-                                    $items[$i]['error']['seo'][$key_seo] = $this->language->get('error_empty_field');
-
-                                    $this->error['error_items'][$menu_type]['store_' . $store_id]['empty_fields'] = $this->language->get('error_empty_fields');
-                                }
-                            }
-                        }
-                    }
-
-                    // Edit Menu Item.
-                    //if (in_array('edit', $meaning)) {}
-
-                    // Recursion.
-                    if (array_key_exists('rows', $items[$i]) && count($items[$i]['rows']) > 0) {
-                        $this->changeMenuItems($items[$i]['rows'], $menu_type, $store_id, $meaning);
-                    }
-
-                    break;
-            }
-
-            // Edit Menu Item.
-            if (in_array('edit', $meaning)) {
-                // Menu Item Icon.
-                if (isset($items[$i]['data']['icon']['image']) && is_file(DIR_IMAGE . $items[$i]['data']['icon']['image'])) {
-                    // Menu Item thumbnail.
-                    $items[$i]['data']['icon']['thumb'] = $this->model_tool_image->resize($items[$i]['data']['icon']['image'], $this->settings['menu'][$menu_type]['icon']['dimensions']['width'], $this->settings['menu'][$menu_type]['icon']['dimensions']['height']);
-                }
-
-                // Set prepared item ID.
-                if (isset($this->prepared['menu'][$menu_type]['store_' . $store_id]['IDs'][$layout])) {
-                    if (!in_array($items[$i]['data']['id'], $this->prepared['menu'][$menu_type]['store_' . $store_id]['IDs'][$layout])) {
-                        $this->prepared['menu'][$menu_type]['store_' . $store_id]['IDs'][$layout][] = $items[$i]['data']['id'];
-                    }
-                } else {
-                    $this->prepared['menu'][$menu_type]['store_' . $store_id]['IDs'][$layout][] = $items[$i]['data']['id'];
-                }
-            }
-        }
-    }
-
-    /**
-     * Get Menu Items (HTML).
-     * 
-     * @param array $data
-     * @param string $meaning
-     * @param string $item_id
-     * @param string $item_name
-     * 
-     * @return void
-     */
-    private function getItemsMenu(&$data, $meaning = 'container', $item_id = '', $item_name = '') {
-        $data['item_id'] = $item_id;
-        $data['item_name'] = $item_name;
-        $data['items_menu'] = array();
-
-        foreach ($data['menus'][$data['menu_type']] as $store => $menu) {
-            $data['store_id'] = str_replace('store_', '', $store);
-            $data['items_store'] = $menu;
-
-            // Store Menu Items (HTML).
-            $data['items_menu'][$store] = $this->load->view('extension/module/dmenu_editor/menu/items', $data);
-        }
-
-        // Cleaning the array $data.
-        unset($data['store_id']);
-        unset($data['items_store']);
-
-        // Menu HTML.
-        switch ($meaning) {
-            case 'container':
-                $data['menu_' . $data['menu_type']] = $this->load->view('extension/module/dmenu_editor/menu/container', $data);
-
-                // Cleaning the array $data.
-                unset($data['items_menu']);
-
-                break;
-            case 'item':
-                break;
-            default:
-                break;
-        }
-    }
-
-    /**
-     * Set extended data.
-     * 
-     * @param array $data
-     * 
-     * @return void
-     */
-    private function setExtendedData(&$data) {
-        // Translated Text.
-        $data['translated_text'] = array(
-            'text_item_desc_none'       => $this->language->get('text_item_desc_none'),
-            'text_item_desc_catalog'    => $this->language->get('text_item_desc_catalog'),
-            'text_result_categories'    => $this->language->get('text_result_categories'),
-            'text_select_none'          => $this->language->get('text_select_none'),
-            'text_target_self'          => $this->language->get('text_target_self'),
-            'text_target_blank'         => $this->language->get('text_target_blank'),
-            'text_target_parent'        => $this->language->get('text_target_parent'),
-            'text_target_top'           => $this->language->get('text_target_top'),
-            'text_enabled'              => $this->language->get('text_enabled'),
-            'text_disabled'             => $this->language->get('text_disabled'),
-            'text_yes'                  => $this->language->get('text_yes'),
-            'text_no'                   => $this->language->get('text_no'),
-
-            'entry_status'              => $this->language->get('entry_status'),
-            'entry_name'                => $this->language->get('entry_name'),
-            'entry_name_hide'           => $this->language->get('entry_name_hide'),
-            'entry_url'                 => $this->language->get('entry_url'),
-            'entry_target'              => $this->language->get('entry_target'),
-            'entry_xfn'                 => $this->language->get('entry_xfn'),
-            'entry_class'               => $this->language->get('entry_class'),
-            'entry_icon'                => $this->language->get('entry_icon'),
-            'entry_category_menu'       => $this->language->get('entry_category_menu'),
-            'entry_category_menu_title' => $this->language->get('entry_category_menu_title'),
-
-            'button_look_tip'           => $this->language->get('button_look_tip'),
-            'button_remove_item_tip'    => $this->language->get('button_remove_item_tip'),
-            'button_edit_item_tip'      => $this->language->get('button_edit_item_tip'),
-            'button_lock_tip'           => $this->language->get('button_lock_tip'),
-            'button_unlock_tip'         => $this->language->get('button_unlock_tip'),
-
-            'note_title_empty'          => $this->language->get('note_title_empty')
-        );
-
-        // Menu Item layouts.
-        $data['module_layouts'] = array(
-            'home'          => $this->language->get('text_item_desc_home'),          // Home
-            'account'       => $this->language->get('text_item_desc_account'),       // Account
-            'login'         => $this->language->get('text_item_desc_login'),         // Account Login
-            'logout'        => $this->language->get('text_item_desc_logout'),        // Account Logout
-            'register'      => $this->language->get('text_item_desc_register'),      // Account Register
-            'contact'       => $this->language->get('text_item_desc_contact'),       // Contact Us
-            'sitemap'       => $this->language->get('text_item_desc_sitemap'),       // Sitemap
-            'compare'       => $this->language->get('text_item_desc_compare'),       // Compare
-            'wishlist'      => $this->language->get('text_item_desc_wishlist'),      // Wishlist
-            'cart'          => $this->language->get('text_item_desc_cart'),          // Cart
-            'checkout'      => $this->language->get('text_item_desc_checkout'),      // Checkout
-            'special'       => $this->language->get('text_item_desc_special'),       // Special
-            'search'        => $this->language->get('text_item_desc_search'),        // Search
-            'information'   => $this->language->get('text_item_desc_information'),   // Information
-            'catalog'       => $this->language->get('text_item_desc_catalog'),       // Catalog
-            'category'      => $this->language->get('text_item_desc_category'),      // Category
-            'product'       => $this->language->get('text_item_desc_product'),       // Product
-            'manufacturers' => $this->language->get('text_item_desc_manufacturers'), // Manufacturers
-            'manufacturer'  => $this->language->get('text_item_desc_manufacturer'),  // Manufacturer
-            'blog_category' => $this->language->get('text_item_desc_blog_category'), // ocStore Blog Category
-            'blog_article'  => $this->language->get('text_item_desc_blog_article'),  // ocStore Blog Article
-            'custom'        => $this->language->get('text_item_desc_custom'),        // Custom
-            'html'          => $this->language->get('text_item_desc_html'),          // HTML
-            'none'          => $this->language->get('text_item_desc_none')           // None
-        );
-
-        // Current language ID.
-        $data['config_language_id'] = (int)$this->config->get('config_language_id');
-
-        // All languages.
-        $this->languages = $this->model_localisation_language->getLanguages();
-        $data['languages'] = $this->languages;
-
-        // Menu Item placeholder.
-        $data['item_placeholder'] = $this->model_tool_image->resize('no_image.png', 100, 100);
-    }
-
-    /**
-     * Change Icon Dimensions.
-     * 
-     * @param array $module_settings
-     * @param string $menu_type
-     * 
-     * @return void
-     */
-    private function dimensions($module_settings, $menu_type) {
-        if (!empty($module_settings['menu'][$menu_type]['icon'])) {
-            if ((int)$module_settings['menu'][$menu_type]['icon']['width'] > 0) {
-                $this->settings['menu'][$menu_type]['icon']['dimensions']['width'] = (int)$module_settings['menu'][$menu_type]['icon']['width'];
-            }
-
-            if ((int)$module_settings['menu'][$menu_type]['icon']['height'] > 0) {
-                $this->settings['menu'][$menu_type]['icon']['dimensions']['height'] = (int)$module_settings['menu'][$menu_type]['icon']['height'];
-            }
-        }
-    }
-
-    /**
-     * Set names.
-     * 
-     * @param string $text
-     * 
-     * @return array $names
-     */
-    private function names($text) {
-        $names = array();
-
-        foreach($this->languages as $language) {
-            $lang = new Language($language['code']);
-            $lang->load('extension/module/dmenu_editor');
-
-            $names[$language['language_id']] = $lang->get($text);
-        }
-
-        return $names;
-    }
-
-    /**
      * Validate Menu Items.
      * 
      * @param array $data
@@ -823,54 +1034,14 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
      * @return bool $this->error
      */
     protected function validate(&$data, $meaning = array()) {
-        // Stores.
-		$stores = array();
-
-		$stores[] = array(
-			'store_id' => 0,
-			'name'     => $this->language->get('text_store_default'),
-            'url'      => ''
-		);
-
-        $results = $this->model_extension_module_dmenu_editor->getStores();
-
-        foreach ($results as $result) {
-            $stores[] = $result;
-        }
-
-        // Change Main Menu Items.
-        foreach ($stores as $store) {
-            if (!empty($data['module_dmenu_editor_items_main_' . $store['store_id']])) {
-                $this->changeMenuItems($data['module_dmenu_editor_items_main_' . $store['store_id']], 'main', $store['store_id'], $meaning);
-            } else {
-                $data['module_dmenu_editor_items_main_' . $store['store_id']] = array();
-            }
-        }
-
-        // Change Top Menu Items.
-        foreach ($stores as $store) {
-            if (!empty($data['module_dmenu_editor_items_top_' . $store['store_id']])) {
-                $this->changeMenuItems($data['module_dmenu_editor_items_top_' . $store['store_id']], 'top', $store['store_id'], $meaning);
-            } else {
-                $data['module_dmenu_editor_items_top_' . $store['store_id']] = array();
-            }
-        }
-
-        // Change Footer Menu Items.
-        foreach ($stores as $store) {
-            if (!empty($data['module_dmenu_editor_items_footer_' . $store['store_id']])) {
-                $this->changeMenuItems($data['module_dmenu_editor_items_footer_' . $store['store_id']], 'footer', $store['store_id'], $meaning);
-            } else {
-                $data['module_dmenu_editor_items_footer_' . $store['store_id']] = array();
-            }
-        }
-
-        // Change Social Menu Items.
-        foreach ($stores as $store) {
-            if (!empty($data['module_dmenu_editor_items_social_' . $store['store_id']])) {
-                $this->changeMenuItems($data['module_dmenu_editor_items_social_' . $store['store_id']], 'social', $store['store_id'], $meaning);
-            } else {
-                $data['module_dmenu_editor_items_social_' . $store['store_id']] = array();
+        // Change Menu Items.
+        foreach ($this->settings['menu'] as $menu_type => $menu) {
+            foreach ($this->stores as $store) {
+                if (!empty($data['module_dmenu_editor_items_' . $menu_type . '_' . $store['store_id']])) {
+                    $this->changeMenuItems($data['module_dmenu_editor_items_' . $menu_type . '_' . $store['store_id']], $menu_type, $store['store_id'], $meaning);
+                } else {
+                    $data['module_dmenu_editor_items_' . $menu_type . '_' . $store['store_id']] = array();
+                }
             }
         }
 
@@ -886,6 +1057,14 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
     public function install(): void {
         // Registering events.
         $this->registerEvents();
+
+        // Path to the module for files.
+        $dirPath = array(
+            'sprite' => DIR_IMAGE . 'module-dmenu_editor/sprite/'
+        );
+
+        // Create directories.
+        $this->makeDir($dirPath);
     }
 
     /**
@@ -895,11 +1074,17 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
     */
     public function uninstall(): void {
         $this->load->model('setting/event');
+
+        // Delete Events.
         $this->model_setting_event->deleteEventByCode('dmenu_editor_1');
         $this->model_setting_event->deleteEventByCode('dmenu_editor_2');
         $this->model_setting_event->deleteEventByCode('dmenu_editor_3');
         $this->model_setting_event->deleteEventByCode('dmenu_editor_4');
         $this->model_setting_event->deleteEventByCode('dmenu_editor_5');
+
+        // Delete directories.
+        $dirPath = DIR_IMAGE . 'module-dmenu_editor/';
+        $this->deleteDir($dirPath);
     }
 
     /**
@@ -908,6 +1093,8 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
     * @return void
     */
     protected function registerEvents(): void {
+        $this->load->model('setting/event');
+
         // Events array.
         $events = array();
 
@@ -956,12 +1143,83 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
             'sort_order'  => 2
         );
 
-        // Loading event model.
-        $this->load->model('setting/event');
-
         // Registering events in DB.
         foreach($events as $event){
             $this->model_setting_event->addEvent($event['code'], $event['trigger'], $event['action'], $event['status'], $event['sort_order']);
         }
+    }
+
+    /**
+    * Create directory.
+    *
+    * @param array $dirPath
+    *
+    * @return void
+    */
+    private function makeDir($dirPath) {
+        foreach ($dirPath as $path) {
+            if (!is_dir($path)) {
+                mkdir($path, 0755, true);
+            }
+        }
+    }
+
+    /**
+    * Delete directory.
+    * Expecting $meaning params: all, file, dir.
+    *
+    * @param string $dirPath
+    * @param string $meaning
+    *
+    * @return void
+    */
+    private function deleteDir($dirPath, $meaning = 'all') {
+        if (is_dir($dirPath)) {
+            $files = scandir($dirPath);
+
+            foreach ($files as $file) {
+                if ($file !== '.' && $file !== '..') {
+                    $filePath = $dirPath . '/' . $file;
+
+                    if (is_dir($filePath)) {
+                        if ($meaning != 'file') $this->deleteDir($filePath);
+                    } else {
+                        if ($meaning != 'dir') unlink($filePath);
+                    }
+                }
+            }
+
+            if ($meaning != 'file') rmdir($dirPath);
+        }
+    }
+
+    /**
+    * Generate random string.
+    *
+    * @param int $length
+    *
+    * @return string $string
+    */
+    private function generateRandomString($length = 24) {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $characters_length = strlen($characters);
+        $string = '';
+
+        for ($i = 0; $i < $length; $i++) {
+            $string .= $characters[random_int(0, $characters_length - 1)];
+        }
+
+        return $string;
+    }
+
+    /**
+     * Return the last item of the array without affecting the internal array pointer.
+     * 
+     * @param array $array
+     * 
+     * @return string
+     */
+    private function endc($array) {
+        return end($array);
     }
 }

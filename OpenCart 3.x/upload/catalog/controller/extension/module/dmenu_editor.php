@@ -8,6 +8,7 @@
  */
 
 class ControllerExtensionModuleDMenuEditor extends Controller {
+    private $menu_type = 'main';
     private $languages = array();
 
     private $catalog = array();
@@ -20,29 +21,10 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
     private $current_ancestor_class = 'current-ancestor';
 
     private $settings = array(
-        'menu' => array(
-            'main' => array(
-                'icon' => array(
-                    'dimensions' => array('width' => 16, 'height' => 16)
-                )
-            ),
-            'top' => array(
-                'icon' => array(
-                    'dimensions' => array('width' => 16, 'height' => 16)
-                )
-            ),
-            'footer' => array(
-                'icon' => array(
-                    'dimensions' => array('width' => 16, 'height' => 16)
-                )
-            ),
-            'social' => array(
-                'icon' => array(
-                    'dimensions' => array('width' => 16, 'height' => 16)
-                )
-            )
-        ),
-        'language_id' => 0
+        'menu'        => array(),
+        'store_id'    => 0,
+        'language_id' => 0,
+        'PATH_IMAGE'  => '' // IMAGE_CATALOG directory path. Can be specified manually.
     );
 
     public function index($data) {
@@ -52,6 +34,16 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
         $this->load->model('catalog/product');
         $this->load->model('extension/module/dmenu_editor');
 
+        // OpenCart data.
+        if ($this->request->server['HTTPS']) {
+            $HTTP_SERVER = HTTPS_SERVER;
+        } else {
+            $HTTP_SERVER = HTTP_SERVER;
+        }
+
+        // Menu Type.
+        $this->menu_type = $data['menu_type'];
+
         // All active languages.
         $this->languages = $this->model_localisation_language->getLanguages();
 
@@ -59,18 +51,10 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
         $this->settings['language_id'] = $this->config->get('config_language_id');
 
         // Setting 'Status'.
-        if ($this->config->get('module_dmenu_editor_status')) {
-            $data['module_dmenu_editor_status'] = $this->config->get('module_dmenu_editor_status');
-        } else {
-            $data['module_dmenu_editor_status'] = 0;
-        }
+        $data['module_dmenu_editor_status'] = $this->config->get('module_dmenu_editor_status');
 
         // Module Settings.
-        if ($this->config->get('module_dmenu_editor_settings')) {
-            $module_settings = $this->config->get('module_dmenu_editor_settings');
-        } else {
-            $module_settings = array();
-        }
+        $module_settings = $this->config->get('module_dmenu_editor_settings');
 
         // Store ID.
         if (isset($module_settings['general']['store_default'][$data['menu_type']])) {
@@ -80,29 +64,11 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
             $data['store_id'] = $this->config->get('config_store_id');
         }
 
-        // Settings Current Menu.
-        if (isset($module_settings['menu'][$data['menu_type']])) {
-            $data['settings_menu'] = $module_settings['menu'][$data['menu_type']];
-        } else {
-            $data['settings_menu'] = array(
-                'status'   => 0,
-                'title'    => array(
-                    'status'  => 0,
-                    'display' => '',
-                    'name'    => array()
-                ),
-                'mobile'   => array(
-                    'status' => 0,
-                    'close'  => 0
-                ),
-                'currency' => 0,
-                'language' => 0,
-                'icon'     => $this->settings['menu'][$data['menu_type']]['icon']
-            );
-        }
+        $this->settings['store_id'] = $data['store_id'];
 
-        // Additional data.
-        $data['additional'] = array();
+        // Settings Current Menu.
+        $data['settings_menu'] = $module_settings['menu'][$this->menu_type];
+        $this->settings['menu']['icon'] = $data['settings_menu']['icon'];
 
         // Items Menu.
         if ($this->config->get('module_dmenu_editor_items_' . $data['menu_type'] . '_' . $data['store_id'])) {
@@ -111,18 +77,41 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
             $data['menu_items'] = array();
         }
 
-        // Setting 'Status Menu'.
-        $data['menu_items_status'] = $data['settings_menu']['status'];
+        // Extra data from DB.
+        if ($this->config->get('module_dmenu_editor_extra')) {
+            $extra = $this->config->get('module_dmenu_editor_extra');
+        } else {
+            $extra = array();
+        }
 
         // Prepared data.
-        if ($this->config->get('module_dmenu_editor_prepared')) {
-            $prepared = $this->config->get('module_dmenu_editor_prepared');
-
-            if (isset($prepared['menu'][$data['menu_type']]['store_' . $data['store_id']]['IDs'])) {
-                foreach ($prepared['menu'][$data['menu_type']]['store_' . $data['store_id']]['IDs'] as $layout => $IDs) {
+        if (isset($extra['prepared'])) {
+            if (isset($extra['prepared']['menu'][$data['menu_type']]['store_' . $data['store_id']]['IDs'])) {
+                foreach ($extra['prepared']['menu'][$data['menu_type']]['store_' . $data['store_id']]['IDs'] as $layout => $IDs) {
                     $this->prepared['menu']['IDs'] = $IDs;
                     $this->prepared['menu']['data'][$layout] = $this->model_extension_module_dmenu_editor->getItemsPrepared($IDs, $layout);
                 }
+            }
+        }
+
+        // IMAGE_CATALOG directory path.
+        if (isset($extra['PATH_IMAGE'])) {
+            $this->settings['PATH_IMAGE'] = $extra['PATH_IMAGE'];
+        } else {
+            if (!$this->settings['PATH_IMAGE']) {
+                $dir_image = explode('/', DIR_IMAGE);
+                $http_server = explode('/', $HTTP_SERVER);
+
+                if (!$this->endc($dir_image)) array_pop($dir_image);
+                if (!$this->endc($http_server)) array_pop($http_server);
+
+                foreach (array_keys($dir_image) as $index) {
+                    $dir = $dir_image[$index];
+                    unset($dir_image[$index]);
+                    if ($dir == $this->endc($http_server)) break;
+                }
+
+                $this->settings['PATH_IMAGE'] = implode('/', array_values($dir_image));
             }
         }
 
@@ -175,6 +164,12 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
             $data['catalog'] = array();
         }
 
+        // Additional data.
+        $data['additional'] = array();
+
+        // Setting 'Icon Status' to additional data.
+        $data['additional']['icon_status'] = $this->settings['menu']['icon']['status'];
+
         // Top Menu additional data.
         if ($data['menu_type'] == 'top') {
             // Switcher Currency.
@@ -203,7 +198,7 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
      * @param string $search_value
      * @param int $depth
      * 
-     * @return bool
+     * @return bool $ancestor
      */
     private function changeMenuItems(&$items, $search_key, $search_value, $depth = 0) {
         $ancestor = false;
@@ -228,21 +223,26 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
 
                 // Set 'current' class.
                 $item['data'][$search_key] = $this->current_ancestor_class;
+
+                // Attribute 'class' for element.
+                if ($search_key == 'current') {
+                    $item['extra']['class']['el'] .= ' ' . $item['data'][$search_key];
+                }
             } else if ($item['data']['status'] && !empty($item['rows']) && $this->changeMenuItems($item['rows'], $search_key, $search_value, ($depth + 1))) {
                 // Set ancestor.
                 $ancestor = true;
 
                 // Set 'current' class.
                 $item['data'][$search_key] = $this->current_ancestor_class;
+
+                // Attribute 'class' for element.
+                if ($search_key == 'current') {
+                    $item['extra']['class']['el'] .= ' ' . $item['data'][$search_key];
+                }
             }
         }
 
-        // Return.
-        if ($ancestor) {
-            return true;
-        } else {
-            return false;
-        }
+        return $ancestor;
     }
 
     /**
@@ -453,6 +453,44 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
                 // Title Menu Item.
                 $item['data']['title'] = $item['data']['names'][$this->settings['language_id']];
             }
+
+            // Set attribute 'class'.
+            $item['extra']['class'] = array();
+
+            // Attribute 'class' for element.
+            $item['extra']['class']['el']  = '';
+            $item['extra']['class']['el'] .= isset($item['data']['names_hide']) ? ' dmenu_editor-title_hidden' : '';
+            $item['extra']['class']['el'] .= ' ' . $layout;
+            $item['extra']['class']['el'] .= ' item-' . $item['data']['id'];
+            $item['extra']['class']['el'] .= !empty($item['data']['class']) ? ' ' . $item['data']['class'] : '';
+            $item['extra']['class']['el'] .= $item['data']['current'] ? ' ' . $item['data']['current'] : '';
+
+            // Set attribute 'style'.
+            $item['extra']['style'] = array();
+            $item['extra']['style']['icon']  = '';
+
+            // Attributes for image.
+            if ($this->settings['menu']['icon']['status']) {
+                $item['extra']['style']['icon'] .= 'width: ' . $this->settings['menu']['icon']['width'] . 'px;';
+                $item['extra']['style']['icon'] .= ' height: ' . $this->settings['menu']['icon']['height'] . 'px;';
+
+                if (isset($item['extra']['sprite'])) {
+                    // Attribute 'class' for element.
+                    $item['extra']['class']['el'] .= ' dmenu_editor-icon icon-sprite';
+
+                    // Attribute 'style' for sprite.
+                    $item['extra']['style']['icon'] .= ' background-image: url(/' . $this->settings['PATH_IMAGE'] . '/' . $item['extra']['sprite']['src'] . ');';
+                    $item['extra']['style']['icon'] .= ' background-position: ' . ($item['extra']['sprite']['coords']['x'] * -1) . 'px ' . ($item['extra']['sprite']['coords']['y'] * -1) . 'px;';
+                } else {
+                    // Attribute 'class' for element.
+                    $item['extra']['class']['el'] .= isset($item['data']['icon']['thumb']) ? ' dmenu_editor-icon icon-simple' : '';
+
+                    // Attribute 'style' for icon.
+                    if (isset($item['data']['icon']['thumb'])) {
+                        $item['extra']['style']['icon'] .= ' background-image: url(' . $item['data']['icon']['thumb'] . ');';
+                    }
+                }
+            }
         } else {
             // Set 'current' class.
             $item['data']['current'] = '';
@@ -547,6 +585,7 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
                     'children' => $children_data,
                     'column'   => $categories[$i]['column'] ? $categories[$i]['column'] : 1,
                     'href'     => $href,
+					'class'    => 'catalog_item-' . $categories[$i]['category_id'],
 					'current'  => $current_class
                 );
             }
@@ -644,6 +683,7 @@ class ControllerExtensionModuleDMenuEditor extends Controller {
         }
 
         // Set other data.
+        // Regular Item.
         if (isset($item_info['status']) && $item_info['status']) {
             // Set href.
             switch ($layout) {

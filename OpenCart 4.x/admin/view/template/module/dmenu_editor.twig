@@ -112,7 +112,19 @@
                         </li>
 
                         <li class="nav-item">
+                            <a href="#tab-categories" data-bs-toggle="tab" class="nav-link">{{ tab_categories }}</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="#tab-styles" data-bs-toggle="tab" class="nav-link">{{ tab_styles }}</a>
+                        </li>
+
+                        <li class="nav-item">
                             <a href="#tab-settings" data-bs-toggle="tab" class="nav-link">{{ tab_settings }}</a>
+                        </li>
+
+                        <li class="nav-item nav-support">
+                            <a href="#tab-support" data-bs-toggle="tab" class="nav-link">{{ tab_support }}</a>
                         </li>
                     </ul>
 
@@ -591,7 +603,17 @@
                             </div>
                         </div>
 
+                        <div class="tab-pane" id="tab-categories">
+                            <div style="font-size: 1.5em; font-style: italic; text-align: center; margin: 40px 0;">{{ note_page_development }}</div>
+                        </div>
+
+                        <div class="tab-pane" id="tab-styles">
+                            <div style="font-size: 1.5em; font-style: italic; text-align: center; margin: 40px 0;">{{ note_page_development }}</div>
+                        </div>
+
                         <div class="tab-pane" id="tab-settings">{{ settings }}</div>
+
+                        <div class="tab-pane" id="tab-support">{{ help_support }}</div>
                     </div>
                 </form>
             </div>

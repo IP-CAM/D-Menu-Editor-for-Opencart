@@ -111,7 +111,13 @@
                 <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-module_dmenu_editor" class="form-horizontal">
                     <ul class="nav nav-tabs">
                         <li class="active"><a href="#tab-menu_general" data-toggle="tab">{{ tab_menu_general }}</a></li>
+                        <li><a href="#tab-categories" data-toggle="tab">{{ tab_categories }}</a></li>
+                        <li><a href="#tab-styles" data-toggle="tab">{{ tab_styles }}</a></li>
                         <li><a href="#tab-settings" data-toggle="tab">{{ tab_settings }}</a></li>
+
+                        <li class="nav-support">
+                            <a href="#tab-support" data-toggle="tab">{{ tab_support }}</a>
+                        </li>
                     </ul>
 
                     <div class="tab-content">
@@ -578,7 +584,17 @@
                             </div>
                         </div>
 
+                        <div class="tab-pane" id="tab-categories">
+                            <div style="font-size: 1.5em; font-style: italic; text-align: center; margin: 40px 0;">{{ note_page_development }}</div>
+                        </div>
+
+                        <div class="tab-pane" id="tab-styles">
+                            <div style="font-size: 1.5em; font-style: italic; text-align: center; margin: 40px 0;">{{ note_page_development }}</div>
+                        </div>
+
                         <div class="tab-pane" id="tab-settings">{{ settings }}</div>
+
+                        <div class="tab-pane" id="tab-support">{{ help_support }}</div>
                     </div>
                 </form>
             </div>

@@ -141,19 +141,19 @@ class ControllerExtensionModuleDMenuEditorEvents extends Controller {
             }
 
             if ($this->request->server['HTTPS']) {
-                $http_server = HTTPS_SERVER;
+                $HTTP_SERVER = HTTPS_SERVER;
             } else {
-                $http_server = HTTP_SERVER;
+                $HTTP_SERVER = HTTP_SERVER;
             }
 
             // New HTML.
             $html  = '';
             $html .= '<script type="text/javascript">var dmenuSettings = { status: 0, menu: {} };</script>';
-            $html .= '<link href="' . $http_server . 'catalog/view/javascript/module-dmenu_editor/dmenu_editor.css" type="text/css" rel="stylesheet" media="screen">';
-            $html .= '<script src="' . $http_server . 'catalog/view/javascript/module-dmenu_editor/dmenu_editor.js" type="text/javascript"></script>';
+            $html .= '<link href="' . $HTTP_SERVER . 'catalog/view/javascript/module-dmenu_editor/dmenu_editor.css" type="text/css" rel="stylesheet" media="screen">';
+            $html .= '<script src="' . $HTTP_SERVER . 'catalog/view/javascript/module-dmenu_editor/dmenu_editor.js" type="text/javascript"></script>';
 
             if ($module_dmenu_editor_settings_close) {
-                $html .= '<script src="' . $http_server . 'catalog/view/javascript/module-dmenu_editor/touchSwipe/jquery.touchSwipe.min.js" type="text/javascript"></script>';
+                $html .= '<script src="' . $HTTP_SERVER . 'catalog/view/javascript/module-dmenu_editor/touchSwipe/jquery.touchSwipe.min.js" type="text/javascript"></script>';
             }
 
             // Find HTML.
