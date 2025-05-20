@@ -3,6 +3,12 @@
 <head></head>
 <body>
     <h1>D.Menu Editor change log</h1>
+    <h2>[v1.2.3] (Release date: 20.05.2025)</h2>
+    <p>
+        <ul>
+            <li>Added sprite for raster images.</li>
+        </ul>
+    </p>
     <h2>[v1.2.2] (Release date: 04.05.2025)</h2>
     <p>
         <ul>
